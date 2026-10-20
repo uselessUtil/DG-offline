@@ -1,0 +1,19 @@
+artifacts/
+__pycache__/
+*.pyc
+
+# Keep supplied archives and generated binaries local.
+*.apk
+*.xapk
+*.apk.idsig
+
+# Signing material and local credentials must never enter Git.
+*.jks
+*.keystore
+*.p12
+*.pfx
+.env
+.env.*
+
+# Local developer instructions stay outside version control.
+/AGENTS.md
