@@ -111,6 +111,19 @@ def main():
     print(prefab_test)
     (args.report.parent/'shop-prefab-tests.txt').write_text(prefab_test)
     report['shop_prefab_tests'] = prefab_test.strip()
+    run('mcs','-out:'+str(tools/'VerifyCollabHooks.exe'),'-r:'+CECIL,tests/'VerifyCollabHooks.cs')
+    collab_test = subprocess.check_output(['mono',str(tools/'VerifyCollabHooks.exe'),
+        str(managed/'Assembly-CSharp.dll'),str(test/'Assembly-CSharp.dll'),str(test/'DivineGateOffline.dll')],text=True)
+    run('mcs','-out:'+str(test/'VerifyCollabGacha.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+        '-r:'+str(test/'DivineGateOffline.dll'),'-r:'+str(test/'Assembly-CSharp-firstpass.dll'),
+        '-r:'+str(test/'UnityEngine.dll'),tests/'VerifyCollabGacha.cs')
+    collab_env = dict(env, DG_TEST_PREFS=str(test/'collab-prefs.txt'))
+    for mode in [[], ['reload']]:
+        collab_test += subprocess.check_output(['mono',str(test/'VerifyCollabGacha.exe'),*mode],
+            env=collab_env,text=True,timeout=45)
+    print(collab_test)
+    (args.report.parent/'collab-gacha-tests.txt').write_text(collab_test)
+    report['collab_gacha_tests'] = collab_test.strip()
     if report.get('recovered_artwork') and images.get('sprite_aliases'):
         from PIL import Image, ImageChops
         import io

@@ -165,6 +165,39 @@ public static class Patch106
         il.Emit(OpCodes.Call, Method("MainMenuSeq", "PageSwitchUpdate"));
         il.Emit(OpCodes.Call, Helper("UpdateFreeChipPage")); il.Emit(OpCodes.Ret);
     }
+    static void CollabGachaSelector()
+    {
+        var update = Method("MainMenuSeqGachaRoot", "Update");
+        var request = update.Body.Instructions.Single(i => i.Operand is MethodReference &&
+            ((MethodReference)i.Operand).DeclaringType.Name == "MainMenuManager" &&
+            ((MethodReference)i.Operand).Name == "AddSwitchRequest");
+        var il = update.Body.GetILProcessor();
+        il.InsertBefore(request, Instruction.Create(OpCodes.Ldarg_0));
+        var route = Helper("RouteGachaRootRequest");
+        if (route.ReturnType.FullName != ((MethodReference)request.Operand).ReturnType.FullName || route.Parameters.Count != 5)
+            throw new Exception("Gacha route must preserve the original request result and add the page argument");
+        request.OpCode = OpCodes.Call;
+        request.Operand = route;
+        var first = update.Body.Instructions.First();
+        il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Call, Helper("CollabSelectorOpen")));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Brfalse, first));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Call, Method("MainMenuSeq", "PageSwitchUpdate")));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Call, Helper("UpdateCollabSelector")));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Ret));
+        var setup = Method("MainMenuSeqGachaRoot", "PageSwitchSetting");
+        il = setup.Body.GetILProcessor();
+        foreach (var end in setup.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray())
+        {
+            end.OpCode = OpCodes.Ldarg_0;
+            var active = Instruction.Create(OpCodes.Ldarg_1);
+            var call = Instruction.Create(OpCodes.Call, Helper("RefreshCollabRoot"));
+            il.InsertAfter(end, active); il.InsertAfter(active, call);
+            il.InsertAfter(call, Instruction.Create(OpCodes.Ret));
+        }
+    }
     public static void Main(string[] args)
     {
         var resolver = new DefaultAssemblyResolver();
@@ -183,6 +216,7 @@ public static class Patch106
         Append("ServerForgery", "Start", "Ready");
         EventMissionAccess();
         FreeChipShop();
+        CollabGachaSelector();
         StartHelper("PatchManager", "SetupPatch");
         CallHelper("PatchManager", "GetPatchText", "PatchText", 1);
         Empty("PatchManager", "PatchUpdateRequest");
