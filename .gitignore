@@ -17,5 +17,10 @@ __pycache__/
 *.keystore
 *.p12
 *.pfx
+*.ulf
+*.alf
 .env
 .env.*
+
+# Imported device cache is a local recovery input, not maintained source.
+/jp.gungho.dg/

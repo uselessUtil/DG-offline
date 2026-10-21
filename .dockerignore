@@ -4,3 +4,16 @@
 artifacts/
 external/
 __pycache__/
+jp.gungho.dg/
+AGENTS.md
+*.apk
+*.xapk
+*.apk.idsig
+*.ulf
+*.alf
+*.jks
+*.keystore
+*.p12
+*.pfx
+.env
+.env.*
