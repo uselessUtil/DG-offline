@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 8";
+    public const string Build = "1.0.6 offline prototype 9";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -429,9 +429,22 @@ public static partial class DivineGateOffline
         // Clone only enemy HUD materials. The original HUD atlases use straight
         // alpha; the included Overlay shader has the same blend plus queue +1.
         if (battle.m_EnemyObjectHP == null) return;
-        bool foreground = true;
+        bool foreground = !EnemyHudBehindPopup();
         foreach (GameObject hp in battle.m_EnemyObjectHP)
             if (hp != null) RaiseEnemyHudNode(hp.transform, foreground);
+    }
+
+    private static bool EnemyHudBehindPopup()
+    {
+        SceneObjReferGameMain scene = Singleton<SceneObjReferGameMain>.Instance;
+        // The root becomes visible on the opening frame, before CurrentMenu is
+        // advanced, so check both the scene root and the menu state machine.
+        if (scene != null && scene.m_UIInstanceMenu != null &&
+            UnityUtil.ChkObjectEnabled(scene.m_UIInstanceMenu)) return true;
+        InGameMenuManager menu = Singleton<InGameMenuManager>.Instance;
+        if (menu != null && menu.IsOpenGameMenu()) return true;
+        DialogManager dialog = Singleton<DialogManager>.Instance;
+        return dialog != null && dialog.CheckDialogActive();
     }
 
     private static void RaiseEnemyHudNode(Transform node, bool foregroundAllowed)
@@ -526,7 +539,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 8");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 9");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :

@@ -30,7 +30,7 @@ def digest(data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype8')
+    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype9')
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
@@ -154,7 +154,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':'1.0.6 offline prototype 8',
+              'version':'1.0.6 offline prototype 9',
               'package':'jp.gungho.dg.offline106','tables':counts,
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),

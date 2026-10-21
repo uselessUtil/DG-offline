@@ -66,6 +66,13 @@ def main():
                     assert portrait.size == shadow.size
                     assert ImageChops.difference(portrait.getchannel('A'), shadow.getchannel('A')).getbbox() is None
                     assert all(extrema == (255,255) for extrema in shadow.convert('RGB').getextrema())
+            run('mcs','-out:'+str(tools/'VerifyRenderFixes.exe'),'-r:'+CECIL,tests/'VerifyRenderFixes.cs')
+            render = subprocess.check_output(['mono',str(tools/'VerifyRenderFixes.exe'),
+                str(test/'Assembly-CSharp.dll'),str(test/'DivineGateOffline.dll')],text=True)
+            render += 'PASS: '+str(images['shadow_masks'])+' white shadow masks preserve portrait alpha exactly. Android rendering remains unverified.\n'
+            print(render)
+            (args.report.parent/'render-fix-tests.txt').write_text(render)
+            report['render_fix_tests'] = render.strip()
     run('mcs','-target:library','-out:'+str(test/'EngineSupport.dll'),'-r:'+str(managed/'UnityEngine.dll'),tests/'EngineSupport.cs')
     run('mcs','-out:'+str(tools/'TestEngine.exe'),'-r:'+CECIL,tests/'TestEngine.cs')
     run('mono',tools/'TestEngine.exe',managed/'UnityEngine.dll',test/'EngineSupport.dll',test/'UnityEngine.dll')
@@ -117,6 +124,26 @@ def main():
         print(enemy_search)
         (args.report.parent/'enemy-atlas-tests.txt').write_text(enemy_search)
         report['enemy_atlas_tests'] = enemy_search.strip()
+        run('mcs','-out:'+str(test/'VerifyHudPopup.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+            '-r:'+str(test/'UnityEngine.dll'),'-r:'+str(test/'EngineSupport.dll'),tests/'VerifyHudPopup.cs')
+        popup = subprocess.check_output(['mono',str(test/'VerifyHudPopup.exe'),str(test/'DivineGateOffline.dll')],env=env,text=True,timeout=45)
+        print(popup)
+        (args.report.parent/'hud-popup-tests.txt').write_text(popup)
+        report['hud_popup_tests'] = popup.strip()
+        if images.get('area_icon_sources'):
+            area_sheet = recovered_png('atlas/AtlasAreaIcon_000_020')
+            for row in images['area_icon_sources']:
+                raw = (ROOT/row['local_path']).read_bytes()
+                assert digest(raw) == row['sha256']
+                original = Image.open(io.BytesIO(raw)).convert('RGBA')
+                x,y,w,h = images['sprites']['AtlasAreaIcon_000_020/'+row['sprite_name']]
+                assert (w,h) == original.size
+                actual = area_sheet.crop((x,y,x+w,y+h))
+                assert not any(channel.getbbox() for channel in ImageChops.difference(original,actual).split())
+            area_result = f'PASS {len(images["area_icon_sources"])} Fandom town-selection icons match downloaded source pixels and retain source aspect/dimensions.\n'
+            print(area_result)
+            (args.report.parent/'area-icon-tests.txt').write_text(area_result)
+            report['area_icon_tests'] = area_result.strip()
         areas = json.loads((work/'tables/MasterDataArea.json').read_bytes(), strict=False)
         names = {a['res_map'].removesuffix('_tex') for a in areas if a.get('res_map','').startswith('map_')}
         for name in names:
