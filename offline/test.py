@@ -108,6 +108,11 @@ def main():
             original = original.resize((w,h),Image.Resampling.LANCZOS)
             actual = panel_atlas.crop((x,y,x+w,y+h))
             assert not any(channel.getbbox() for channel in ImageChops.difference(original,actual).split())
+        for color in ['b','y','r']:
+            for count in range(1,7):
+                rect = images['sprites'][f'AtlasPanelIcon/panel_{color}_{count}']
+                assert rect == images['sprites'][f'AtlasPanelIcon/panel_{count}']
+                assert rect != images['sprites']['AtlasPanelIcon/__missing']
         run('mcs','-out:'+str(test/'VerifyMapTextureRouting.exe'),
             '-r:'+str(test/'Assembly-CSharp.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'VerifyMapTextureRouting.cs')
         run('mcs','-out:'+str(tools/'PrepareMapProbe.exe'),'-r:'+CECIL,tests/'PrepareMapProbe.cs')

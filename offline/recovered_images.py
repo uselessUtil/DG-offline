@@ -62,6 +62,14 @@ def create(output: Path, tables: Path, source: Path):
                                 if path.startswith(('public/img/panel/', 'public/img/trap/'))]
     alias_records = json.loads((Path(__file__).parent / 'dgdb-sprite-aliases.json').read_text())
     aliases = {name: row['source'] for name, row in alias_records.items()}
+    # The public backup preserves one set of 1..6 star panels. Use the same
+    # star-count art for all three old risk variants; no guessed recoloring.
+    for color in ['b', 'y', 'r']:
+        for count in range(1, 7):
+            name = f'panel_{color}_{count}'
+            aliases[name] = f'panel_{count}'
+            alias_records[name] = {'source': f'panel_{count}',
+                'basis': 'compatible star-count panel requested by user; original color variant unavailable'}
     for atlas, entries in groups.items():
         # Keep the full 128px icon resolution. Alpha variants share these textures.
         empty = Image.new('RGBA', (128, 128))

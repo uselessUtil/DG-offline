@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 5";
+    public const string Build = "1.0.6 offline prototype 6";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -371,6 +371,28 @@ public static partial class DivineGateOffline
         GameObject root = Template(name);
         if (name.ToLower().IndexOf("door") >= 0)
         {
+            // Top-down camera: place the split upper art past the 5x5 grid's
+            // far edge. This display mesh has no collider; GoalCollision stays
+            // at (0,-.3,3), owned by the original scene.
+            Texture2D upper = MapPartTexture(bundle, name, "upper");
+            if (upper != null)
+            {
+                float top = 2.5f + 5f * upper.height / upper.width;
+                GameObject backdrop = new GameObject("DG upper map backdrop");
+                backdrop.transform.parent = root.transform;
+                backdrop.transform.localPosition = Vector3.zero;
+                Mesh mesh = new Mesh();
+                mesh.vertices = new Vector3[] { new Vector3(-2.5f,0,2.5f), new Vector3(2.5f,0,2.5f),
+                    new Vector3(2.5f,0,top), new Vector3(-2.5f,0,top) };
+                mesh.uv = new Vector2[] { new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1) };
+                mesh.colors = new Color[] { Color.white, Color.white, Color.white, Color.white };
+                mesh.triangles = new int[] { 0,2,1,0,3,2 };
+                mesh.RecalculateNormals();
+                backdrop.AddComponent<MeshFilter>().mesh = mesh;
+                Material material = new Material(FlatShader());
+                material.mainTexture = upper;
+                backdrop.AddComponent<MeshRenderer>().sharedMaterial = material;
+            }
             return root;
         }
         if (name.ToLower().IndexOf("mesh") >= 0)
@@ -449,7 +471,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 5");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 6");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :
