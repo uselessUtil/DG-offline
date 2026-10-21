@@ -72,7 +72,9 @@ def create(output: Path, tables: Path, source: Path):
                 'basis': 'compatible star-count panel requested by user; original color variant unavailable'}
     for atlas, entries in groups.items():
         # Keep the full 128px icon resolution. Alpha variants share these textures.
-        empty = Image.new('RGBA', (128, 128))
+        # Null friend/party slots request this sprite from the character atlas.
+        # A transparent substitute exposes the prefab's white backing tile.
+        empty = read('public/img/panel/chara_icon_empty.png')
         missing = Image.new('RGBA', (128, 128), '#555568')
         ImageDraw.Draw(missing).text((56, 55), '?', fill='white')
         entries = [('__missing', missing), ('chara_icon_empty', empty),

@@ -87,6 +87,26 @@ def main():
             value = Image.open(io.BytesIO(packed[row['offset']:row['offset']+row['size']])).convert('RGBA')
             value.load()
             return value
+        empty_row = files['public/img/panel/chara_icon_empty.png']
+        empty_raw = (ROOT/empty_row['local_path']).read_bytes()
+        assert digest(empty_raw) == empty_row['sha256']
+        empty_source = Image.open(io.BytesIO(empty_raw)).convert('RGBA')
+        assert empty_source.getchannel('A').getextrema()[0] > 0
+        empty_atlases = []
+        for key in images['payloads']:
+            if not key.startswith('atlas/AtlasCharaIcon_'):
+                continue
+            atlas_name = key.split('/',1)[1]
+            x,y,w,h = images['sprites'][atlas_name+'/chara_icon_empty']
+            actual = recovered_png(key).crop((x,y,x+w,y+h))
+            expected_empty = empty_source.resize((w,h),Image.Resampling.LANCZOS)
+            assert not any(channel.getbbox() for channel in ImageChops.difference(actual,expected_empty).split())
+            empty_atlases.append(atlas_name)
+        assert len(empty_atlases) == 5
+        empty_result = 'PASS empty friend/party slot: all 5 character atlases match the verified dark Empty artwork; no transparent empty substitute.\n'
+        print(empty_result)
+        (args.report.parent/'empty-slot-tests.txt').write_text(empty_result)
+        report['empty_slot_tests'] = empty_result.strip()
         areas = json.loads((work/'tables/MasterDataArea.json').read_bytes(), strict=False)
         names = {a['res_map'].removesuffix('_tex') for a in areas if a.get('res_map','').startswith('map_')}
         for name in names:
