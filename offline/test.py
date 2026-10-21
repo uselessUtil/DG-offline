@@ -189,15 +189,71 @@ def main():
         report['hud_popup_tests'] = popup.strip()
         if images.get('area_icon_sources'):
             area_sheet = recovered_png('atlas/AtlasAreaIcon_000_020')
+            areas = json.loads((work/'tables/MasterDataArea.json').read_bytes(), strict=False)
+            coverage = {}
+            area_rects = []
             for row in images['area_icon_sources']:
                 raw = (ROOT/row['local_path']).read_bytes()
                 assert digest(raw) == row['sha256']
                 original = Image.open(io.BytesIO(raw)).convert('RGBA')
+                if 'crop_box' in row:
+                    assert original.size == (1024,315)
+                    assert row['crop_box'] == [348,108,675,315]
+                    original = original.convert('RGB').crop((348,108,675,315)).resize(
+                        (207,131),Image.Resampling.LANCZOS).convert('RGBA')
+                    derived = (args.report.parent/row['derived_file']).read_bytes()
+                    assert digest(derived) == row['derived_sha256']
+                    assert not any(c.getbbox() for c in ImageChops.difference(
+                        Image.open(io.BytesIO(derived)).convert('RGBA'),original).split())
+                    if row['map_name'] == 'map_0006':
+                        assert digest(derived) == '5354c5721c3f3240fec187b1f4ee3ad4bcb2a6d4e2aeb1bb71a402016a6cbf56'
+                elif row.get('derived_file'):
+                    derived = (args.report.parent/row['derived_file']).read_bytes()
+                    assert derived == raw  # Preserve the Wiki PNG bytes as well as its pixels.
+                    assert digest(derived) == row['derived_sha256']
+                if 'area_ids' in row:
+                    for area_id in row['area_ids']:
+                        assert area_id not in coverage
+                        coverage[area_id] = row
                 x,y,w,h = images['sprites']['AtlasAreaIcon_000_020/'+row['sprite_name']]
                 assert (w,h) == original.size
+                assert 0 <= x and 0 <= y and x+w <= area_sheet.width and y+h <= area_sheet.height
+                assert not any(x < ox+ow and x+w > ox and y < oy+oh and y+h > oy
+                               for ox,oy,ow,oh in area_rects)
+                area_rects.append((x,y,w,h))
                 actual = area_sheet.crop((x,y,x+w,y+h))
                 assert not any(channel.getbbox() for channel in ImageChops.difference(original,actual).split())
-            area_result = f'PASS {len(images["area_icon_sources"])} Fandom town-selection icons match downloaded source pixels and retain source aspect/dimensions.\n'
+            if coverage:
+                assert set(coverage) == {a['fix_id'] for a in areas if a['fix_id']}
+                for area in areas:
+                    if not area['fix_id']:
+                        continue
+                    row = coverage[area['fix_id']]
+                    assert area['res_map'] == row['map_name']+'_tex'
+                    assert area['res_map_icon'] == row['sprite_name']
+                assert area_sheet.width <= 2048 and area_sheet.height <= 2048
+                cropped = [r for r in images['area_icon_sources'] if 'crop_box' in r]
+                wiki = [r for r in images['area_icon_sources'] if 'crop_box' not in r]
+                wiki_manifest = json.loads((source/'fandom-area-images.json').read_text())
+                assert {r['sprite_name'] for r in wiki} == {r['sprite_name'] for r in wiki_manifest}
+                for reference in wiki_manifest:
+                    row = next(r for r in wiki if r['sprite_name'] == reference['sprite_name'])
+                    assert row['sha256'] == reference['sha256']
+                area_result = (f'PASS selection art: {len(coverage)} original areas, '
+                    f'{len(wiki)} Wiki icons preserved byte-for-byte, {len(cropped)} A-cropped icons '
+                    f'from {len({r["map_name"] for r in cropped})} upper textures; '
+                    f'{len(area_rects)} non-overlapping 207x131 sprites, source/derived hashes and embedded atlas pixels match.\n')
+                expected_area_rects = test/'area-sprite-rects.tsv'
+                expected_area_rects.write_text(''.join(r['sprite_name']+'\t'+','.join(map(str,
+                    images['sprites']['AtlasAreaIcon_000_020/'+r['sprite_name']]))+'\n'
+                    for r in images['area_icon_sources']))
+                run('mcs','-out:'+str(test/'VerifyAreaIcons.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+                    '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),
+                    '-r:'+str(test/'EngineSupport.dll'),tests/'VerifyAreaIcons.cs')
+                area_result += subprocess.check_output(['mono',str(test/'VerifyAreaIcons.exe'),str(expected_area_rects)],
+                    env=env,text=True,timeout=45)
+            else:
+                area_result = f'PASS {len(images["area_icon_sources"])} Fandom town-selection icons match downloaded source pixels and retain source aspect/dimensions.\n'
             print(area_result)
             (args.report.parent/'area-icon-tests.txt').write_text(area_result)
             report['area_icon_tests'] = area_result.strip()
