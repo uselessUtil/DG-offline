@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 3";
+    public const string Build = "1.0.6 offline prototype 4";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -123,34 +123,11 @@ public static partial class DivineGateOffline
 
     private static Shader FlatShader()
     {
-        Shader shader = Shader.Find("Unlit - Transparent Colored");
-        if (shader == null)
-        {
-            shader = Shader.Find("Unlit - Texture (AlphaNone)");
-        }
-        if (shader == null)
-        {
-            shader = Shader.Find("Unlit-Alpha");
-        }
-        if (shader == null)
-        {
-            shader = Shader.Find("Unlit/Transparent");
-        }
-        if (shader == null)
-        {
-            shader = Shader.Find("Unlit/Texture");
-        }
-        if (shader == null)
-        {
-            shader = Shader.Find("Sprites/Default");
-        }
-        if (shader == null)
-        {
-            throw new InvalidOperationException("No bundled unlit shader");
-        }
+        Shader shader = Shader.Find("Unlit/Transparent Colored");
+        if (shader == null) shader = Shader.Find("Unlit/Transparent");
+        if (shader == null) throw new InvalidOperationException("No bundled alpha-blended shader");
         return shader;
     }
-
 
     private static Color ColorFor(int id)
     {
@@ -344,15 +321,35 @@ public static partial class DivineGateOffline
         return obj;
     }
 
+    public static void FixCharacterShadow(AssetAutoSetCharaMesh view)
+    {
+        GameObject shadow = view.m_AssetBundleObjectShadow;
+        if (shadow == null || shadow.renderer == null) return;
+        Material previous = shadow.renderer.sharedMaterial;
+        if (previous == null || previous.name.StartsWith("DG alpha shadow ")) return;
+        Texture2D mask = RecoveredTexture("shadow/" + Number(shadow.name));
+        if (mask == null) return;
+        Shader shader = Shader.Find("Unlit/Colored Mult Diffuse Transparent");
+        if (shader == null)
+        {
+            // Do not fall back to an opaque tinted rectangle.
+            shadow.SetActive(false);
+            Debug.LogError("[DG offline] Missing transparent shadow shader");
+            return;
+        }
+        Material material = new Material(shader);
+        material.name = "DG alpha shadow " + shadow.name;
+        material.SetColor("_Color", previous.GetColor("_Color"));
+        material.mainTexture = mask;
+        shadow.renderer.sharedMaterial = material;
+        Object.Destroy(previous);
+    }
+
     private static GameObject Map(string bundle, string name)
     {
         GameObject root = Template(name);
         if (name.ToLower().IndexOf("door") >= 0)
         {
-            GameObject door = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            door.transform.parent = root.transform;
-            door.transform.localPosition = new Vector3(0, 1, 0);
-            door.transform.localScale = new Vector3(1, 2, .2f);
             return root;
         }
         if (name.ToLower().IndexOf("mesh") >= 0)
@@ -431,7 +428,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 3");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 4");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :

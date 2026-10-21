@@ -43,6 +43,12 @@ def create(output: Path, tables: Path, source: Path):
         # Preserve the compact, already verified PNG bytes and transparency.
         portrait_data = read(portrait, original=True)
         payloads['portrait/' + str(int(resource))] = portrait_data
+        # Original shadow materials paint an untextured silhouette mesh. Our
+        # replacement is a rectangle, so give its shadow an explicit alpha mask.
+        alpha = Image.open(io.BytesIO(portrait_data)).convert('RGBA').getchannel('A')
+        shadow = Image.new('RGBA', alpha.size, (255, 255, 255, 0))
+        shadow.putalpha(alpha)
+        payloads['shadow/' + str(int(resource))] = png(shadow)
         start = int(char['fix_id']) // 200 * 200
         groups[f'AtlasCharaIcon_{start:03d}_{start+199:03d}'].append(
             ('chara_icon_' + resource, read(icon)))
@@ -125,7 +131,7 @@ public static byte[] Payload(int index) { return null; }
     (output / 'RecoveredImages.cs').write_text('\n'.join(lines))
     report = {'source': 'https://github.com/kennyfong19931/dgdb',
               'commit': json.loads((source / 'dgdb-commit.json').read_text())['commit'],
-              'portraits': len(mapping), 'character_icons': len(mapping), 'shadow_masks': 0, 'maps': maps,
+              'portraits': len(mapping), 'character_icons': len(mapping), 'shadow_masks': len(mapping), 'maps': maps,
               'panel_and_trap_images': len(groups['AtlasPanelIcon']),
               'area_icons': len(area_sources), 'area_icon_sources': area_sources,
               'image_pack_bytes': pack.stat().st_size, 'image_pack_sha256': hashlib.sha256(pack.read_bytes()).hexdigest(),

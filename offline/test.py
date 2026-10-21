@@ -48,6 +48,24 @@ def main():
         print(verified)
         (args.report.parent/'recovered-image-tests.txt').write_text(verified)
         report['recovered_image_tests'] = verified.strip()
+        if images.get('shadow_masks'):
+            import io
+            from PIL import Image, ImageChops
+            packed = work/'build/RecoveredImages.bin'
+            assert digest(packed.read_bytes()) == images['image_pack_sha256']
+            with packed.open('rb') as stream:
+                def image(key):
+                    row = images['payloads'][key]
+                    stream.seek(row['offset'])
+                    value = Image.open(io.BytesIO(stream.read(row['size']))).convert('RGBA')
+                    value.load()
+                    return value
+                for char in images['characters']:
+                    rid = str(int(char['resource_id']))
+                    portrait, shadow = image('portrait/'+rid), image('shadow/'+rid)
+                    assert portrait.size == shadow.size
+                    assert ImageChops.difference(portrait.getchannel('A'), shadow.getchannel('A')).getbbox() is None
+                    assert all(extrema == (255,255) for extrema in shadow.convert('RGB').getextrema())
     run('mcs','-target:library','-out:'+str(test/'EngineSupport.dll'),'-r:'+str(managed/'UnityEngine.dll'),tests/'EngineSupport.cs')
     run('mcs','-out:'+str(tools/'TestEngine.exe'),'-r:'+CECIL,tests/'TestEngine.cs')
     run('mono',tools/'TestEngine.exe',managed/'UnityEngine.dll',test/'EngineSupport.dll',test/'UnityEngine.dll')

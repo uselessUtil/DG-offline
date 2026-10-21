@@ -67,6 +67,20 @@ public static class Patch106
         il.InsertAfter(end, Instruction.Create(OpCodes.Call, Helper(helper)));
         il.Append(Instruction.Create(OpCodes.Ret));
     }
+    static void BeforeEveryReturn(string type, string name, string helper)
+    {
+        var method = Method(type, name);
+        var exits = method.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray();
+        if (exits.Length == 0) throw new Exception("No exits in " + type + "." + name);
+        var il = method.Body.GetILProcessor();
+        foreach (var end in exits)
+        {
+            end.OpCode = OpCodes.Ldarg_0;
+            var call = Instruction.Create(OpCodes.Call, Helper(helper));
+            il.InsertAfter(end, call);
+            il.InsertAfter(call, Instruction.Create(OpCodes.Ret));
+        }
+    }
     static void PageUpdate(string type, string helper)
     {
         var il = Reset(Method(type, "Update"));
@@ -114,6 +128,7 @@ public static class Patch106
         clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Ldarg_0));
         clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Call, Helper("ClearTransientAssets")));
         Empty("AssetBundleManager", "SetupAssetBundlePackageParam");
+        BeforeEveryReturn("AssetAutoSetCharaMesh", "Update", "FixCharacterShadow");
         StartHelper("StoreManager", "DisableStore");
         Empty("StoreManager", "Update");
         foreach (var method in module.Types.Single(t => t.Name == "PlayGameServiceUtil").Methods.Where(m => m.IsStatic && m.ReturnType.FullName == "System.Void"))
