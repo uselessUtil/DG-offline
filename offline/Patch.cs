@@ -180,6 +180,8 @@ public static class Patch106
         request.Operand = route;
         var first = update.Body.Instructions.First();
         il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Call, Helper("MaintainCollabRoot")));
+        il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
         il.InsertBefore(first, Instruction.Create(OpCodes.Call, Helper("CollabSelectorOpen")));
         il.InsertBefore(first, Instruction.Create(OpCodes.Brfalse, first));
         il.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));

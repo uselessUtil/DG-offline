@@ -13,8 +13,12 @@ public static class VerifyCollabHooks
         var root = game.Types.Single(t => t.Name == "MainMenuSeqGachaRoot");
         var update = root.Methods.Single(m => m.Name == "Update");
         var calls = update.Body.Instructions.Where(i => i.Operand is MethodReference).Select(i => (MethodReference)i.Operand).ToArray();
-        foreach (var name in new[] { "CollabSelectorOpen", "UpdateCollabSelector", "RouteGachaRootRequest" })
+        foreach (var name in new[] { "MaintainCollabRoot", "CollabSelectorOpen", "UpdateCollabSelector", "RouteGachaRootRequest" })
             if (calls.Count(c => c.Name == name) != 1) throw new Exception("Missing/duplicate selector hook " + name);
+        if (update.Body.Instructions[0].OpCode != OpCodes.Ldarg_0 ||
+            !(update.Body.Instructions[1].Operand is MethodReference) ||
+            ((MethodReference)update.Body.Instructions[1].Operand).Name != "MaintainCollabRoot")
+            throw new Exception("Normal-page cleanup must run before animation/input processing");
         var route = adapter.Types.Single(t => t.Name == "DivineGateOffline").Methods.Single(m => m.Name == "RouteGachaRootRequest");
         var oldRequest = original.Types.Single(t => t.Name == "MainMenuManager").Methods.Single(m => m.Name == "AddSwitchRequest");
         if (route.ReturnType.FullName != oldRequest.ReturnType.FullName || route.ReturnType.FullName != "System.Boolean" ||
@@ -32,6 +36,9 @@ public static class VerifyCollabHooks
         if (!(setup[2].Operand is MethodReference) || ((MethodReference)setup[2].Operand).Name != "BeforeCollabRootRefresh")
             throw new Exception("Original card appearance must restore before the normal page refresh");
         var runtime = adapter.Types.Single(t => t.Name == "DivineGateOffline");
+        if (!runtime.Methods.Single(m => m.Name == "RefreshCollabRoot").Body.Instructions.Any(i =>
+            i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "MaintainCollabRoot"))
+            throw new Exception("Fade-in page refresh must hide the fourth card and disable selector Back");
         var create = runtime.Methods.Single(m => m.Name == "CreateCollabSelector").Body.Instructions;
         if (create.Any(i => i.OpCode == OpCodes.Newobj && ((MethodReference)i.Operand).DeclaringType.Name == "GameObject") ||
             !create.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "GachaType3") ||

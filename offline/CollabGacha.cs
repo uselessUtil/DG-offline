@@ -101,9 +101,24 @@ public static partial class DivineGateOffline
         return collabSelecting && collabOwner == page;
     }
 
+    public static void MaintainCollabRoot(MainMenuSeqGachaRoot page)
+    {
+        if (collabOwner != page || collabSelecting) return;
+        // The original fade-in recursively enables every child, including
+        // inactive clones and colliders. Reapply normal-page visibility even
+        // when the selector was already closed before leaving for a draw.
+        if (collabCards != null && collabCards.Length > 3 && collabCards[3] != null &&
+            collabCards[3].activeSelf) collabCards[3].SetActive(false);
+        if (collabBackCollider != null && collabBackCollider.enabled) collabBackCollider.enabled = false;
+    }
+
     private static void SetCollabMode(bool selecting)
     {
-        if (selecting == collabSelecting) return;
+        if (selecting == collabSelecting)
+        {
+            MaintainCollabRoot(collabOwner);
+            return;
+        }
         if (selecting)
         {
             collabOriginalGroupPosition = collabChoices.transform.localPosition;
@@ -122,6 +137,7 @@ public static partial class DivineGateOffline
         // Hiding GachaType3 would also hide this selector.
         UnityUtil.SetObjectEnabled(UnityUtil.GetChildNode(collabOwner.gameObject, "ListObject"), !selecting);
         if (collabBackCollider != null) collabBackCollider.enabled = selecting;
+        MaintainCollabRoot(collabOwner);
         UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(collabOwner.gameObject, "PageTitleLabel"),
             selecting ? "Collab Scratch" : collabOriginalTitle);
         Debug.Log("[DG offline] Collab selector " + (selecting ? "open: original 3 cards + fourth, native hierarchy" : "closed: original scratch restored"));
@@ -149,7 +165,7 @@ public static partial class DivineGateOffline
         UIPanel panel = UIPanel.Find(collabChoices.transform, false);
         int layer = panel != null ? panel.gameObject.layer : collabChoices.layer;
         UnityUtil.SetObjectLayer(card, layer);
-        UnityUtil.SetObjectEnabled(card, true);
+        UnityUtil.SetObjectEnabledFix(card, true);
         GameObject label = UnityUtil.GetChildNode(card, "ElementLabel");
         label.transform.localScale = new Vector3(20, 20, 1);
         UnityUtil.SetUILabelValue(label, collabCardNames[index]);
@@ -213,6 +229,7 @@ public static partial class DivineGateOffline
     public static void RefreshCollabRoot(MainMenuSeqGachaRoot page, bool active)
     {
         if (!active) return;
+        MaintainCollabRoot(page);
         GameObject entry = UnityUtil.GetChildNode(page.gameObject, "Element02");
         UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(entry, "ElementLabel"), "コラボ選択");
         GameObject hint = UnityUtil.GetChildNode(entry, "ElementHint");
