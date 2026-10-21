@@ -1,6 +1,6 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-21。實作基準：**1.0.6 offline prototype 17**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 18**。
 
 本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
 
@@ -34,8 +34,9 @@
 | 原始 `ディバゲ_2.1.0.apk` | 32,114,571 | `af40f477e5455caba4f4bbfa24d6fde94e174fc4614db39025c9411be207bb29` |
 | 1.0.6 prototype 16 | 184,636,132 | `9b54bdbe1301dc5637dc41e8600444e116a551f1696fd69e1fe9529c24308c88` |
 | 1.0.6 prototype 17 | 189,063,908 | `d98b73348e2f17a576f430153e00eec43caecb08422ed53a005435af023bf029` |
+| 1.0.6 prototype 18 | 189,133,540 | `2805fe356a0b2701322a3101b94932dcb1ab65a2dcb99521523bf6993861bbff` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 17 產物目錄](artifacts/1.0.6-offline-prototype17-area-map-crops-wiki-preserved/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 18 產物目錄](artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -259,6 +260,8 @@ DGDB 圖片依 `draw_id` 命名，原客戶端資源請求依 `res_chara_id_str`
 實際接圖由原表的 resource／draw 欄位建立映射，並以 `character-map-106.csv` 與 SQL 唯讀對照留證。DGDB 後期 SQL 只用來核對，沒有匯入為 1.0.6 主資料。Git blob 相同只證明與玩家備份相同，並不證明與原 CDN 內容逐位元相同。
 
 建置輸入清單是 `dgdb-downloaded-assets.json`、可選的 `dgdb-additional-assets.json`、`fandom-area-images.json` 及 `dgdb-commit.json`；每筆 `local_path` 記錄專案相對位置。實際圖片分類保存在 `artifacts/web-asset-search-2026-10-20/recovered-dgdb/public/img/` 等目錄。
+
+prototype 18 另要求 `fandom-ui-images.json`：目前登錄使用者指定的 Wiki `Empty-icon.png`（82×82），作為 `chara_icon_empty` 的覆蓋來源，原 PNG 副本位於 `fandom-ui/Empty-icon.png`。其 SHA-256 與 Wiki 備份的官方上傳 SHA-1／大小均已核對；五個角色圖集及其他含 Empty 的圖集使用新圖並保留 alpha，舊 DGDB 面板來源的同名 Empty 被排除，避免再次覆蓋。測試依 `source_manifest` 核對 Wiki 備份清單，再逐像素驗證七個圖集。原進化頁三個材料空格要求的名稱為 `lock1`，目前在 Wiki 媒體名稱、DGDB 圖片及已檢查原 APK 中未找到獨立原圖；搜尋證據與限制見 [本次交付說明](artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)。
 
 ### 7.3 地圖與別名
 
@@ -569,10 +572,11 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 | prototype 15 | 抽卡返回重新啟用造成的第四卡／Collider 殘留 |
 | prototype 16 | 快照前及返回後清除按壓／懸停 Tween，還原正常尺寸 |
 | prototype 17 | 保留七張 Wiki 圖，其餘 77 個選關圖示以各區域門景裁切替代 |
+| prototype 18 | 改用使用者指定的 Wiki Empty-icon.png，排除舊同名來源；記錄 lock1 搜尋範圍與缺失 |
 
 延伸證據：
 
-- [目前使用說明](offline/README.md)、[prototype 17 交付報告](artifacts/1.0.6-offline-prototype17-area-map-crops-wiki-preserved/README.md)。
+- [目前使用說明](offline/README.md)、[prototype 18 交付報告](artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)。
 - [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
 - [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。
