@@ -6,12 +6,14 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 2";
+    public const string Build = "1.0.6 offline prototype 3";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
     private static readonly Dictionary<string, Object> assets = new Dictionary<string, Object>();
     private static readonly Dictionary<string, UIAtlas.Sprite> sprites = new Dictionary<string, UIAtlas.Sprite>();
+    private static readonly Dictionary<string, Texture2D> recoveredTextures = new Dictionary<string, Texture2D>();
+    private static readonly Dictionary<string, Material> recoveredAtlasMaterials = new Dictionary<string, Material>();
     private static string error = "";
     private static bool showNotice = true;
 
@@ -212,15 +214,26 @@ public static partial class DivineGateOffline
     {
         if (!atlas.gameObject.name.StartsWith("DG offline atlas") || name == null) return;
         foreach (UIAtlas.Sprite existing in atlas.spriteList) if (existing.name == name) return;
+        string atlasName = atlas.gameObject.name.Substring("DG offline atlas ".Length).Replace("Alpha", "");
+        string spriteKey = atlasName + "/" + name;
         UIAtlas.Sprite sprite;
-        if (!sprites.TryGetValue(name, out sprite))
+        if (!sprites.TryGetValue(spriteKey, out sprite))
         {
             sprite = new UIAtlas.Sprite();
             sprite.name = name;
-            int tile = Number(name) % 1024;
-            sprite.outer = new Rect(tile % 32 * 32, tile / 32 * 32, 32, 32);
+            int[] rect = RecoveredImages.Sprite(atlasName, name);
+            if (rect == null && recoveredAtlasMaterials.ContainsKey(atlasName))
+                rect = RecoveredImages.Sprite(atlasName, "__missing");
+            if (rect != null)
+                sprite.outer = new Rect(rect[0], rect[1], rect[2], rect[3]);
+            else
+            {
+                int tile = Number(name) % 1024;
+                // NGUI pixel coordinates start at the top, not Unity's UV origin.
+                sprite.outer = new Rect(tile % 32 * 32, tile / 32 * 32, 32, 32);
+            }
             sprite.inner = sprite.outer;
-            sprites.Add(name, sprite);
+            sprites.Add(spriteKey, sprite);
         }
         atlas.spriteList.Add(sprite);
     }
@@ -229,20 +242,89 @@ public static partial class DivineGateOffline
     {
         GameObject obj = Template("DG offline atlas " + name);
         UIAtlas atlas = obj.AddComponent<UIAtlas>();
-        AtlasTexture();
-        atlas.spriteMaterial = atlasMaterial;
+        string atlasName = name.Replace("Alpha", "");
+        Material material;
+        if (!recoveredAtlasMaterials.TryGetValue(atlasName, out material))
+        {
+            Texture2D texture = RecoveredTexture("atlas/" + atlasName);
+            if (texture != null)
+            {
+                material = new Material(FlatShader());
+                material.mainTexture = texture;
+                Object.DontDestroyOnLoad(material);
+                recoveredAtlasMaterials.Add(atlasName, material);
+            }
+            else
+            {
+                AtlasTexture();
+                material = atlasMaterial;
+            }
+        }
+        atlas.spriteMaterial = material;
         atlas.coordinates = UIAtlas.Coordinates.Pixels;
         return obj;
     }
 
     private static Texture2D CharacterTexture(string name)
     {
+        Texture2D recovered = RecoveredTexture("portrait/" + Number(name));
+        if (recovered != null) return recovered;
         Texture2D texture = new Texture2D(2, 2);
         texture.name = "DG offline " + name;
         if (!texture.LoadImage(Convert.FromBase64String(OfflineImages.Portraits[Number(name) % 1024])))
             throw new InvalidOperationException("Cannot decode offline portrait");
         Object.DontDestroyOnLoad(texture);
         return texture;
+    }
+
+    private static Texture2D RecoveredTexture(string key)
+    {
+        Texture2D texture;
+        if (recoveredTextures.TryGetValue(key, out texture)) return texture;
+        byte[] data = RecoveredImages.Read(key);
+        if (data == null) return null;
+        texture = new Texture2D(2, 2);
+        if (!texture.LoadImage(data)) throw new InvalidOperationException("Cannot decode recovered " + key);
+        texture.name = "DG recovered " + key;
+        texture.wrapMode = TextureWrapMode.Clamp;
+        if (key.StartsWith("atlas/")) Object.DontDestroyOnLoad(texture);
+        recoveredTextures.Add(key, texture);
+        return texture;
+    }
+
+    public static void ClearTransientAssets(AssetBundleManager manager)
+    {
+        // Match AssetBundle.Unload(false): discard our template/cache ownership,
+        // while existing scene instances retain their own materials and textures.
+        // Full portraits are much larger than the old numbered substitutes.
+        bool removed = false;
+        List<string> keys = new List<string>();
+        foreach (string key in assets.Keys) keys.Add(key);
+        foreach (string key in keys)
+        {
+            GameObject obj = assets[key] as GameObject;
+            if (obj != null && obj.name.StartsWith("DG offline atlas ")) continue;
+            assets.Remove(key);
+            removed = true;
+        }
+        keys.Clear();
+        foreach (string key in recoveredTextures.Keys) keys.Add(key);
+        foreach (string key in keys)
+            if (!key.StartsWith("atlas/")) recoveredTextures.Remove(key);
+        if (templates != null)
+            for (int i = templates.transform.childCount - 1; i >= 0; i--)
+            {
+                GameObject obj = templates.transform.GetChild(i).gameObject;
+                if (!obj.name.StartsWith("DG offline atlas ")) Object.Destroy(obj);
+            }
+        if (removed) UnityUtil.ResourceRefreshAndGC();
+    }
+
+    private static Texture2D MapTexture(string bundle, string name)
+    {
+        string map = bundle.Replace(".unity3d", "");
+        Texture2D texture = RecoveredTexture("map/" + map + "/lower");
+        return texture != null ? texture : CharacterTexture(name);
     }
 
     private static GameObject Card(string name)
@@ -281,8 +363,10 @@ public static partial class DivineGateOffline
             Object.Destroy(floor.GetComponent<Collider>());
             floor.transform.parent = root.transform;
             Material material = new Material(FlatShader());
+            Texture2D lower = MapTexture(bundle, name);
             floor.transform.localPosition = new Vector3(0, -.1f, 0);
             floor.transform.localScale = new Vector3(12f, .1f, 12f);
+            material.mainTexture = lower;
             floor.renderer.sharedMaterial = material;
         }
         return root;
@@ -318,11 +402,11 @@ public static partial class DivineGateOffline
                 if (name.StartsWith("Atlas")) asset = Atlas(name);
                 else if (name.StartsWith("chara_prefab_")) asset = Card(name);
                 else if (type == typeof(Texture) || type == typeof(Texture2D))
-                    asset = bundle.StartsWith("map_") ? CharacterTexture(name) : CharacterTexture(name);
+                    asset = bundle.StartsWith("map_") ? MapTexture(bundle, name) : CharacterTexture(name);
                 else if (type == typeof(Material))
                 {
                     Material material = new Material(FlatShader());
-                    material.mainTexture = bundle.StartsWith("map_") ? CharacterTexture(name) : CharacterTexture(name);
+                    material.mainTexture = bundle.StartsWith("map_") ? MapTexture(bundle, name) : CharacterTexture(name);
                     asset = material;
                 }
                 else asset = Map(bundle, name);
@@ -343,12 +427,15 @@ public static partial class DivineGateOffline
     public static void DrawNotice()
     {
         GUI.depth = -1000;
-        GUI.Label(new Rect(8, 2, Screen.width - 16, 26), "DG 1.0.6 OFFLINE TEST | placeholder assets");
+        GUI.Label(new Rect(8, 2, Screen.width - 16, 26), RecoveredImages.Enabled ?
+            "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 2");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 3");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
-                "Local account / save. No original server.\nMissing downloaded art uses numbered placeholders.\nAndroid gameplay verification is pending.");
+                RecoveredImages.Enabled ?
+                "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :
+                "Local account / save. No original server.\nMissing downloaded art uses numbered placeholders.\nGameplay compatibility is still being tested.");
             if (GUI.Button(new Rect(24, 145, 160, 36), "Continue")) showNotice = false;
         }
         if (error.Length > 0) GUI.Label(new Rect(8, Screen.height - 65, Screen.width - 16, 60), error);

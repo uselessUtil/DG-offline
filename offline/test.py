@@ -35,6 +35,19 @@ def main():
     tests = ROOT/'offline/tests'
     run('mcs','-out:'+str(tools/'VerifyReferences.exe'),'-r:'+CECIL,tests/'VerifyReferences.cs')
     run('mono',tools/'VerifyReferences.exe',managed,test)
+    if report.get('recovered_artwork'):
+        images = json.loads((args.report.parent/'recovered-images.json').read_text())
+        expected = test/'expected-images.tsv'
+        expected.write_text(''.join(key+'\t'+row['sha256']+'\n' for key,row in images['payloads'].items()))
+        rects = test/'expected-sprites.tsv'
+        rects.write_text(''.join(key.split('/',1)[0]+'\t'+key.split('/',1)[1]+'\t'+','.join(map(str,rect))+'\n'
+                                 for key,rect in images['sprites'].items()))
+        run('mcs','-out:'+str(tools/'VerifyRecoveredImages.exe'),tests/'VerifyRecoveredImages.cs')
+        verified = subprocess.check_output(['mono',str(tools/'VerifyRecoveredImages.exe'),
+            str(test/'DivineGateOffline.dll'),str(expected),str(rects)],text=True)
+        print(verified)
+        (args.report.parent/'recovered-image-tests.txt').write_text(verified)
+        report['recovered_image_tests'] = verified.strip()
     run('mcs','-target:library','-out:'+str(test/'EngineSupport.dll'),'-r:'+str(managed/'UnityEngine.dll'),tests/'EngineSupport.cs')
     run('mcs','-out:'+str(tools/'TestEngine.exe'),'-r:'+CECIL,tests/'TestEngine.cs')
     run('mono',tools/'TestEngine.exe',managed/'UnityEngine.dll',test/'EngineSupport.dll',test/'UnityEngine.dll')

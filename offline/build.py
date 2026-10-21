@@ -11,6 +11,7 @@ import zipfile
 import UnityPy
 from manifest import patch as patch_manifest
 from generate_images import create as create_images
+from recovered_images import create as create_recovered_images, disabled as disable_recovered_images
 
 SOURCE_HASH = 'ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
 CECIL = '/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
@@ -29,9 +30,10 @@ def digest(data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype2')
+    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype3')
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
+    parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
     args = parser.parse_args()
     source = ROOT / 'ディバゲ_1.0.6.apk'
     if digest(source.read_bytes()) != SOURCE_HASH:
@@ -67,9 +69,20 @@ def main():
     if counts.get('MasterDataParamChara') != 523 or counts.get('MasterDataQuest') != 371:
         raise ValueError('Unexpected embedded master data')
     create_images(build/'Images.cs', tables)
+    recovered = None
+    if args.recovered_assets:
+        recovered = create_recovered_images(build, tables, args.recovered_assets)
+        shutil.copy2(build/'recovered-images.json', output/'recovered-images.json')
+    else:
+        disable_recovered_images(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',build/'Images.cs')
+        ROOT/'offline/Runtime.cs',build/'Images.cs',build/'RecoveredImages.cs')
+    if recovered:
+        run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
+        run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
+            build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
+        shutil.move(build/'WithImages.dll',build/'DivineGateOffline.dll')
     run('mcs','-out:'+str(build/'Patch.exe'),'-r:'+CECIL,ROOT/'offline/Patch.cs')
     run('mono',build/'Patch.exe',managed/'Assembly-CSharp.dll',build/'DivineGateOffline.dll',build/'Assembly-CSharp.dll')
     # Explicitly register the added adapter assembly with the old Unity player.
@@ -141,13 +154,13 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':'1.0.6 offline prototype 2',
+              'version':'1.0.6 offline prototype 3',
               'package':'jp.gungho.dg.offline106','tables':counts,
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),
               'native_direct_loader':args.native_direct,
-              'missing_downloaded_assets':'numbered colored substitutes',
-              'recovered_artwork':None}
+              'missing_downloaded_assets':('original map meshes/animations absent; recovered portraits/icons/panels, simplified textured floors and upper scenery planes' if recovered else 'numbered colored substitutes, not recovered artwork'),
+              'recovered_artwork':({key: recovered[key] for key in ['source','commit','portraits','character_icons','shadow_masks','maps','panel_and_trap_images','area_icons','area_icon_sources','image_pack_bytes','image_pack_sha256','limitations']} if recovered else None)}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))

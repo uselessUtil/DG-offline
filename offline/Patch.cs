@@ -108,6 +108,11 @@ public static class Patch106
         PageUpdate("TitleMenuSeqLoadAssetBundle", "LoadLocalAssets");
         BaseLayoutOnly("TitleMenuSeqLoadAssetBundle");
         CallHelper("AssetBundleManager", "Request", "Request", 1, 2, 3, 4);
+        var clearAssets = Method("AssetBundleManager", "ClearAssetBundle");
+        var firstClear = clearAssets.Body.Instructions.First();
+        var clearIL = clearAssets.Body.GetILProcessor();
+        clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Ldarg_0));
+        clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Call, Helper("ClearTransientAssets")));
         Empty("AssetBundleManager", "SetupAssetBundlePackageParam");
         StartHelper("StoreManager", "DisableStore");
         Empty("StoreManager", "Update");
