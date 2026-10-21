@@ -19,6 +19,10 @@ def create(output: Path, tables: Path, source: Path):
     if supplement.exists():
         records += json.loads(supplement.read_text())
     area_sources = []
+    fandom = source / 'fandom-area-images.json'
+    if fandom.exists():
+        area_sources = json.loads(fandom.read_text())
+        records += area_sources
     files = {row['path']: row for row in records}
     chars = json.loads((tables / 'MasterDataParamChara.json').read_bytes(), strict=False)
     payloads, sprites, provenance = {}, {}, []
@@ -60,6 +64,8 @@ def create(output: Path, tables: Path, source: Path):
 
     groups['AtlasPanelIcon'] = [(Path(path).stem, read(path)) for path in sorted(files)
                                 if path.startswith(('public/img/panel/', 'public/img/trap/'))]
+    if area_sources:
+        groups['AtlasAreaIcon_000_020'] = [(row['sprite_name'], read(row['path'])) for row in area_sources]
     alias_records = json.loads((Path(__file__).parent / 'dgdb-sprite-aliases.json').read_text())
     aliases = {name: row['source'] for name, row in alias_records.items()}
     # The public backup preserves one set of 1..6 star panels. Use the same
