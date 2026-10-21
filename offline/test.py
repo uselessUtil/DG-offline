@@ -151,14 +151,23 @@ def main():
             value = Image.open(io.BytesIO(packed[row['offset']:row['offset']+row['size']])).convert('RGBA')
             value.load()
             return value
-        empty_row = files['public/img/panel/chara_icon_empty.png']
+        ui_sources = images.get('ui_icon_sources', [])
+        empty_row = (next(r for r in ui_sources if r['sprite_name'] == 'chara_icon_empty')
+                     if ui_sources else files['public/img/panel/chara_icon_empty.png'])
         empty_raw = (ROOT/empty_row['local_path']).read_bytes()
         assert digest(empty_raw) == empty_row['sha256']
         empty_source = Image.open(io.BytesIO(empty_raw)).convert('RGBA')
         assert empty_source.getchannel('A').getextrema()[0] > 0
+        if ui_sources:
+            assert empty_row['name'] == 'Empty-icon.png' and empty_source.size == (82,82)
+            assert digest(empty_raw) == 'b77fa58025da48b1b5b07d345e7d9ad60f886edeae3f3b1f896ed68c0e10f5d9'
+            assert (ROOT/empty_row['source_manifest']).is_file()
+            wiki_row = next(r for r in json.loads((ROOT/empty_row['source_manifest']).read_text())
+                            if r['name'] == 'Empty-icon.png')
+            assert wiki_row['sha256'] == empty_row['sha256'] and wiki_row['original_bytes_match']
         empty_atlases = []
         for key in images['payloads']:
-            if not key.startswith('atlas/AtlasCharaIcon_'):
+            if not key.startswith('atlas/') or (not ui_sources and not key.startswith('atlas/AtlasCharaIcon_')):
                 continue
             atlas_name = key.split('/',1)[1]
             x,y,w,h = images['sprites'][atlas_name+'/chara_icon_empty']
@@ -166,8 +175,10 @@ def main():
             expected_empty = empty_source.resize((w,h),Image.Resampling.LANCZOS)
             assert not any(channel.getbbox() for channel in ImageChops.difference(actual,expected_empty).split())
             empty_atlases.append(atlas_name)
-        assert len(empty_atlases) == 5
-        empty_result = 'PASS empty friend/party slot: all 5 character atlases match the verified dark Empty artwork; no transparent empty substitute.\n'
+        assert len(empty_atlases) == (7 if ui_sources else 5)
+        empty_result = ('PASS Wiki Empty-icon.png: verified 82x82 original, all 7 atlases (including 5 character atlases) '
+                        'match resized source pixels and alpha; old panel Empty cannot shadow the override.\n'
+                        if ui_sources else 'PASS empty friend/party slot: all 5 character atlases match the verified dark Empty artwork; no transparent empty substitute.\n')
         print(empty_result)
         (args.report.parent/'empty-slot-tests.txt').write_text(empty_result)
         report['empty_slot_tests'] = empty_result.strip()
