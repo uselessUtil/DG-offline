@@ -53,3 +53,5 @@ Android 16 相容性分析見 [相容性報告](../artifacts/android16-compatibi
 腳本仍有固定工作目錄及工具定位設定，尚未完成跨配置參數化。執行前須核對原始碼、版本相符的 APK、素材 manifests 及來源檔；不能將既有開發配置當成通用安裝方式。`recover_dgdb_variants.py` 只補充既有資料集，不是完整素材的初次下載入口。
 
 每次使用新的產物與中間檔目錄，保留原 APK 及舊版。需要更新安裝時應維持相同簽署憑證，私鑰不放進倉庫。Android 驗證應優先確認角色顯示、教學 Boss 入口、結算、連續 UI 返回及重啟存檔，並記錄受測 APK hash、Android 版本與 ABI。
+
+各 prototype 的提交拆分、重建範圍與查閱方式，請參考 [Prototype 提交索引](PROTOTYPE_HISTORY.md)。
