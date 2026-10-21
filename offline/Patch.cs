@@ -124,6 +124,41 @@ public static class Patch106
         il.InsertBefore(write, Instruction.Create(OpCodes.Ldloc, original));
         il.InsertBefore(write, Instruction.Create(OpCodes.Call, Helper("EventQuestPlayable")));
     }
+    static void FreeChipShop()
+    {
+        var server = module.Types.Single(t => t.Name == "ServerForgery");
+        var save = server.Fields.Single(f => f.Name == "m_ForgeryPlayerSave" && f.FieldType.Name == "ServerForgerySaveUser");
+        if (server.Methods.Any(m => m.Name == "DGOfflineShopPlayer")) throw new Exception("Shop save accessor already exists");
+        var accessor = new MethodDefinition("DGOfflineShopPlayer", MethodAttributes.Public | MethodAttributes.HideBySig, save.FieldType);
+        server.Methods.Add(accessor);
+        var il = accessor.Body.GetILProcessor();
+        il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldfld, save); il.Emit(OpCodes.Ret);
+        var stub = adapter.Types.Single(t => t.Name == "DivineGateOffline").Methods.Single(m => m.Name == "LocalShopPlayer");
+        var stubIL = Reset(stub);
+        stubIL.Emit(OpCodes.Ldarg_0); stubIL.Emit(OpCodes.Callvirt, adapter.ImportReference(accessor)); stubIL.Emit(OpCodes.Ret);
+
+        CallHelper("StoreManager", "GetProductFromNum", "FreeChipProductAt", 1);
+        CallHelper("StoreManager", "GetProductFromID", "FreeChipProductByID", 1);
+        CallHelper("MainMenuSeqShopRoot", "ProductSetup", "SetupFreeChipProduct", 1, 2, 3, 4);
+        var rootUpdate = Method("MainMenuSeqShopRoot", "Update");
+        var storeGate = rootUpdate.Body.Instructions.Single(i => i.OpCode == OpCodes.Call &&
+            i.Operand is MethodReference && ((MethodReference)i.Operand).DeclaringType.Name == "SystemUtil" &&
+            ((MethodReference)i.Operand).Name == "GetStoreOpen");
+        storeGate.Operand = Helper("LocalChipShopOpen");
+
+        var page = Method("MainMenuSeqShopBuyTip", "PageSwitchSetting");
+        var baseSetting = (MethodReference)page.Body.Instructions.First(i => i.OpCode == OpCodes.Call &&
+            i.Operand is MethodReference && ((MethodReference)i.Operand).DeclaringType.Name == "MainMenuSeq" &&
+            ((MethodReference)i.Operand).Name == "PageSwitchSetting").Operand;
+        il = Reset(page);
+        il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldarg_1); il.Emit(OpCodes.Ldarg_2); il.Emit(OpCodes.Call, baseSetting);
+        il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldarg_1); il.Emit(OpCodes.Call, Helper("SetupFreeChipPage")); il.Emit(OpCodes.Ret);
+        var update = Method("MainMenuSeqShopBuyTip", "Update");
+        il = Reset(update);
+        il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Call, Method("MainMenuSeq", "PageSwitchUpdate"));
+        il.Emit(OpCodes.Call, Helper("UpdateFreeChipPage")); il.Emit(OpCodes.Ret);
+    }
     public static void Main(string[] args)
     {
         var resolver = new DefaultAssemblyResolver();
@@ -141,6 +176,7 @@ public static class Patch106
         Append("ResidentManager", "Start", "Bootstrap");
         Append("ServerForgery", "Start", "Ready");
         EventMissionAccess();
+        FreeChipShop();
         StartHelper("PatchManager", "SetupPatch");
         CallHelper("PatchManager", "GetPatchText", "PatchText", 1);
         Empty("PatchManager", "PatchUpdateRequest");

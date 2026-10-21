@@ -31,7 +31,7 @@ def digest(data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype10')
+    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype11')
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
@@ -79,7 +79,7 @@ def main():
         disable_recovered_images(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',build/'Images.cs',build/'RecoveredImages.cs')
+        ROOT/'offline/Runtime.cs',ROOT/'offline/FreeChipShop.cs',build/'Images.cs',build/'RecoveredImages.cs')
     if recovered:
         run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
         run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
@@ -156,7 +156,8 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':'1.0.6 offline prototype 10',
+              'version':'1.0.6 offline prototype 11',
+              'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
               'package':'jp.gungho.dg.offline106','tables':counts,
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),

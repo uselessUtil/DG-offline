@@ -90,6 +90,17 @@ def main():
     print(event_patch + event_test)
     (args.report.parent/'event-unlock-tests.txt').write_text(event_patch + event_test)
     report['event_unlock_tests'] = (event_patch + event_test).strip()
+    run('mcs','-out:'+str(test/'VerifyFreeChipShop.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+        '-r:'+str(test/'DivineGateOffline.dll'),'-r:'+str(test/'Assembly-CSharp-firstpass.dll'),
+        '-r:'+str(test/'UnityEngine.dll'),tests/'VerifyFreeChipShop.cs')
+    shop_env = dict(env, DG_TEST_PREFS=str(test/'free-chip-prefs.txt'))
+    shop_test = ''
+    for mode in [[], ['reload']]:
+        shop_test += subprocess.check_output(['mono',str(test/'VerifyFreeChipShop.exe'),*mode],
+            env=shop_env,text=True,timeout=45)
+    print(shop_test)
+    (args.report.parent/'free-chip-shop-tests.txt').write_text(shop_test)
+    report['free_chip_shop_tests'] = shop_test.strip()
     if report.get('recovered_artwork') and images.get('sprite_aliases'):
         from PIL import Image, ImageChops
         import io
