@@ -74,19 +74,20 @@ def attributes(chunk, strings):
         yield strings[name], text, pos
 
 
-def patch(data):
+def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.0.6',
+          extra_permissions=(), extra_components=()):
     items = list(chunks(data))
     pool = next(c for k,c in items if k == 1)
     strings = strings_from(pool)
     if strings.count('jp.gungho.dg') != 1:
         raise ValueError('Unexpected source package')
-    strings[strings.index('jp.gungho.dg')] = 'jp.gungho.dg.offline106'
+    strings[strings.index('jp.gungho.dg')] = package
     label_index = len(strings)
-    strings.append('Divine Gate Offline 1.0.6')
+    strings.append(label)
     result = []
     skip_depth = 0
     removed = []
-    remove_permissions = {'android.permission.INTERNET', 'com.android.vending.BILLING', 'android.permission.ACCESS_NETWORK_STATE'}
+    remove_permissions = {'android.permission.INTERNET', 'com.android.vending.BILLING', 'android.permission.ACCESS_NETWORK_STATE'} | set(extra_permissions)
     for kind, chunk in items:
         if kind == 1:
             result.append(string_pool(chunk, strings))
@@ -102,7 +103,7 @@ def patch(data):
                 (tag in {'service','receiver','activity'} and name in {
                     'com.prime31.billing.BillingService', 'com.prime31.billing.BillingReceiver',
                     'com.prime31.GoogleIABProxyActivity', 'jp.appAdForce.android.InstallReceiver',
-                    'jp.gungho.unityplugin.GoeIntentReceiveActivity'}) or
+                    'jp.gungho.unityplugin.GoeIntentReceiveActivity'} | set(extra_components)) or
                 (tag == 'meta-data' and (name.startswith('APPADFORCE_') or
                  name.startswith('com.google.android.gms.') or name == 'com.prime31.PlayGameServicesPlugin'))):
                 skip_depth = 1
