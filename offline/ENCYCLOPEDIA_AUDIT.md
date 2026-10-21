@@ -1,12 +1,14 @@
 # Divinegate Encyclopedia 1.0.0 素材與來源檢查
 
-檢查日期：2026-10-20。來源：使用者放入專案的 `Divinegate+Encyclopedia_1.0.0_APKPure.xapk`；檔名所述下載站不是來源已驗證的證據。
+檢查日期：2026-10-20。受測檔案為 `Divinegate+Encyclopedia_1.0.0_APKPure.xapk`；以文末檔案指紋辨識，檔名所述下載站不是來源已驗證的證據。原檔與 `artifacts/encyclopedia-audit/` 報告不隨原始碼發布。
+
+本文記錄圖鑑來源的覆蓋與格式，不代表現行 APK 僅使用圖鑑素材。後續 DGDB 已補回此處列出的 123 筆缺圖，現況見 [移植指南](../OFFLINE_PORTING_GUIDE.md)。
 
 ## 結論
 
 **可以補回大量角色立繪與圖示，不能補齊全部遊戲素材。** 對照原始 1.0.6 的 523 筆角色資料，排除 ID 0 的資料整合列後，522 筆中有 **399 筆（76.4%）同時找到立繪與圖示**，123 筆未找到。這是素材編號的覆蓋率，並非已在 Android 上驗證 399 名角色的所有顯示情境。
 
-本次只在既有 Docker 容器靜態讀取、解包與解析，沒有安裝或執行圖鑑 APK，也沒有把檔案送到外部掃描服務。現有離線 APK 未修改。
+本次只做靜態讀取、解包與解析，沒有安裝或執行圖鑑 APK，也沒有把檔案送到外部掃描服務。這次調查本身未修改離線 APK。
 
 ## 素材結果
 
@@ -52,7 +54,7 @@
 
 | 檔案 | bytes | SHA-256 |
 | --- | ---: | --- |
-| 使用者提供的 XAPK | 1,441,348,970 | `c9e4c7cac1305168f0b1fac1dc1843842054e46f32dee0a8358d54b69f562db2` |
+| 受測 XAPK | 1,441,348,970 | `c9e4c7cac1305168f0b1fac1dc1843842054e46f32dee0a8358d54b69f562db2` |
 | 內含 APK | 32,716,506 | `975403b61a80234a279c7b8e89ca9ba2f990020010ac7c7afd25e4dcb71f4aa9` |
 | 內含 OBB | 1,408,560,579 | `591ca9530652bb0c11d04306103380b46c6605f2137321beff84851e58d65a0e` |
 
@@ -60,10 +62,12 @@
 
 ## 重現與證據
 
-`offline/audit_encyclopedia.py` 讀取容器暫存目錄中已抽出的八個 `.bin`，輸出清單、覆蓋率及抽樣預覽。輸入的舊表是從原始 1.0.6 的 TextAsset 取得的 JSON；暫存解包內容沒有作為維護中的遊戲原始碼。
+`offline/audit_encyclopedia.py` 讀取已抽出的八個 `.bin`，輸出清單、覆蓋率及抽樣預覽。輸入的舊表是從原始 1.0.6 TextAsset 取得的 JSON；提取目錄需自行準備，腳本不會代替完整 XAPK／OBB 解包流程。
 
-本次使用：
+| 必要參數 | 輸入／用途 |
+| --- | --- |
+| `--work-dir` | 含圖鑑八個 `.bin` 的獨立工作目錄 |
+| `--master-table` | 原 1.0.6 的 `MasterDataParamChara.json` |
+| `--output` | 新的分析報告目錄 |
 
-特定開發配置的指令已移除；重現前應核對建置程式、來源檔及輸入參數。
-
-
+產物包括 `inventory.json`、`coverage-summary.json`、`coverage-106.csv` 與抽樣預覽。該次另行執行的來源／簽章／Manifest／Java 靜態分析保存於 `source-hashes.json`、`signature.txt`、`manifest-tree.txt`、`bundle-records.json`、`java-static-review.json` 等；這些額外報告不是單靠執行覆蓋率腳本就會全部產生。

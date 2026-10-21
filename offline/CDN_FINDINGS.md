@@ -1,12 +1,14 @@
 # Divine Gate 原 CDN 與素材封存調查
 
-檢查日期：2026-10-20。以下為該次調查紀錄。
+檢查日期：2026-10-20。本文記錄當日 APK 靜態分析、下載及封存驗證結果，不代表網址目前仍維持相同狀態。現行 APK 配接情況見 [移植指南](../OFFLINE_PORTING_GUIDE.md)。
+
+`artifacts/` 為另行保存的調查資料，不隨原始碼發布。文中的相對路徑說明資料分類；未附資料集時，對應檔案不會因 clone 倉庫而自動存在。
 
 ## 結論
 
-**原 CDN 與 APK 指向的兩個 S3 儲存桶目前無法提供素材，但 Wayback Machine 保留了兩個真正的 Unity AssetBundle，已成功取回。**
+**調查當日，原 CDN 與 APK 指向的兩個 S3 儲存桶無法提供素材；Wayback Machine 則保留了兩個真正的 Unity AssetBundle，並已取回驗證。**
 
-兩包共解析出 10 張 1024×1024 角色圖片，以及角色 GameObject、Mesh、Material 與 Shader。來源路徑分別標示 1.1.0 與 2.1.0；沒有找到完整 1.0.6 素材集。本次僅調查、下載與驗證，現有 APK 未修改。
+兩包共解析出 10 張 1024×1024 角色圖片，以及角色 GameObject、Mesh、Material 與 Shader。來源路徑分別標示 1.1.0 與 2.1.0；沒有找到完整 1.0.6 素材集。本次調查本身未修改 APK，不能據此推論後續版本的素材接入狀態。
 
 ## APK 中的實際下載位置
 
@@ -62,11 +64,11 @@ UnityPy 初次解析第一包遇到舊格式的版本字串 `4.1.0f4\n1`；僅�
 - [20160408104743-Unit_000_009.unity3d](https://web.archive.org/web/20160408104743id_/http://d3btkj3txnv5zz.cloudfront.net/900_Release/v1_1_0_kh9onea2habnfla4v3g14dast8ausprob/Android/QUALITY_1_1/Unit_000_009.unity3d)
   - 原始 URL：`http://d3btkj3txnv5zz.cloudfront.net/900_Release/v1_1_0_kh9onea2habnfla4v3g14dast8ausprob/Android/QUALITY_1_1/Unit_000_009.unity3d`
   - SHA-256：`24890975487554690834683f7fa79aeac52f14216e0cd467a32cd0290af31acc`
-  - 本機：`artifacts/cdn-investigation-2026-10-20/recovered/20160408104743-Unit_000_009/20160408104743-Unit_000_009.unity3d`
+  - 封存資料相對位置：`artifacts/cdn-investigation-2026-10-20/recovered/20160408104743-Unit_000_009/20160408104743-Unit_000_009.unity3d`
 - [20160408105235-Unit_0973.unity3d](https://web.archive.org/web/20160408105235id_/http://d3btkj3txnv5zz.cloudfront.net/900_Release/v2_1_0_9aujw0ejg0aj0w3j0jq30jg0jq09dskcq/Android/ResUnit0001/QUALITY_1_1/Unit_0973.unity3d)
   - 原始 URL：`http://d3btkj3txnv5zz.cloudfront.net/900_Release/v2_1_0_9aujw0ejg0aj0w3j0jq30jg0jq09dskcq/Android/ResUnit0001/QUALITY_1_1/Unit_0973.unity3d`
   - SHA-256：`ea108a7227bce79cd6b61ee74f399e55cf46e27ea35a26a677e285f3c920386f`
-  - 本機：`artifacts/cdn-investigation-2026-10-20/recovered/20160408105235-Unit_0973/20160408105235-Unit_0973.unity3d`
+  - 封存資料相對位置：`artifacts/cdn-investigation-2026-10-20/recovered/20160408105235-Unit_0973/20160408105235-Unit_0973.unity3d`
 
 完整物件清單、圖片尺寸、digest 比對及檔案路徑見 `artifacts/cdn-investigation-2026-10-20/recovered-assets.json`。
 
@@ -78,4 +80,4 @@ UnityPy 初次解析第一包遇到舊格式的版本字串 `4.1.0f4\n1`；僅�
 
 這 10 張圖片與 prefab 是部分復原，**不能補齊關卡地板、門、Boss 房模型或全部角色資源**。它們可作為後續復原的實際參考，但跨版本載入與遊戲內顯示仍需另外整合、測試，不能僅憑相同 Unity 版本保證可直接使用。
 
-先前使用者提供的圖鑑 XAPK 已找到大量立繪與圖示，詳見 `offline/ENCYCLOPEDIA_AUDIT.md`；本次 CDN 封存額外價值在於取得舊遊戲的原始角色 prefab 與 Mesh。若要繼續尋找完整素材，較有機會的來源仍是保留下載快取的舊手機、模擬器備份或玩家留下的資料備份。
+圖鑑 XAPK 分析另找到大量立繪與圖示，詳見 [圖鑑分析](ENCYCLOPEDIA_AUDIT.md)；本次 CDN 封存額外價值在於取得舊遊戲的原始角色 prefab 與 Mesh。若要繼續尋找完整素材，較有機會的來源仍是保留下載快取的舊手機、模擬器備份或玩家留下的資料備份。

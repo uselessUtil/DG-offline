@@ -1,6 +1,8 @@
 # Divine Gate 1.0.6 缺圖名稱核對
 
-已按原 APK 與最新已封裝素材核對，產生可轉交備份者的清單。此工作沒有修改 APK。
+本文保留 2026-10-20 初次缺圖 audit 的需求清單，該次工作未修改 APK。這是歷史需求，不能視為目前仍全部缺失：以 prototype 16 為準，112 項優先名稱已有 28 項以來源圖或相容別名配接，剩餘 84 項。現況及分類見 [移植指南第 10 節](../OFFLINE_PORTING_GUIDE.md#10-仍缺失或尚未驗證的部分)。
+
+以下 `artifacts/` 清單、預覽與報告不隨原始碼發布；未另附資料集時，對應連結不表示已提供下載。
 
 - [可直接轉交的需求文字](../artifacts/missing-image-audit-2026-10-20/給備份者的補圖需求.txt)：含用途、優先順序、精確名稱及缺模型說明。
 - [優先圖片名稱 112 項](../artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt)：28 個未配對面板／效果／寶箱名稱，加 84 個關卡圖示。
@@ -20,9 +22,9 @@
 
 1.0.6 的 MasterDataArea 有 83 個不同的 `res_map` 名稱、84 個 `res_map_icon` 名稱；模型下載包只有 27 種。多個區域可共用一套網格但使用不同貼圖，兩組編號不可混為一談。
 
-83 組對應的 `_lower.png` / `_upper.png` 在先前保存的 DGDB 公開檔案目錄中全部能找到，**目前不是公開來源已失傳**；先前只依 27 個模型包編號下載及接入 54 張貼圖，沒有涵蓋這 83 種變體的全部圖片。原始完整 `map_XXXX_tex` 貼圖仍未取得，適合列為次要補檔，無需讓備份者重找可公開取得的分拆圖。
+83 組對應的 `_lower.png` / `_upper.png` 在當次核對的 DGDB 版本中全部能找到。初期依 27 個模型包只接入 54 張貼圖；後續已補齊 83 種所需變體，prototype 16 封裝 86 組上下圖（含額外 3 組）。原始完整 `map_XXXX_tex` 貼圖仍未取得，不能把分拆圖覆蓋率當作原場景完整復原。
 
-關卡圖示 `area_icon_XXXX` 包括資料表中的活動，不代表目前所有區域都已解鎖或可玩。
+關卡圖示 `area_icon_XXXX` 包括資料表中的活動；圖片需求與區域解鎖是不同問題。活動開放情況應查現行版本說明，不能由此歷史缺圖表推斷。
 
 ## 截圖核對
 
@@ -40,4 +42,4 @@
 
 ## 證據
 
-產物目錄有 `original-textures.json`、`screenshot-name-check.json`、`summary.json`。名稱來源是原始 1.0.6 內建 MasterDataArea / MasterDataAssetBundlePath、反編譯 InGameUtil.SetupMaterial 的實際請求，以及最新素材版的 `recovered-images.json`。`original-ui-sprites.json` 為未成功解碼的嘗試，空陣列不代表原 APK 沒有 UI 圖集。
+原 audit 產物包括 `original-textures.json`、`screenshot-name-check.json`、`summary.json`。名稱來源是原始 1.0.6 內建 MasterDataArea / MasterDataAssetBundlePath、反編譯 InGameUtil.SetupMaterial 的實際請求，以及當時素材版的 `recovered-images.json`。`original-ui-sprites.json` 為未成功解碼的嘗試，空陣列不代表原 APK 沒有 UI 圖集。

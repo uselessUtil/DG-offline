@@ -1,0 +1,568 @@
+# Divine Gate 離線化實作與其他版本 APK 移植指南
+
+文件核對日期：2026-10-21。實作基準：**1.0.6 offline prototype 16**。
+
+本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
+
+**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** 有些場景由圖片與簡化幾何替代；內建本機資料及抽卡權重也不能直接視為已核實的歷史營運資料。prototype 16 已通過程式與資料檢查，尚未記錄完整的 Android 實機驗證。
+
+## 目錄
+
+1. [基準版本與證據](#1-基準版本與證據)
+2. [目錄與維護邊界](#2-目錄與維護邊界)
+3. [離線化架構](#3-離線化架構)
+4. [實際修改位置](#4-實際修改位置)
+5. [API、資料表與存檔](#5-api資料表與存檔)
+6. [下載素材的替代載入](#6-下載素材的替代載入)
+7. [資料與素材從哪裡補](#7-資料與素材從哪裡補)
+8. [已修正問題及原因](#8-已修正問題及原因)
+9. [新增及開放的功能](#9-新增及開放的功能)
+10. [仍缺失或尚未驗證的部分](#10-仍缺失或尚未驗證的部分)
+11. [建置流程與輸入要求](#11-建置流程與輸入要求)
+12. [測試範圍與實機驗證](#12-測試範圍與實機驗證)
+13. [移植其他版本的工作流程](#13-移植其他版本的工作流程)
+14. [給接手 agent 的執行清單](#14-給接手-agent-的執行清單)
+15. [版本演進與延伸文件](#15-版本演進與延伸文件)
+
+## 1. 基準版本與證據
+
+| 對象 | 大小（bytes） | SHA-256 |
+| --- | ---: | --- |
+| 原始 `ディバゲ_1.0.6.apk` | 31,047,374 | `ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2` |
+| 原始 `ディバゲ_2.1.0.apk` | 32,114,571 | `af40f477e5455caba4f4bbfa24d6fde94e174fc4614db39025c9411be207bb29` |
+| 1.0.6 prototype 16 | 184,636,132 | `9b54bdbe1301dc5637dc41e8600444e116a551f1696fd69e1fe9529c24308c88` |
+
+最新 APK、建置參數、修改項目與測試結果位於 [prototype 16 產物目錄](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。**2.1.0 尚未依本指南完成離線移植**，不能將 1.0.6 的成功推廣為 2.1.0 已可用。
+
+原版引擎為 Unity 4.1.0f4，使用舊 Mono 與 APK 中裁剪過的 .NET 程式庫。離線套件名稱為 `jp.gungho.dg.offline106`，顯示名稱為 `Divine Gate Offline 1.0.6`。Android `versionName=1.0.6`、`versionCode=8` 沿用原值；prototype 編號記錄在配接器、畫面及報告中，不是 Android versionCode。
+
+## 2. 目錄與維護邊界
+
+| 位置 | 用途 |
+| --- | --- |
+| 根目錄原 APK／XAPK | 唯讀來源封存；不能覆寫原檔 |
+| [offline/Runtime.cs](offline/Runtime.cs) | 新增離線配接器：啟動、主資料表、資源替代、顯示修正、提示 |
+| [offline/Patch.cs](offline/Patch.cs) | Mono.Cecil 對原遊戲 DLL 的版本限定 IL 修改 |
+| [offline/FreeChipShop.cs](offline/FreeChipShop.cs) | 免費代幣商品、確認、發放、防重複、存檔 |
+| [offline/CollabGacha.cs](offline/CollabGacha.cs) | 四池選擇、原卡片重用、返回清理與動畫還原 |
+| [offline/build.py](offline/build.py)、[offline/manifest.py](offline/manifest.py) | 提取、編譯、二進位 Manifest 修改、封裝與簽章 |
+| [offline/recovered_images.py](offline/recovered_images.py)、[offline/EmbedImages.cs](offline/EmbedImages.cs) | 圖片核對、圖集產生及舊 Mono 可讀的圖片嵌入 |
+| [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
+| [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
+| [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
+| `artifacts/` | 各次 APK、來源清單、下載、調查、測試報告；由 Git 忽略 |
+| `external/dgdb/` | 第三方 DGDB checkout，含獨立 Git 歷史；不是本專案 submodule |
+| `external/divine-gate-wiki/` | Wiki 媒體及頁面 XML 備份；不是已接入 APK 的完整資源 |
+| `external/image-preview.html` | 跨來源素材預覽，圖片未內嵌在 HTML 中 |
+
+`artifacts/` 及大型素材庫不隨原始碼自動發布。公開發行時，應另附可分發的報告與來源清單；未附的相對連結只代表專案中的資料分類，不保證公開下載包包含該檔案。
+
+`offline/` 是本專案維護的新增程式。反編譯得到的原遊戲 C# 只用來理解與定位；**沒有把整個反編譯專案當成正式原始碼重新編譯**。原 APK 中未修改的 DEX、UI、場景與引擎盡量保留。
+
+## 3. 離線化架構
+
+### 3.1 關鍵發現：APK 已保留本機 API 實作
+
+1.0.6 的 `ServerDataManager` 原本就有兩條路徑：
+
+- `LocalSaveManager.LoadFuncServerAddressIP()` 回傳非空字串：走原網路通訊。
+- 位址為空且存在 `ServerForgery`：呼叫 `ServerForgery.CreateRecvForgery(...)`，再經原 `ServerDataUtilRecv.RecvPacketAPI(...)` 解析。
+
+因此不是把伺服器域名改成 localhost，也沒有在手機上另開 HTTP 服務。核心做法是回傳空 API 位址、建立 `ServerForgery`，讓原封包流程使用內建本機處理器。
+
+```mermaid
+flowchart TD
+    UI[原登入／關卡／抽卡介面] --> API[原 ServerDataManager]
+    API --> ROUTE[伺服器位址固定為空]
+    ROUTE --> LOCAL[原 ServerForgery.CreateRecvForgery]
+    LOCAL --> RECV[原回應解析與遊戲流程]
+    LOCAL <--> SAVE[SERVER_SAVE／LocalSaveUtil／PlayerPrefs]
+    TABLE[APK 內建 MasterData TextAsset] --> LOCAL
+    TABLE --> READY[新增 Ready 資料表配接]
+    READY --> MASTER[原 MasterDataManager]
+    ASSET[原 AssetBundleManager.Request] --> ADAPTER[新增本機資源工廠]
+    ADAPTER --> ART[已核對 PNG／重建 UIAtlas／簡化網格]
+```
+
+### 3.2 為何只切換 API 還不夠
+
+原客戶端仍會等待更新清單、協議頁、AssetBundle 初始化及商店 SDK，很多角色圖與關卡資源原本也要另外下載。因此需要同時處理啟動門檻、資料表就緒、外部資源回應、原生引擎載入，以及舊 UI 的實際預製物件和生命週期。
+
+「顯示標題」不表示初始化完整；「API 回傳成功」不表示物件、圖集、碰撞及動畫完整。文件後面的修正案例大多源自這個差別。
+
+## 4. 實際修改位置
+
+### 4.1 原 APK 中被改動／新增的檔案
+
+| APK 內部路徑 | 修改內容 |
+| --- | --- |
+| `assets/bin/Data/Managed/Assembly-CSharp.dll` | 以 Cecil 修改少量方法／呼叫點，加入離線掛鉤與商店存檔存取器 |
+| `assets/bin/Data/Managed/DivineGateOffline.dll` | 新增；編譯配接器及生成圖片索引，包含圖片位元資料 |
+| `assets/bin/Data/mainData` | 在 MonoManager 的 `m_AssemblyNames` 登錄新增 DLL；其他 Unity 物件原始資料逐一核對不變 |
+| `AndroidManifest.xml` | 改套件／顯示名稱、移除指定網路與付款權限及服務登錄 |
+| `lib/armeabi-v7a/libmono.so` | `--native-direct` 時以 APK 自帶 `assets/libs/armeabi-v7a/libmono.so` 取代舊代理載入器 |
+| `lib/armeabi-v7a/libunity.so` | 同上，使用 APK 自帶的真正引擎 |
+| `META-INF/` 及 APK 簽章區 | 原簽章失效後重新簽章；不是沿用官方簽章 |
+
+`UnityEngine.dll` 及真正引擎的位元內容不改；原遊戲的 `classes.dex` 沒有重寫。只在測試目錄使用的 `EngineSupport.dll`、測試程式與修改後測試引擎 **不會放進 APK**。
+
+### 4.2 `Patch.cs` 修改原 DLL 的對照表
+
+以下名稱皆以原始 1.0.6 為準，其他版本必須重查簽章與控制流程。
+
+| 原類別／方法 | 改動與配接器入口 |
+| --- | --- |
+| `LocalSaveManager.LoadFuncServerAddressIP` | 固定回傳空字串，使用原本機路由 |
+| `ResidentManager.Start` | 原流程結尾呼叫 `Bootstrap`，必要時 AddComponent 建立 `ServerForgery` |
+| `ServerForgery.Start` | 原流程結尾呼叫 `Ready`，資料表配接及載入本機存檔 |
+| `PatchManager.Start` | 保留 base Start，改呼叫 `SetupPatch`，設定空清單與已取得狀態 |
+| `PatchManager.GetPatchText` | 改呼叫 `PatchText`，提供本機版本／更新計數等值 |
+| `PatchManager.PatchUpdateRequest` | 停用外部更新請求 |
+| `PatchUtil.CheckAppUpdate` | 固定 false，避免要求已關服的應用更新 |
+| `TitleMenuSeqInformationFox.Update`、`LayoutSwitchSetting` | 保留基本切頁動畫；透過 `SkipAgreement` 保存本機協議狀態並前進 |
+| `TitleMenuSeqLoadAssetBundle.Update`、`LayoutSwitchSetting` | 透過 `LoadLocalAssets` 等待本機表就緒、載入常駐資源、記錄初始化後前進 |
+| `AssetBundleManager.Request` | 改呼叫本機 `Request(bundle,name,tag,type)`，回傳原要求的包裝型別 |
+| `AssetBundleManager.SetupAssetBundlePackageParam` | 停用原下載套件設定 |
+| `AssetBundleManager.ClearAssetBundle` | 原處理前呼叫 `ClearTransientAssets` 清除配接器非駐留持有關係 |
+| `UIAtlas.GetSprite` | 原查找前呼叫 `EnsureSprite`，只替離線圖集補正確 Sprite |
+| `AssetAutoSetCharaMesh.Update` | 所有 return 前呼叫 `FixCharacterShadow` |
+| `BattleManager` 新增 `LateUpdate` | 呼叫 `RaiseEnemyHud`，依選單／對話框狀態切換敵人 HUD 材質 |
+| `InGameManager.GetTouchCell` | 前置 `TraceDoorInput` 診斷入口命中；不強制通關／進 Boss |
+| `StoreManager.Start`、`Update` | 設定本機停用商店 SDK 狀態，停止付款更新流程 |
+| `StoreManager.GetProductFromNum`、`GetProductFromID` | 改為六種免費商品查詢 |
+| `MainMenuSeqShopRoot.ProductSetup`、`Update` 的商店開啟條件 | FREE 顯示與本機帳號可用條件，避開零價格折扣除法 |
+| `MainMenuManager` 中 `PageShopBuyTip` 資源路徑 | 改成仍內建的 `_old_PageShopBuyTip` 完整確認預製物件 |
+| `MainMenuSeqShopBuyTip.PageSwitchSetting`、`Update` | 保留基本切頁處理，改用本機確認／領取流程 |
+| `ServerForgery` 新增 `DGOfflineShopPlayer` | 只讀取現有私有存檔物件的公開存取器；連接配接器 `LocalShopPlayer`，不建立第二份存檔 |
+| `MainMenuSeqQuestSelectMission.PageSwitchSetting` | 在特定 `m_QuestPlayable` 寫入前套用 `EventQuestPlayable`，只開正式活動難度 |
+| `MainMenuSeqGachaRoot.Update` | 聯動請求改由 `RouteGachaRootRequest` 選池；前置正常頁清理／選池專用更新 |
+| `MainMenuSeqGachaRoot.PageSwitchSetting` | 原刷新前還原選池外觀，所有 return 前刷新聯動入口與清理 |
+| `PlayGameServiceUtil` 的靜態 void 方法、`isSignedIn` | 停用外部登入動作；回報已通過登入狀態以略過不可用入口，不是登入真實帳號 |
+| `ResidentManager` 新增 `OnGUI` | 顯示 prototype 編號、離線／替代資源提示及錯誤 |
+
+補丁另加 `DGOfflinePatched` 標記拒絕重複修改；多處用唯一方法、唯一呼叫點、預期 return 數及欄位型別檢查，不符合即失敗。這些限制是防止錯改其他版本的保護，移植時不能只刪掉斷言讓程式繼續。
+
+## 5. API、資料表與存檔
+
+### 5.1 初始化順序
+
+1. 原常駐物件初始化後，`Bootstrap` 建立缺少的 `ServerForgery`。不手動重複呼叫 Unity 的 `Start`。
+2. 原 `ServerForgery.Start` 讀取 APK 內建 MasterData。
+3. 新 `Ready` 將本機表參照配接到 `MasterDataManager`，並執行 `ConvertMasterSkillLimitBreak`。
+4. 清空已過期公告與外部商品表；免費商品由新商店程式提供。
+5. 對指定活動／聯動池調整本機可用條件。
+6. 呼叫 `UserParamLoad` 載入原本機存檔，後續登入／創角仍使用原封包流程。
+
+兩邊使用共用資料表參照，因此本機條件修改同時供畫面與本機 API 使用；不是把外部 SQL 匯入後覆蓋遊戲資料。
+
+### 5.2 資料來源及關聯
+
+主來源是 **原 APK 的 TextAsset**。`build.py` 用 UnityPy 提取 `MasterData*.json` 供建置與核對。部分舊 JSON 含控制字元，分析腳本使用 `json.loads(..., strict=False)`；遊戲內仍用原 LitJson。
+
+| 資料類別 | 主要原表／用途 |
+| --- | --- |
+| 帳號與成長 | `MasterDataUserRank`、Login 系列、`MasterDataDefaultParty` |
+| 角色 | `MasterDataParamChara`、進化、主動／被動／隊長／限界技能 |
+| 關卡 | `MasterDataArea` → `MasterDataQuest` → `MasterDataQuestFloor` → 敵群／敵人及面板組 |
+| 場景貼圖 | `MasterDataArea.res_map`；不能只看共用模型 bundle 的名稱 |
+| 抽卡 | `MasterDataGacha` → `MasterDataGachaAssign`；保留原權重、等級與加值 |
+| 下載定位 | `MasterDataAssetBundlePath`；記錄原請求名稱、分類及包，不代表包內容已存在 |
+
+1.0.6 建置目前硬性檢查角色表 523 筆、任務表 371 筆。角色表包含 fix_id=0 的整合列，實際接圖角色為 522 筆。這些數量及欄位映射都是版本限定，不能直接套在其他版本。
+
+### 5.3 本機 API 的範圍
+
+原 `CreateRecvForgery` 有創角、認證、改名、初始隊伍、登入、好友／助人、隊伍、出售／合成／進化、開始／結算／退休關卡、擴充／回體、抽卡、禮物及部分 debug／轉移等分派。
+
+**有分派不表示每個行為都已完整驗證，也不表示真的連接其他玩家或官方服務。** 好友／助人包含內建產生的資料；原線上帳號、社交網路及官方轉移資料沒有復原。未逐項驗證的 API 應列為待測，不能直接宣稱所有原功能已完整離線。
+
+### 5.4 存檔
+
+原存檔路徑是 `ServerForgerySaveUser` → LitJson → `LocalSaveUtil.SetValueString("SERVER_SAVE", ...)` → `ExecDataSave`／PlayerPrefs。讀取由 `UserParamLoad` 還原同一結構。
+
+新增免費代幣也直接更新這個物件，呼叫原 `UserParamSave`，再同步顯示用 `UserDataAdmin.m_StructPlayer`。存檔失敗時還原記憶體中的免費／總額；沒有額外創建帳戶資料庫。
+
+原型間維持相同套件及測試簽章，可更新安裝保留資料。**其他版本的存檔結構及欄位相容性尚未確認**；建議各版本隔離套件名稱，另行制定存檔轉換與備份流程。`SERVER_SAVE` 同名不代表格式相同。
+
+## 6. 下載素材的替代載入
+
+### 6.1 保留原要求的資源契約
+
+原呼叫者期待 `AssetBundleResource`，裡面有請求名稱、tag、型別、載入狀態與結果物件。新 `Request` 回傳同一型別，正常時為 `LOAD_SUCCESS`，異常時記錄訊息並回 `LOAD_ERROR`。
+
+| 請求特徵 | 配接方式 |
+| --- | --- |
+| `Atlas...` | 建立離線 `UIAtlas`，指定合成圖片及 Sprite 矩形 |
+| `chara_prefab_...` | 建立有 UV、頂點色、透明材質的角色 quad |
+| `Texture`／`Texture2D` | 依原資源編號取回角色圖或區域貼圖 |
+| `Material` | 以 APK 內建透明 Shader 配接對應圖片 |
+| 地圖 mesh／door 類物件 | 建立簡化地板或沒有 Collider 的上層背景平面 |
+| 未能配對的圖像／Sprite | 視請求使用數字色塊或 `__missing`；角色跨圖集搜尋必須保留找不到的 null 結果 |
+
+這不是通用 AssetBundle 解碼替代器。其他版本若多出音效、Animator、粒子、骨架等請求，必須新增對應策略，不能一律回傳空 GameObject 並宣稱成功。
+
+### 6.2 圖片準備與封裝
+
+`recovered_images.py` 讀取已核對的來源清單，逐檔比對 SHA-256，再生成：
+
+- `portrait/<resource_id>`：角色透明立繪，保留已核對 PNG 原始位元組。
+- `shadow/<resource_id>`：白色 RGB＋立繪原 Alpha 的遮罩。
+- `atlas/AtlasCharaIcon_...`：五組角色圖集；圖示格為 128px。
+- `atlas/AtlasPanelIcon`：面板／陷阱合成圖集；格為 96px，以保持圖集在 2048px 以內。
+- `atlas/AtlasAreaIcon_000_020`：七個城鎮入口圖，保留來源長寬比。
+- `map/<map_id>/lower`、`upper`：關卡上下貼圖。
+- `recovered-images.json`：資源 key、大小、索引、SHA-256、Sprite 矩形、角色映射、來源與限制。
+
+NGUI 使用的像素座標從頂端開始，不能直接套 Unity UV 原點。Alpha 變體圖集共用圖片配接；這不代表已找回原圖集的每個壓縮格式和切圖方式。
+
+舊版裁剪後 `mscorlib` 不保留 `Assembly.GetManifestResourceStream`。因此 `EmbedImages.cs` 將 PNG 嵌入 DLL 的 RVA 欄位，以原遊戲也使用的 `RuntimeHelpers.InitializeArray` 指令按需讀出；不是啟動時把全部圖片建成 Texture2D。原始圖片包約 149 MB，最新 APK 因而約 185 MB。
+
+圖片／物件快取在 `ClearTransientAssets` 配合原場景清理釋放非駐留持有關係；不是立刻銷毀仍被場景引用的材質／貼圖。長時間記憶體表現仍需裝置測試。
+
+## 7. 資料與素材從哪裡補
+
+### 7.1 來源、用途與是否已接入
+
+| 來源 | 專案資料位置／證據 | 已接入情況 |
+| --- | --- | --- |
+| 原 1.0.6 APK | 由原 APK 提取的 MasterData、Unity Data 及原生程式庫 | 原資料、UI、場景、引擎為主要基礎 |
+| [kennyfong19931/dgdb](https://github.com/kennyfong19931/dgdb) | `artifacts/web-asset-search-2026-10-20/` 的固定 commit 清單與圖片 | 目前大部分恢復圖片的實際來源 |
+| DGDB 完整 checkout | `external/dgdb/`；commit `1a15adf733bb02467d51303a110f361535a7b4bc` | 供查閱，不會自動取代建置清單 |
+| [Divine Gate Wiki](https://divine-gate.fandom.com/) 七個城鎮圖片 | `artifacts/fandom-area-search-2026-10-20/`、`fandom-area-images.json` | 已接入 `area_icon_0001..0007` |
+| Wiki 完整媒體與頁面備份 | `external/divine-gate-wiki/` | 已保存，尚未整批接入 APK |
+| 原 CDN 的 Wayback 部分 bundle | `artifacts/cdn-investigation-2026-10-20/recovered/` | 已調查與保存，沒有作為 prototype 16 全部角色／地圖的載入來源 |
+| 圖鑑 XAPK | 根目錄及 `artifacts/encyclopedia-audit/` | 來源與覆蓋調查；目前建置不直接載入其 OBB／程式 |
+
+### 7.2 DGDB 命名對照
+
+DGDB 圖片依 `draw_id` 命名，原客戶端資源請求依 `res_chara_id_str`；不能直接把角色 fix_id 當成圖片檔名。
+
+| 角色例子 | 舊 fix_id／素材編號 | draw_id | DGDB 立繪路徑 |
+| --- | ---: | ---: | --- |
+| クリスティーナ | 347 | 227 | `public/img/large/227.png` |
+| ナツ | 379 | 303 | `public/img/large/303.png` |
+| エレン | 468 | 404 | `public/img/large/404.png` |
+| 上条当麻 | 577 | 515 | `public/img/large/515.png` |
+
+實際接圖由原表的 resource／draw 欄位建立映射，並以 `character-map-106.csv` 與 SQL 唯讀對照留證。DGDB 後期 SQL 只用來核對，沒有匯入為 1.0.6 主資料。Git blob 相同只證明與玩家備份相同，並不證明與原 CDN 內容逐位元相同。
+
+建置輸入清單是 `dgdb-downloaded-assets.json`、可選的 `dgdb-additional-assets.json`、`fandom-area-images.json` 及 `dgdb-commit.json`；每筆 `local_path` 記錄專案相對位置。實際圖片分類保存在 `artifacts/web-asset-search-2026-10-20/recovered-dgdb/public/img/` 等目錄。
+
+### 7.3 地圖與別名
+
+原表需要 **83 種 `res_map`**，但共用模型包只有 27 種。最新版封裝 86 組上下圖：83 組所需貼圖＋先前依包名保存的額外 3 組。不能以共用模型編號推算目前區域應顯示的門景。
+
+| 原請求名稱 | 備份圖片／來源名 | 限制 |
+| --- | --- | --- |
+| `map_0006_tex` | `map_0006_tex_lower.png`、`map_0006_tex_upper.png` | 分拆圖，不是原整張材質／原門模型 |
+| 魔法禁書目錄 `map_5005_tex` | `map_5005_tex_lower.png`、`map_5005_tex_upper.png` | 同上 |
+| `trap_teleport` | `trap_telepot` | 原備份拼字差異 |
+| `toaru_key` | `toaru_Key` | 大小寫差異 |
+| `panel_alarm` | `trap_siren` | 相容用途圖片，未證明原 1.0.6 像素完全一致 |
+| `panel_banana` | `trap_banana` | 同上 |
+| `toaru_box_01` | `toaru_box` | 同上 |
+| `panel_b_1..6`、`panel_r_1..6`、`panel_y_1..6` | `panel_1..6` | 三組共用黃色星星數量圖，沒有猜測重繪風險顏色 |
+
+固定別名在 [offline/dgdb-sprite-aliases.json](offline/dgdb-sprite-aliases.json)；18 個星星別名由 `recovered_images.py` 生成。別名總共 23 筆。
+
+### 7.4 CDN、圖鑑與 Wiki 備份的意義
+
+2026-10-20 的檢查中，APK 指定 CloudFront 網域無法解析，`gungho-pqdm` 與更新清單的 S3 桶回覆 `NoSuchBucket`。這是當日觀測，並非宣稱所有私人副本不存在；精確 URL 與回應在 [CDN 調查](offline/CDN_FINDINGS.md)。
+
+Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 2.1.0 路徑的 `Unit_0973.unity3d`。合計 10 張圖片及角色 prefab／Mesh／材質，沒有完整 1.0.6 地圖集。解析舊版本字串 `4.1.0f4\n1` 時只在解析器記憶體取首行，原下載檔未改。
+
+圖鑑 XAPK 使用 Unity 2018.2.1f1，其 2,060 張角色立繪／圖示對舊版覆蓋 399/522；其餘 123 筆後來由 DGDB 補圖。圖鑑不是舊遊戲地圖模型來源；不能直接把新版 UnityFS 包塞給 Unity 4.1。若後續取用，以資料形式匯出圖片，不必匯入其 DEX、SO、廣告 SDK 或執行圖鑑。
+
+後來 Wiki 備份保存 7,354 筆媒體項目、7,295 個去重檔案及 13,672 頁最新 XML。6,493 筆與 API 原檔雜湊／大小相符；861 筆明確標為 CDN 版本，總數含三張 YouTube 縮圖而非影片本體。這些數字是備份清單統計，**不是 APK 新增素材數**。原檔名保存在 `metadata/image-manifest.json`，媒體依實際 SHA-1 命名；請經 manifest 查找，不要猜 images 目錄的檔名。
+
+圖片預覽用 `external/image-preview.html` 或 Wiki 的 `catalog.html`。來源描述／授權見保存的 File 頁與 metadata，不能把全部遊戲圖片一概當成同一種開源授權。
+
+## 8. 已修正問題及原因
+
+| 症狀 | 確認原因／限制 | 現行處理 |
+| --- | --- | --- |
+| 舊 APK 原生引擎載入失敗 | 舊代理載入方式存在相容性問題 | `--native-direct` 使用 APK 自帶真正引擎；不表示支援所有新 Android |
+| 教學無法進 Boss 房 | 替代地板使用 primitive cube，預設 Collider 擋在原 `GoalCollision` 射線前 | 移除替代地板 Collider，保留原場景入口判定與流程 |
+| 中央白色橫條 | 初期替代門的白色幾何露出 | 不再顯示該替代方塊，改用無碰撞的上層貼圖背景 |
+| 立繪後方出現有色方形 | 原陰影依原輪廓網格，替代 quad 卻是矩形 | 由立繪 Alpha 生成白色遮罩，使用原透明陰影 Shader；找不到 Shader 則停用陰影 |
+| 不同關卡都使用相同背景／門不對 | 以共用模型包選圖，忽略區域 `res_map` | 優先明確貼圖請求，其次查目前區域 `res_map` |
+| 上層門景被地板遮住 | 過大的透明地板延伸到上層背景，透明距離排序覆蓋 | 地面寬 5、按 lower 比例計深度，在 z=2.5 停止；upper 從棋盤遠端延伸 |
+| Boss 立繪遮血條 | 角色 quad 與 NGUI 透明排序衝突 | 對敵人 HUD 複製專用材質，使用內建 Overlay Shader queue 3001 |
+| 血條又蓋過 MENU／對話框 | Overlay 忽略原 NGUI 的模態順序 | 選單開啟首幀、子頁、關閉過渡與對話框時切回原 HUD 材質 |
+| 好友未選時是白色格 | 透明 empty 替代圖露出原白底 | 將實際深色 `chara_icon_empty.png` 放進五組角色圖集 |
+| 活動格子的敵人頭像仍是缺圖 | `GetSprite` 在第一組錯圖集建立假 Sprite，原跨圖集搜尋提前成功 | 外來／未知角色 Sprite 保持 null，讓原搜尋繼續找真正擁有者 |
+| 免費代幣確認頁只有空背景 | 實際 `PageShopBuyTip` 是標題容器，沒有程式期待的完整控制 | 切換到原 APK 仍內建的 `_old_PageShopBuyTip`，驗證訊息及 Yes/No Collider |
+| 聯動頁只有標題 | 新容器／克隆的舊 NGUI 顯示註冊未由先前測試驗證；不能單憑截圖鎖定單一原因 | 重用原三卡、只補第四張、沿用父物件與圖層，明確設定 enabled／alpha／CreatePanel |
+| 抽完返回後第四張卡殘留 | 原頁 fade-in 遞迴啟用所有子物件與 Collider，選池已關閉所以舊條件不清理 | 正常頁刷新後、Update 輸入前重做第四卡／選池 Back 清理 |
+| 選池返回按鈕大小／動畫未還原 | 快照捕捉按壓／懸停中的尺寸，舊 Tween 還能覆寫還原結果 | 快照前、卡片設定後、外觀還原後呼叫 `OnHover(false)`，停止 Tween，起終點歸正常尺寸 |
+
+### 8.1 幾個移植時容易漏掉的細節
+
+- 原 `GoalCollision` 約位於 `(0,-0.3,3)`；新門景只是顯示，沒有建立另一個入口 Collider，更沒有直接呼叫勝利／Boss 切頁。
+- `res_map` 與模型包不是一對一：測試有 61 個區域需要的貼圖不同於其模型包名稱。
+- HUD 只切換敵人 UI 材質，不修改共享圖集或縮小原 Boss 圖；選單狀態要同時看實際 UI root、狀態機和 Dialog，不能只看一個旗標。
+- `UnityUtil.SetObjectEnabledFix` 會遞迴啟用 Behaviour、Renderer、Collider，單次 `SetActive(false)` 不能永久保證不再出現。
+- `UIButtonScale` 還有私有快取與懸停狀態。只寫 `transform.localScale` 不能停止舊 `TweenScale`；現行做法保留之後正常按壓／懸停，不每幀強制鎖尺寸。
+
+## 9. 新增及開放的功能
+
+### 9.1 活動常駐
+
+`OpenLocalEvents` 只調整區域：type=2 活動、type=3 進化區域的 `event_id=0`；type=2 的 `pre_area=0`。`EventQuestPlayable` 只放行 type=2 且 `quest.active=2` 的正式活動難度，保留主線順序與 reserve 停用狀態。
+
+目前清單為 49 個活動區域、132 個正式難度、6 個進化神殿，另有 7 筆 reserve。沒有為解鎖偽造通關旗標，也沒有全域開啟歷史商店、倍率與公告。原體力、獎勵與結算仍走本機 API。完整名稱見 [活動清單](artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。
+
+### 9.2 商店六種免費代幣
+
+按原 Android 商品順序，由左至右、上排再下排：**1、6、12、25、52、85 枚**。商品 ID 為 `jp.gungho.dg.chip<數量>`，顯示 `FREE`，經確認後可重複領取。
+
+實作只增加 `have_stone_free`，總額等於免費＋付費；付費餘額及購買歷史不變。總額上限 999，整包超過即拒絕，不截斷也不溢位。同一確認頁只提交一次，取消／外來頁不發放，存檔後同步頂部餘額。這是新增離線福利，不是恢復 Google Play 付款。
+
+### 9.3 四個聯動池選擇
+
+| 選池名稱 | 卡池 ID | 原 event_id | 不重複角色數 | 每抽 |
+| --- | ---: | ---: | ---: | ---: |
+| FAIRY TAIL | 300100 | 600010 | 7 | 5 枚 |
+| 進撃の巨人 | 300200 | 600020 | 6 | 5 枚 |
+| ケリ姫スイーツ | 300300 | 600030 | 6 | 5 枚 |
+| とある魔術の禁書目録 | 300400 | 800690 | 7 | 5 枚 |
+
+只改這四個池的時段條件；原畫面只有一個聯動槽位，若只是全部 `event_id=0`，後一筆會覆蓋前一筆，因此需要新增四池 UI。
+
+原 `GachaType3` 下的 `Element00/01/02` 在選池時暫時排成四格，第四格由原卡複製。選定後只設 `MainMenuParam.m_GachaID` 及原圖鑑取得旗標參照，不在選池階段扣幣。之後沿用原確認、單抽／最多九連抽、刮卡、背包與存檔程式。友情與普通稀有流程保留；四個選項目前共用原聯動卡圖，以名稱區分。
+
+原 1.0.6 沒有 STEINS;GATE 的 type=3 卡池記錄；有該活動關卡或角色圖片，不等於存在可直接開啟的卡池。權重保留 APK 內建資料，不宣稱歷史官方機率已核實。
+
+### 9.4 IL 呼叫契約
+
+`MainMenuManager.AddSwitchRequest` 原本回傳 bool，原呼叫後有 `pop`。替代的 `RouteGachaRootRequest` 必須也回傳 bool 並補上 page 參數；早期 void 替代版已被測試拒絕，不能使用。原 `MainMenuSeqGachaConfirm`、`MainMenuSeqGachaMain` 方法指令由測試比對維持不變。
+
+## 10. 仍缺失或尚未驗證的部分
+
+### 10.1 圖片清單的「缺」要區分版本
+
+原 [priority-image-filenames.txt](artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt) 是歷史 112 項需求。依 prototype 16 的 Sprite 索引比對，已有 28 項以來源圖／相容別名接入，**剩餘 84 項未配接**：
+
+| 分類 | 數量 | 精確名稱／判定 |
+| --- | ---: | --- |
+| 選關入口圖示 | 77 | 原 84 個 `area_icon_...` 扣掉已補的 `0001..0007`；包含活動入口 |
+| 場地效果圖 | 4 | `heal_happytresure.png`、`heal_moneyup.png`、`heal_removetrap.png`、`heal_torch.png` |
+| 尚無可靠對應 | 3 | `mugen_box.png`、`panel_panic.png`、`panel_weekness.png` |
+
+保留原拼字 `happytresure`、`weekness`。DGDB 的 `icon_heal_happytreasure/moneyup/removetrap/torch.png` 已下載，但只是效果／狀態圖示候選，不直接當成原場地面板。無限迷宮與魔法禁書目錄的入口圖未配接。
+
+77 項可由原清單排除 `area_icon_0001..0007` 得到；原清單並非連續整數，例如有 `area_icon_2007_a`、`2007_b`。**不能用 `0008..6003` 連續範圍代替實際清單。** 後來完整 Wiki 備份是否能補更多仍待逐項核對，不能將「已備份」寫成「已接入」。
+
+### 10.2 其他缺失與限制
+
+| 項目 | 現況／需要補什麼 |
+| --- | --- |
+| 原關卡模型、門及房間動畫 | 仍缺完整原 AssetBundle 的 Mesh、UV、材質關聯與 AnimationClip；PNG 不能提供這些資訊 |
+| 原整張 `map_XXXX_tex` | 使用 lower／upper 分拆圖重建顯示，沒有宣稱原整張貼圖已找回 |
+| 原 `IconPackPanel`／`IconPackArea` 圖集 | 自建圖集與別名替代；原座標／壓縮／顏色變體未完全復原 |
+| 部分效果、粒子、音訊、聯動刮卡專屬美術 | 沒有完整逐項復原／驗證；外部音訊備份沒有整批接入 |
+| 官方伺服器資料及帳號 | 沒有恢復歷史帳號、真實好友、線上活動狀態、官方存檔或完整營運規則 |
+| 全關卡可玩性 | 132 活動的本機 API 啟動／結算檢查不等於每關已在 Android 實際通關 |
+| 長時間記憶體與所有裝置 | 待測；圖片比初期替代版大很多 |
+| 新 Android 相容性 | 僅 armeabi-v7a；min SDK 9、target SDK 17；不是 arm64 版 |
+
+原生程式庫靜態分析顯示舊引擎有實際 text relocation。不能只改 target SDK 或把資料夾改成 arm64 就宣稱相容；參考 [Android 16 相容性分析](artifacts/android16-compatibility-audit-2026-10-20/README.md)。該報告不包含 Android 16 裝置測試結果。
+
+## 11. 建置流程與輸入要求
+
+### 11.1 建置依賴與可攜性
+
+實作使用 Python／UnityPy 解析 Unity 資料、Mono C# 編譯器編譯配接器、Mono.Cecil 修改 IL，並使用 Android 封裝工具檢查 Manifest、對齊及簽章。反編譯工具只供理解原程式，不參與整個遊戲原始碼的重建。
+
+現有腳本仍有固定工作目錄及工具定位設定，尚未完成跨配置參數化。移植時應將來源 APK、工作目錄、素材根目錄、工具與簽署設定改為明確參數；不能把既有開發配置當成遊戲離線化的必要條件。本節描述輸入、階段及驗證契約，不綁定特定電腦或執行配置。
+
+原 APK 應保持唯讀，提取／反編譯／編譯中間檔使用獨立工作目錄。維護發行時須保持簽署憑證一致，否則不能直接更新既有安裝；測試簽章不等於官方簽章。簽署私鑰不屬於公開文件或發行素材。
+
+### 11.2 素材輸入前提
+
+建置不是只靠 Git checkout 即可完整重現：原 APK、調查產物及大型第三方素材不隨原始碼自動發布。重現時需自行準備版本相符的 APK、已核對素材及來源 manifests；完整 DGDB checkout 不會自動生成目前全部 manifests。
+
+`recover_dgdb_variants.py` 依已存在的固定 tree、commit、缺圖 audit 及初次下載清單補 118 張地圖變體與 4 張候選圖，**不是從空目錄重建全部調查的下載器**。使用前須備妥其輸入清單，並確認來源版本。
+
+新增素材時須記錄原來源 URL／commit、原檔名、尺寸、格式、雜湊與配對理由，更新來源 manifest，再由 `recovered_images.py` 生成索引；不要直接手改生成的 `RecoveredImages.cs` 或 DLL 中的圖片。
+
+### 11.3 建置入口及階段
+
+入口為 `offline/build.py`，完成後以 `offline/test.py` 讀取該次 `build-report.json` 驗證。參數用途如下：
+
+| 參數 | 用途 |
+| --- | --- |
+| `--native-direct` | 使用 APK 自帶的真正引擎，替代舊代理載入器 |
+| `--recovered-assets` | 指定包含來源 manifests 與已核對素材的資料集 |
+| `--output` | 指定新的產物目錄，不覆寫既有 APK |
+| `--work` | 指定獨立的中間檔工作目錄 |
+
+`--recovered-assets` 省略時是數字／色塊素材模式；不能把該建置當成已補圖的交付版。以上參數尚未涵蓋腳本中的全部固定設定，跨配置執行前仍需檢查原始碼。
+
+`build.py` 的步驟：
+
+1. 檢查原 APK SHA-256、ZIP 完整性，拒絕錯版／已有輸出 APK。
+2. 提取原 Unity Data 至獨立工作目錄，讀表、檢查數量及產生活動清單。
+3. 生成替代圖與核對素材，建圖集、PNG 包、索引及來源報告。
+4. `mcs -nostdlib` 對**原 APK 的 mscorlib／System／System.Core／UnityEngine／遊戲 DLL** 編譯配接器。
+5. Cecil 嵌入 PNG，執行 `Patch.cs` 修改原遊戲 DLL；封裝前執行聯動掛鉤契約檢查。
+6. 在 mainData 的 MonoManager 登錄新 DLL，核對其他物件原始資料沒有改動。
+7. 二進位修改 Manifest；依 `--native-direct` 放入自帶真正引擎。
+8. 重建 APK、zipalign、測試簽章，驗證 ZIP、簽章、對齊、套件、權限與修改檔案集合。
+9. 輸出 APK、SHA256SUMS、Manifest／簽章摘要、圖片報告、build-report；再用 `test.py` 檢查實際封裝 DLL。
+
+## 12. 測試範圍與實機驗證
+
+### 12.1 程式與資料測試
+
+測試先核對 APK hash，再從該 APK 取出原遊戲與配接器 DLL。引擎替身只存在於隔離測試目錄，Resources、PlayerPrefs、部分 Transform／元件／啟用旗標等由替身提供，不修改正式 APK 的引擎。
+
+| 測試檔／組別 | 驗證重點 |
+| --- | --- |
+| `VerifyReferences.cs` | 新配接器引用能在原裁剪引擎／BCL 找到 |
+| `LocalApiTests.cs` | 建帳、改名、初始隊伍、認證、主資料、登入包、教學開始／結算及另一程序重讀 |
+| `VerifyEventPatch.cs`、`VerifyEventUnlock.cs` | 只修改預期關卡存取點；132 活動 API 開始／扣體／結算，reserve／主線規則保留 |
+| `VerifyFreeChipShop.cs` | 六包數量、免費／付費分離、999 上限、溢位、取消、一次提交、持久保存 |
+| `VerifyShopPrefabHook.cs`、`verify_shop_prefab.py` | 真正選到完整 prefab，訊息／Yes／No 控制存在；空容器為反例 |
+| `VerifyCollabHooks.cs` | bool 堆疊、原動畫／教學與原確認／刮卡指令保留；快照／還原／正常頁清理掛鉤 |
+| `VerifyCollabGacha.cs` | 四池資料／選擇、原權重、每池單抽＋九連抽，共 40 張卡的資格、扣幣及跨程序保存 |
+| `VerifyCollabReturn.cs` | 100 次模擬選池／關閉／重新啟用，第四卡、Back Collider 與原三卡隔離 |
+| `VerifyCollabAnimation.cs` | 四卡共 100 次原 `UIButtonScale`／`TweenScale.Begin` 狀態循環，重設後仍能按壓／懸停 |
+| `verify_collab_prefab.py` | 原卡父節點、178×215 Collider、UILabel／UISprite、沒有搶點擊的子 Collider |
+| `VerifyRecoveredImages.cs` | 實際嵌入 1,223 個 PNG payload 的 hash 與 Sprite 矩形 |
+| `VerifyRenderFixes.cs`、Alpha 比對 | 透明陰影、HUD 掛鉤、上層景無新增 Collider；522 遮罩 Alpha 與立繪一致 |
+| `VerifyEnemyAtlasSearch.cs` | 1,044 次角色／Alpha 圖集搜尋選到真正擁有者 |
+| `VerifyHudPopup.cs` | 23 個戰鬥／選單／過渡／對話框狀態 |
+| `VerifyMapTextureRouting.cs` 等 | 404 次貼圖路由；166 張必需地圖分拆圖、23 個別名與來源像素對照 |
+
+1,223 是封裝 payload 數，包含 522 立繪、522 衍生陰影、172 地圖圖及 7 張合成圖集；不是所有來源小圖的數量。七張合成圖集為五組角色、一組面板、一組城鎮圖。
+
+上述測試**不執行原生 Unity 渲染、真正時間推進、觸控射線、刮卡演出或裝置儲存／載入器**。測試通過只能作為交付前的程式及資料證據，不能替代 Android 安裝與遊玩。
+
+### 12.2 Android 手動測試清單
+
+使用支援該 APK 原生架構的 Android 裝置或模擬器。測試時記錄版本、安裝方式與操作結果，並使用獨立測試資料；更新相容性測試則保留既有資料，避免用清除資料掩蓋問題。
+
+1. 記錄 APK SHA、裝置／模擬器、Android 版本、ABI、安裝與啟動結果。
+2. 新帳：開場、命名、初始角色、教學、鑰匙／Boss 入口、結算與重啟。
+3. 更新安裝：既有角色、隊伍、餘額及進度保留；不透過清資料掩蓋問題。
+4. 畫面：立繪透明、陰影、敵人頭像、空好友格、星星數、不同區域 lower／upper。
+5. 戰鬥：Boss 血條、回合／狀態圖示；MENU 首幀、Options／Retire、對話框及關閉過渡。
+6. 活動：選區、難度、助人、開始、結算；reserve 不應被當成可玩關卡。
+7. 商店：取消／確認、六包、餘額顯示、999 邊界、連點及重啟保存。
+8. 聯動：四池名稱與確認池一致、取消不扣幣、單抽／九連、領卡、返回與重啟。
+9. UI 循環：選池 Back、其他主選單往返、連續抽卡返回、再次按壓；四卡／三卡、Collider、數量與尺寸都正確。
+10. 開啟飛航模式／停網後重啟與遊玩，檢查完整離線流程；長時間切場景觀察記憶體與崩潰日誌。
+
+早期版本的啟動截圖或紀錄不能作為 prototype 16 已實機通過的證明；驗證結果須與實際受測 APK 的 hash 綁定。
+
+## 13. 移植其他版本的工作流程
+
+### 13.1 先作唯讀版本盤點
+
+每個版本應先完成以下唯讀分析，再決定補丁策略：
+
+1. 計算 APK SHA-256，列出封裝內容與 Android Manifest 資訊。
+2. 在獨立工作目錄提取 Unity Data、Managed 程式集與原生程式庫，保留原檔。
+3. 以相符版本的相依程式集解析 `Assembly-CSharp.dll`，用反編譯器檢查類別及 IL。
+4. 若沒有 Managed DLL，確認是否使用 IL2CPP；此 Cecil／Mono 方案不能直接套用。
+5. 建立資源、API、資料表及存檔契約清單，與 1.0.6 逐項比較。
+
+反編譯輸出只供分析，仍不直接重建整個原遊戲。2.1.0 的檔案指紋可作為輸入辨識依據，不代表已完成補丁或可直接套用 1.0.6 的腳本。
+
+盤點報告至少包括 Unity／Mono／BCL 版本、ABI、SDK、原生代理與真正引擎位置、資料表及下載包、API／更新 URL、包名、簽章與資源清單。不同版本 CDN 路徑已知會不同，參考原 `CreatePackagePath` 實作，不靠 1.0.6 字串替換猜測。
+
+### 13.2 決定本機後端策略
+
+依序確認：
+
+1. 是否仍有 `ServerForgery` 或相似開發用後端？是否能完整載入自己的資料表？
+2. 網路管理器何時改走它？位址為空、編譯條件、旗標或其他邏輯是否不同？
+3. 需要的 API enum、Send／Recv 結構、錯誤碼、Header 版本及資料列是否匹配？
+4. 創角、登入、隊伍、關卡、抽卡等實際需要哪些端點？逐一檢查 handler 內容，而非只找到名稱。
+5. 存檔如何持久化？是否保有 `SERVER_SAVE`、序列化欄位及新版本新增機制？
+
+若本機後端不存在或只剩空殼，就需要另外實作版本對應的封包處理與存檔模型；1.0.6 的工作量不能當成該版本只需幾個 patch 的證據。不要只回「成功」跳過還沒完成的 API，這可能在稍後進入缺欄位／缺物件流程才崩潰。
+
+### 13.3 新增版本設定與補丁，保留 1.0.6
+
+目前硬編碼處包括 `build.py` 的原檔／hash／數量、`manifest.py` 的包名／名稱、`Runtime.cs` 的版本字串與資源規則、`Patch.cs` 的方法／欄位／IL 形狀、活動類型、商品及四池 ID。`recovered_images.py` 也固定使用五組角色圖集、原資料欄位與 1.0.6 bundle 標籤。
+
+建議新增明確版本設定及獨立 patch／測試入口，而不是把現行檢查全部放寬：
+
+| 要重查的契約 | 其他版本需記錄 |
+| --- | --- |
+| 原檔辨識 | 檔名、SHA-256、Unity／程序集版本 |
+| IL 掛鉤 | declaring type、參數、回傳型別、static／instance、分支／return、預期匹配數 |
+| 主資料表 | 原 TextAsset 名稱、結構型別、欄位、關聯、筆數與可用範圍 |
+| 資源請求 | bundle／name／type／tag 與完整預期物件階層 |
+| UI | 實際 Resources 路徑、prefab 控制元件、圖層、深度、碰撞、動畫 |
+| 本機存檔 | schema、儲存 key、版本隔離與升級方案 |
+| 平台 | 原生 ABI、載入器、SDK、可用 Shader／BCL／Unity API |
+
+例如遇到既有 `BattleManager.LateUpdate`，必須保留原內容並選適當掛鉤，不能直接新增同名方法。`Append`／每個 return 的處理也要注意 branch 直接跳向 return；只在 return 前插入指令，可能被分支跳過。
+
+### 13.4 以該版本自己的表建立素材映射
+
+先從原表產生角色／區域／Sprite／bundle 需求，再對 DGDB、Wiki、圖鑑或舊快取配對：
+
+1. 角色分清 `fix_id`、`draw_id`、`res_chara_id_str`，檢查缺值／重複／編號範圍。
+2. 圖集分組不能假定仍每 200 個或只有五組；另查 Alpha 命名與跨圖集搜尋。
+3. 區域用 `res_map` 與入口圖示各自配對，不能用同編號地圖圖冒充選關圖。
+4. 保留 Alpha、尺寸、來源與裁切證據；JPG 不可自動當成透明立繪。
+5. 只把已確認素材加入輸入清單；相容替代／猜測候選／真正原檔分開標記。
+6. 新版 bundle 不保證舊引擎可讀。可先匯出資料重建；真正模型／動畫移植另查格式、Shader 與掛載關係。
+
+初始版本只需先打通啟動、建立帳號、教學與保存。圖片可使用明確替代圖做診斷，再分批接回，避免把 API、渲染及 UI 三類失敗混在一起。
+
+### 13.5 編譯、封裝及驗證
+
+對該版本原裁剪程序集編譯新增 DLL，不使用主機 .NET 的較新 API 當作手機一定具有的能力。新版本可能有不同 MonoManager 登錄、分段檔、Manifest 字串池或原生 SO 配置；`mainData`／manifest 修改器不適用時應明確停止，不直接用 1.0.6 輸出覆蓋。
+
+分段確認：原檔完整性 → 類型與方法契約 → 本機 API → 資料／資源關聯 → prefab／UI → APK 簽章與修改檔集合 → 核准 Android 裝置。必須用**該次真正交付 APK**再取 DLL 測試，避免測到暫存舊版而交付另一版。
+
+移植完成後另寫版本報告：原 SHA、產物 SHA／大小、包名／簽章、改哪些檔、資料來源與缺失、程式測試結果、裝置／Android／ABI 及實機結果。沒有實機證據就維持 pending，不以 1.0.6 截圖充當新版本驗證。
+
+## 14. 給接手 agent 的執行清單
+
+1. 先讀本文件、`offline/README.md` 及目標產物報告，區分歷史調查與現行狀態。
+2. 核對原檔 hash、素材 manifest、版本相依工具及簽署要求，確認建置輸入完整。
+3. 選定此次目標版本、包名、資料範圍及可驗證的最小流程，產生版本盤點。
+4. 先確認本機 API 路由與存檔，再處理資源替代，最後增加商店／活動／卡池等選用功能。
+5. 保持版本限定檢查；不得以改輸入 hash、改所有 class 名、刪失敗斷言的方式硬套補丁。
+6. 修改 UI 前讀真正 prefab；檢查可見性、Collider、panel 註冊、遞迴重新啟用及 Tween 私有狀態。
+7. 新功能沿用同一份本機存檔；取消不提交、確認有防重複，處理邊界及重讀。
+8. 新建產物目錄，保留原 APK／舊版；不提交生成二進位、原反編譯檔、裝置資料或金鑰。
+9. 按影響範圍執行實際 APK 檢查，記錄資料／資源／UI 測試的限制，另安排實機驗證未測項目。
+10. 更新本版本使用說明、未解決項目與來源對照；不要覆寫歷史調查來掩蓋曾經失敗的版本。
+
+## 15. 版本演進與延伸文件
+
+| 階段 | 主要內容 |
+| --- | --- |
+| prototype 1／native-direct | 打通原內建本機後端、啟動流程、替代素材與舊引擎載入 |
+| prototype 2 | 修正替代地板 Collider 擋 Boss 入口，加入入口診斷 |
+| prototype 3／r2 | 接入已核對角色／圖示／面板等素材 |
+| prototype 4 | 立繪陰影 Alpha 遮罩 |
+| prototype 5 | 區域貼圖變體與名稱配接 |
+| prototype 6 | 上層背景／門景與敵人 HUD 排序 |
+| prototype 7 | 空好友／空角色格修正 |
+| prototype 8 | 敵人跨圖集搜尋、地板與門景排序 |
+| prototype 9 | 模態 UI 前後景、七個城鎮入口圖 |
+| prototype 10 | 活動與進化區域常駐 |
+| prototype 11／12 | 免費代幣；修正確認頁選到空 prefab |
+| prototype 13 | 四池選擇；其中未修復候選有 DO_NOT_INSTALL 標記，不能使用 |
+| prototype 14 | 重用原三卡、只補第四張、原 NGUI 階層與註冊 |
+| prototype 15 | 抽卡返回重新啟用造成的第四卡／Collider 殘留 |
+| prototype 16 | 快照前及返回後清除按壓／懸停 Tween，還原正常尺寸 |
+
+延伸證據：
+
+- [目前使用說明](offline/README.md)、[prototype 16 交付報告](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)。
+- [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
+- [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。
+- [聯動池資料與原 UI 限制](artifacts/1.0.6-collab-gacha-audit-2026-10-20/README.md)、[活動清單](artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。
+- [第三方目錄與圖片預覽](external/README.md)、[Wiki 備份範圍及重現](offline/FANDOM_ARCHIVE.md)。
+- [Android 16 相容性調查](artifacts/android16-compatibility-audit-2026-10-20/README.md)。
+
+歷史文件中的「未寫入 APK」「尚未重建 upper」等敘述對應當時階段；判斷現況應以本文件基準、最新 `Runtime.cs`／生成器及同版 `build-report.json`、`recovered-images.json` 交叉核對。
