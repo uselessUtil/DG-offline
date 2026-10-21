@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Divine Gate 本機素材預覽</title>
+<style>
+:root{color-scheme:dark;font:15px/1.5 system-ui,sans-serif;background:#101319;color:#ecedf3;--surface:#1b202a;--line:#343d4e;--image-bg:repeating-conic-gradient(#363b46 0% 25%,#292e38 0% 50%) 0/20px 20px}
+*{box-sizing:border-box}body{margin:0}main,header{max-width:1500px;margin:auto;padding:22px}h1{font-size:23px;margin:0 0 5px}p{margin:5px 0;color:#b9c2d3}a{color:#95c7ff}button,input,select{font:inherit;border:1px solid var(--line);border-radius:7px;padding:9px 12px;background:var(--surface);color:inherit}button{cursor:pointer}button:hover{border-color:#98b8ff}button:disabled{opacity:.35;cursor:default}:focus-visible{outline:2px solid #98b8ff;outline-offset:3px}.tools{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 12px;align-items:end}.tools label{display:grid;gap:5px;font-size:13px;color:#b9c2d3}.search{flex:1;min-width:220px}input{width:100%}.toolbar{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}.pager{display:flex;gap:10px;align-items:center}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}.card{padding:0;overflow:hidden;text-align:left;background:var(--surface);min-width:0}.thumb{height:180px;background:var(--image-bg);display:grid;place-items:center}.thumb img{width:100%;height:180px;object-fit:contain;padding:8px}.caption{display:block;padding:10px}.name{display:block;overflow-wrap:anywhere;font-weight:600;font-size:13px}.meta{display:block;color:#aeb8cc;font-size:12px;margin-top:5px}.badge{color:#9bd2ff}.empty{padding:65px;text-align:center;color:#b9c2d3}.bottom{padding:24px 0;justify-content:center}.hint{font-size:12px}dialog{width:min(1100px,96vw);max-height:94vh;border:1px solid var(--line);border-radius:12px;background:#171c25;color:inherit;padding:16px}dialog::backdrop{background:#000c}.detail-head{display:flex;align-items:center;justify-content:space-between;gap:15px}.detail-head h2{font-size:17px;overflow-wrap:anywhere;margin:0}.stage{height:57vh;min-height:180px;margin:15px 0;background:var(--image-bg);display:grid;place-items:center}.stage img{max-width:100%;max-height:57vh;object-fit:contain}.path{font:12px/1.5 ui-monospace,monospace;overflow-wrap:anywhere;user-select:all}.detail-links{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px}.footer{margin-top:15px}#detailInfo{font-size:13px}#detailError{color:#ffb6b6}body.light{--image-bg:#fff}body.black{--image-bg:#080808}@media(max-width:500px){header,main{padding:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.thumb,.thumb img{height:145px}.tools{gap:8px}select{max-width:190px}}
+</style>
+<header>
+<h1>Divine Gate 本機素材預覽</h1>
+<p id="inventory"></p>
+<p class="hint">直接讀取本機圖片。以原檔名或路徑搜尋，例如 map_0006、panel_6、001-icon。點圖片可放大及開啟原檔。</p>
+<div class="tools">
+<label class="search">搜尋<input id="query" type="search" placeholder="檔名或路徑，多個關鍵字以空白分隔" autocomplete="off"></label>
+<label>素材來源<select id="source"><option value="">全部來源</option><option>Wiki</option><option>DGDB</option></select></label>
+<label>資料夾／格式<select id="group"><option value="">全部</option></select></label>
+<label>圖片背景<select id="background"><option value="">透明棋盤格</option><option value="light">白色</option><option value="black">黑色</option></select></label>
+</div>
+<div class="toolbar"><span id="results" role="status" aria-live="polite"></span><span class="hint">往下捲動，自動載入更多圖片</span></div>
+</header>
+<main><div id="grid" class="grid"></div><div id="empty" class="empty" hidden>沒有符合的圖片，請換個關鍵字或來源。</div><div id="loadMarker" class="pager bottom"><span id="loadStatus"></span><button id="loadMore">載入更多</button></div><p class="hint footer">保留 Wiki 原始檔名及來源；CDN 版本另有標示。YouTube 項目僅為縮圖。請保留本頁與 dgdb、divine-gate-wiki 資料夾的相對位置。</p></main>
+<dialog id="detail" aria-labelledby="detailName"><div class="detail-head"><h2 id="detailName"></h2><button id="close" autofocus>關閉 ✕</button></div><div class="stage"><img id="detailImage" alt=""></div><p id="detailError" hidden>圖片無法載入，請確認素材資料夾仍在原位置。</p><p id="detailInfo"></p><p id="detailPath" class="path"></p><div class="toolbar"><div class="detail-links"><a id="localLink" target="_blank" rel="noopener">開啟本機原檔</a><a id="sourceLink" target="_blank" rel="noopener noreferrer">查看網路來源 ↗</a></div><div class="pager"><button id="imagePrev">上一張</button><span id="imagePosition"></span><button id="imageNext">下一張</button></div></div></dialog>
+<script id="records" type="application/json">__IMAGE_RECORDS__</script>
+<script>
+'use strict';
+const records=JSON.parse(document.getElementById('records').textContent);
+const $=id=>document.getElementById(id), batchSize=80;
+const searchable=records.map(r=>(r.name+' '+r.path).toLocaleLowerCase());
+let filtered=[],displayed=0,selected=0,timer,loading=false;
+function formatSize(bytes){return bytes<1024?bytes+' B':bytes<1048576?(bytes/1024).toFixed(1)+' KB':(bytes/1048576).toFixed(1)+' MB'}
+function refreshGroups(){
+ const current=$('group').value;
+ const groups=[...new Set(records.filter(r=>!$('source').value||r.source===$('source').value).map(r=>r.source+' / '+r.group))].sort();
+ $('group').replaceChildren(new Option('全部',''),...groups.map(g=>new Option(g,g)));
+ if(groups.includes(current))$('group').value=current;
+}
+function filter(){
+ const words=$('query').value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+ filtered=records.map((r,i)=>i).filter(i=>{const r=records[i];return (!$('source').value||r.source===$('source').value)&&(!$('group').value||r.source+' / '+r.group===$('group').value)&&words.every(w=>searchable[i].includes(w))});
+ displayed=0;$('grid').replaceChildren();appendBatch();
+}
+function appendBatch(){
+ const start=displayed;
+ const fragment=document.createDocumentFragment();
+ filtered.slice(start,start+batchSize).forEach((index,offset)=>{
+  const r=records[index],card=document.createElement('button');card.className='card';card.title=r.name;card.setAttribute('aria-label','放大 '+r.name);
+  const thumb=document.createElement('span');thumb.className='thumb';
+  const img=document.createElement('img');img.src=r.src;img.alt=r.name;img.loading='lazy';img.decoding='async';img.onerror=()=>{img.alt='無法載入：'+r.name};thumb.append(img);
+  const caption=document.createElement('span');caption.className='caption';
+  const name=document.createElement('span');name.className='name';name.textContent=r.name;
+  const meta=document.createElement('span');meta.className='meta';meta.textContent=r.source+' / '+r.group+' · '+r.width+'×'+r.height;
+  const status=document.createElement('span');status.className='meta badge';status.textContent=r.status;
+  caption.append(name,meta,status);card.append(thumb,caption);card.onclick=()=>showImage(start+offset);fragment.append(card);
+ });
+ displayed=Math.min(start+batchSize,filtered.length);
+ $('grid').append(fragment);$('empty').hidden=filtered.length!==0;
+ $('results').textContent='已顯示 '+displayed.toLocaleString()+' / '+filtered.length.toLocaleString()+' 張';
+ $('loadMore').hidden=displayed>=filtered.length;
+ $('loadStatus').textContent=!filtered.length?'':displayed>=filtered.length?'已載入全部圖片':'繼續往下捲動以載入更多';
+ requestAnimationFrame(checkLoadMarker);
+}
+function loadNextBatch(){
+ if(loading||displayed>=filtered.length||$('detail').open)return;
+ loading=true;
+ requestAnimationFrame(()=>{appendBatch();loading=false});
+}
+function checkLoadMarker(){
+ if($('loadMarker').getBoundingClientRect().top<window.innerHeight+800)loadNextBatch();
+}
+function showImage(index){
+ selected=index;const r=records[filtered[index]];
+ $('detailName').textContent=r.name;$('detailError').hidden=true;
+ $('detailImage').alt=r.name;$('detailImage').src=r.src;
+ $('detailInfo').textContent=r.source+' / '+r.group+' · '+r.width+' × '+r.height+' · '+formatSize(r.size)+' · '+r.status;
+ $('detailPath').textContent=r.path;$('localLink').href=r.src;$('sourceLink').href=r.url;
+ $('imagePosition').textContent=(index+1)+' / '+filtered.length;
+ $('imagePrev').disabled=index===0;$('imageNext').disabled=index===filtered.length-1;
+ if(!$('detail').open)$('detail').showModal();
+}
+$('detailImage').onerror=()=>{$('detailError').hidden=false};
+$('query').oninput=()=>{clearTimeout(timer);timer=setTimeout(filter,140)};
+$('source').onchange=()=>{refreshGroups();filter()};$('group').onchange=filter;
+$('background').onchange=()=>{document.body.className=$('background').value};
+$('loadMore').onclick=loadNextBatch;
+if('IntersectionObserver' in window){
+ const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))loadNextBatch()},{rootMargin:'800px 0px'});
+ observer.observe($('loadMarker'));
+}else{window.addEventListener('scroll',checkLoadMarker,{passive:true})}
+window.addEventListener('resize',checkLoadMarker);
+$('close').onclick=()=>$('detail').close();
+$('detail').addEventListener('close',()=>{$('detailImage').removeAttribute('src');checkLoadMarker()});
+$('detail').addEventListener('click',event=>{if(event.target===$('detail')){const rect=$('detail').getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)$('detail').close()}});
+$('imagePrev').onclick=()=>showImage(selected-1);$('imageNext').onclick=()=>showImage(selected+1);
+document.addEventListener('keydown',event=>{if(!$('detail').open)return;if(event.key==='ArrowLeft'&&selected>0){event.preventDefault();showImage(selected-1)}if(event.key==='ArrowRight'&&selected<filtered.length-1){event.preventDefault();showImage(selected+1)}});
+$('inventory').textContent=['Wiki','DGDB'].map(source=>source+' '+records.filter(r=>r.source===source).length.toLocaleString()+' 張').join('　＋　')+'　｜　共 '+records.length.toLocaleString()+' 張';
+refreshGroups();filter();
+</script>
+</html>
