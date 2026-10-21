@@ -126,6 +126,11 @@ def main():
         '-r:'+str(test/'EngineSupport.dll'),tests/'VerifyCollabReturn.cs')
     collab_test += subprocess.check_output(['mono',str(test/'VerifyCollabReturn.exe')],
         env=collab_env,text=True,timeout=45)
+    run('mcs','-out:'+str(test/'VerifyCollabAnimation.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+        '-r:'+str(test/'DivineGateOffline.dll'),'-r:'+str(test/'UnityEngine.dll'),
+        '-r:'+str(test/'EngineSupport.dll'),tests/'VerifyCollabAnimation.cs')
+    collab_test += subprocess.check_output(['mono',str(test/'VerifyCollabAnimation.exe')],
+        env=collab_env,text=True,timeout=45)
     from verify_collab_prefab import verify as verify_collab_prefab
     collab_test += verify_collab_prefab(artifact, args.report.parent)
     print(collab_test)

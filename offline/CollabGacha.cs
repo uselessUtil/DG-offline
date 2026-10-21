@@ -27,6 +27,7 @@ public static partial class DivineGateOffline
 
         public void Capture(GameObject card)
         {
+            ResetCollabCardAnimation(card);
             root = card; position = card.transform.localPosition; scale = card.transform.localScale;
             GameObject labelNode = UnityUtil.GetChildNode(card, "ElementLabel");
             GameObject hintNode = UnityUtil.GetChildNode(card, "ElementHint");
@@ -48,7 +49,25 @@ public static partial class DivineGateOffline
             UnityUtil.SetUILabelValue(hintNode, hint); hintNode.SetActive(hintActive);
             UnityUtil.GetChildNode(root, "CountMark").SetActive(countActive);
             UnityUtil.SetUIAtlasSprite(UnityUtil.GetChildNode(root, "ElementObj"), atlas, sprite);
+            ResetCollabCardAnimation(root);
         }
+    }
+
+    private static void ResetCollabCardAnimation(GameObject card)
+    {
+        UIButtonScale button = card.GetComponent<UIButtonScale>();
+        if (button == null || !button.enabled) return;
+        // OnHover(false) clears the button's private highlight state and uses
+        // its cached neutral scale, rather than the current pressed/hover frame.
+        card.SendMessage("OnHover", false, SendMessageOptions.DontRequireReceiver);
+        if (button.tweenTarget == null) return;
+        TweenScale tween = button.tweenTarget.GetComponent<TweenScale>();
+        if (tween == null) return;
+        tween.enabled = false;
+        button.tweenTarget.localScale = tween.to;
+        // Page fade-in enables disabled behaviours again. A revived old tween
+        // must have neutral endpoints, not the pre-switch hover/press targets.
+        tween.from = tween.to;
     }
 
     public static uint CollabPoolID(int index)
@@ -166,6 +185,7 @@ public static partial class DivineGateOffline
         int layer = panel != null ? panel.gameObject.layer : collabChoices.layer;
         UnityUtil.SetObjectLayer(card, layer);
         UnityUtil.SetObjectEnabledFix(card, true);
+        ResetCollabCardAnimation(card);
         GameObject label = UnityUtil.GetChildNode(card, "ElementLabel");
         label.transform.localScale = new Vector3(20, 20, 1);
         UnityUtil.SetUILabelValue(label, collabCardNames[index]);

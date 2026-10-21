@@ -54,6 +54,16 @@ public static class VerifyCollabHooks
         var mode = runtime.Methods.Single(m => m.Name == "SetCollabMode").Body.Instructions;
         if (mode.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "GachaType3"))
             throw new Exception("Selector must not hide its original card parent");
+        var view = runtime.NestedTypes.Single(t => t.Name == "CollabCardView");
+        var capture = view.Methods.Single(m => m.Name == "Capture").Body.Instructions;
+        int resetIndex = capture.ToList().FindIndex(i => i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "ResetCollabCardAnimation");
+        int scaleIndex = capture.ToList().FindIndex(i => i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "get_localScale");
+        if (resetIndex < 0 || resetIndex >= scaleIndex)
+            throw new Exception("Card snapshot must normalize the transient hover/press scale first");
+        foreach (var body in new[] { view.Methods.Single(m => m.Name == "Restore").Body,
+            runtime.Methods.Single(m => m.Name == "SetupCollabCard").Body })
+            if (!body.Instructions.Any(i => i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "ResetCollabCardAnimation"))
+                throw new Exception("Setup/restore must clear the old card scale tween");
         // Confirmation and scratching are still the original instructions.
         foreach (var type in new[] { "MainMenuSeqGachaConfirm", "MainMenuSeqGachaMain" })
         {
@@ -67,6 +77,6 @@ public static class VerifyCollabHooks
                     throw new Exception("Original confirmation/scratch modified: " + method.FullName);
             }
         }
-        Console.WriteLine("PASS collab hooks: bool request stack, animation/tutorial, confirmation and scratch instructions preserved.");
+        Console.WriteLine("PASS collab hooks: normalize button animations before snapshots and after setup/restore; normal-page cleanup after fade-in activation and before animation/input; original three cards/parent reused, only fourth cloned, explicit widget registration. Bool request stack, animation/tutorial, confirmation and scratch instructions preserved.");
     }
 }
