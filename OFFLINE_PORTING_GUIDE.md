@@ -32,7 +32,9 @@
 | 原始 `ディバゲ_2.1.0.apk` | 32,114,571 | `af40f477e5455caba4f4bbfa24d6fde94e174fc4614db39025c9411be207bb29` |
 | 1.0.6 prototype 16 | 184,636,132 | `9b54bdbe1301dc5637dc41e8600444e116a551f1696fd69e1fe9529c24308c88` |
 
-最新 APK、建置參數、修改項目與測試結果位於 [prototype 16 產物目錄](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。**2.1.0 尚未依本指南完成離線移植**，不能將 1.0.6 的成功推廣為 2.1.0 已可用。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 16 產物目錄](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
+
+**2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
 **2.9.0 已另做安全檢查與移植嘗試，目前只有離線診斷原型，無法遊玩。** 該 APK 保留本機 `ServerForgery`，卻沒有其要求的 42 份 Resources 主資料；創角與關卡因此無法從 APK 單獨復原。版本限定補丁、證據範圍、缺失資料／素材及重現方式見 [2.9.0 報告](offline/v290/README.md)。不要將診斷版當成完成的單機版，也不要把 1.0.6 資料直接冒充 2.9.0。
 
@@ -561,6 +563,7 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 延伸證據：
 
 - [目前使用說明](offline/README.md)、[prototype 16 交付報告](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)。
+- [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
 - [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。
 - [聯動池資料與原 UI 限制](artifacts/1.0.6-collab-gacha-audit-2026-10-20/README.md)、[活動清單](artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。
