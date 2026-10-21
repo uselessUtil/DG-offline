@@ -1,0 +1,7 @@
+{
+  "trap_teleport": {"source": "trap_telepot", "basis": "teleport trap; source spelling differs"},
+  "toaru_key": {"source": "toaru_Key", "basis": "same collaboration key; case differs"},
+  "panel_alarm": {"source": "trap_siren", "basis": "alarm trap; inspected red siren panel, compatible artwork rather than verified original 1.0.6 pixels"},
+  "panel_banana": {"source": "trap_banana", "basis": "banana trap; inspected banana peel panel, compatible artwork rather than verified original 1.0.6 pixels"},
+  "toaru_box_01": {"source": "toaru_box", "basis": "Toaru collaboration chest; inspected electronics case, compatible artwork rather than verified original 1.0.6 pixels"}
+}
