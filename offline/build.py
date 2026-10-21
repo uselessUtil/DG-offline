@@ -75,6 +75,8 @@ def main():
     if args.recovered_assets:
         recovered = create_recovered_images(build, tables, args.recovered_assets)
         shutil.copy2(build/'recovered-images.json', output/'recovered-images.json')
+        shutil.copytree(build/'area-icons', output/'area-icons')
+        shutil.copy2(build/'area-icon-manifest.json', output/'area-icon-manifest.json')
     else:
         disable_recovered_images(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
@@ -158,7 +160,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 16 collab button animation reset' if recovered else '1.0.6 offline prototype 16 placeholders'),
+              'version':('1.0.6 offline prototype 17 map-derived selection icons' if recovered else '1.0.6 offline prototype 17 placeholders'),
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,

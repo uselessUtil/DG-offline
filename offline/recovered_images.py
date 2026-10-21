@@ -5,6 +5,7 @@ import json
 import math
 from pathlib import Path
 from PIL import Image, ImageDraw
+from area_icons import create as create_area_icons
 
 
 def png(image):
@@ -18,11 +19,11 @@ def create(output: Path, tables: Path, source: Path):
     supplement = source / 'dgdb-additional-assets.json'
     if supplement.exists():
         records += json.loads(supplement.read_text())
-    area_sources = []
+    wiki_sources = []
     fandom = source / 'fandom-area-images.json'
     if fandom.exists():
-        area_sources = json.loads(fandom.read_text())
-        records += area_sources
+        wiki_sources = json.loads(fandom.read_text())
+        records += wiki_sources
     files = {row['path']: row for row in records}
     chars = json.loads((tables / 'MasterDataParamChara.json').read_bytes(), strict=False)
     payloads, sprites, provenance = {}, {}, []
@@ -64,8 +65,9 @@ def create(output: Path, tables: Path, source: Path):
 
     groups['AtlasPanelIcon'] = [(Path(path).stem, read(path)) for path in sorted(files)
                                 if path.startswith(('public/img/panel/', 'public/img/trap/'))]
-    if area_sources:
-        groups['AtlasAreaIcon_000_020'] = [(row['sprite_name'], read(row['path'])) for row in area_sources]
+    areas = json.loads((tables / 'MasterDataArea.json').read_bytes(), strict=False)
+    area_entries, area_sources = create_area_icons(areas, files, read, output / 'area-icons', wiki_sources)
+    groups['AtlasAreaIcon_000_020'] = area_entries
     alias_records = json.loads((Path(__file__).parent / 'dgdb-sprite-aliases.json').read_text())
     aliases = {name: row['source'] for name, row in alias_records.items()}
     # The public backup preserves one set of 1..6 star panels. Use the same
@@ -114,7 +116,6 @@ def create(output: Path, tables: Path, source: Path):
                         for row in bundle_paths if row['name'].startswith('[1.0.6]map_')})
     # Models are shared by areas with different res_map textures. Select by the
     # actual master texture names as well as the model bundle names.
-    areas = json.loads((tables / 'MasterDataArea.json').read_bytes(), strict=False)
     map_names = sorted(set(map_names) | {row['res_map'].removesuffix('_tex')
                        for row in areas if row.get('res_map', '').startswith('map_')})
     maps = []
