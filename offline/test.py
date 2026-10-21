@@ -72,6 +72,53 @@ def main():
     run('mcs','-out:'+str(test/'LocalApiTests.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
         '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'LocalApiTests.cs')
     env = dict(os.environ, DG_TEST_TABLES=str(work/'tables'),DG_TEST_PREFS=str(test/'player-prefs.txt'))
+    if report.get('recovered_artwork') and images.get('sprite_aliases'):
+        from PIL import Image, ImageChops
+        import io
+        source = ROOT/'artifacts/web-asset-search-2026-10-20'
+        records = json.loads((source/'dgdb-downloaded-assets.json').read_text())
+        supplement = source/'dgdb-additional-assets.json'
+        if supplement.exists():
+            records += json.loads(supplement.read_text())
+        files = {r['path']: r for r in records}
+        packed = (work/'build/RecoveredImages.bin').read_bytes()
+        def recovered_png(key):
+            row = images['payloads'][key]
+            value = Image.open(io.BytesIO(packed[row['offset']:row['offset']+row['size']])).convert('RGBA')
+            value.load()
+            return value
+        areas = json.loads((work/'tables/MasterDataArea.json').read_bytes(), strict=False)
+        names = {a['res_map'].removesuffix('_tex') for a in areas if a.get('res_map','').startswith('map_')}
+        for name in names:
+            for part in ['lower','upper']:
+                row = files[f'public/img/area/{name}_tex_{part}.png']
+                raw = (ROOT/row['local_path']).read_bytes()
+                assert digest(raw) == row['sha256']
+                original = Image.open(io.BytesIO(raw)).convert('RGBA')
+                actual = recovered_png(f'map/{name}/{part}')
+                assert original.size == actual.size
+                assert not any(channel.getbbox() for channel in ImageChops.difference(original, actual).split())
+        panel_atlas = recovered_png('atlas/AtlasPanelIcon')
+        for alias, row in images['sprite_aliases'].items():
+            assert images['sprites']['AtlasPanelIcon/'+alias] == images['sprites']['AtlasPanelIcon/'+row['source']]
+            source_path = next(path for path in files if path.startswith(('public/img/panel/','public/img/trap/'))
+                               and Path(path).stem == row['source'])
+            original = Image.open(ROOT/files[source_path]['local_path']).convert('RGBA')
+            x,y,w,h = images['sprites']['AtlasPanelIcon/'+alias]
+            original = original.resize((w,h),Image.Resampling.LANCZOS)
+            actual = panel_atlas.crop((x,y,x+w,y+h))
+            assert not any(channel.getbbox() for channel in ImageChops.difference(original,actual).split())
+        run('mcs','-out:'+str(test/'VerifyMapTextureRouting.exe'),
+            '-r:'+str(test/'Assembly-CSharp.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'VerifyMapTextureRouting.cs')
+        run('mcs','-out:'+str(tools/'PrepareMapProbe.exe'),'-r:'+CECIL,tests/'PrepareMapProbe.cs')
+        run('mono',tools/'PrepareMapProbe.exe',test/'DivineGateOffline.dll',test/'MapProbe.dll')
+        shutil.move(test/'MapProbe.dll',test/'DivineGateOffline.dll')
+        routing = subprocess.check_output(['mono',str(test/'VerifyMapTextureRouting.exe'),
+            str(test/'DivineGateOffline.dll')],env=env,text=True,timeout=45)
+        routing += f'PASS source pixels: {len(names)*2} required split map PNGs; {len(images["sprite_aliases"])} sprite aliases match source pixels and declared rectangles.\n'
+        print(routing)
+        (args.report.parent/'map-variant-tests.txt').write_text(routing)
+        report['map_variant_tests'] = routing.strip()
     logs = []
     for args2 in [[],['reload']]:
         log = test/('reload.log' if args2 else 'api.log')

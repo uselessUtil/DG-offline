@@ -15,6 +15,9 @@ def png(image):
 
 def create(output: Path, tables: Path, source: Path):
     records = json.loads((source / 'dgdb-downloaded-assets.json').read_text())
+    supplement = source / 'dgdb-additional-assets.json'
+    if supplement.exists():
+        records += json.loads(supplement.read_text())
     area_sources = []
     files = {row['path']: row for row in records}
     chars = json.loads((tables / 'MasterDataParamChara.json').read_bytes(), strict=False)
@@ -57,8 +60,8 @@ def create(output: Path, tables: Path, source: Path):
 
     groups['AtlasPanelIcon'] = [(Path(path).stem, read(path)) for path in sorted(files)
                                 if path.startswith(('public/img/panel/', 'public/img/trap/'))]
-    alias_records = {}
-    aliases = {}
+    alias_records = json.loads((Path(__file__).parent / 'dgdb-sprite-aliases.json').read_text())
+    aliases = {name: row['source'] for name, row in alias_records.items()}
     for atlas, entries in groups.items():
         # Keep the full 128px icon resolution. Alpha variants share these textures.
         empty = Image.new('RGBA', (128, 128))
@@ -93,6 +96,11 @@ def create(output: Path, tables: Path, source: Path):
     bundle_paths = json.loads((tables / 'MasterDataAssetBundlePath.json').read_bytes(), strict=False)
     map_names = sorted({row['name'].removeprefix('[1.0.6]').removesuffix('.unity3d')
                         for row in bundle_paths if row['name'].startswith('[1.0.6]map_')})
+    # Models are shared by areas with different res_map textures. Select by the
+    # actual master texture names as well as the model bundle names.
+    areas = json.loads((tables / 'MasterDataArea.json').read_bytes(), strict=False)
+    map_names = sorted(set(map_names) | {row['res_map'].removesuffix('_tex')
+                       for row in areas if row.get('res_map', '').startswith('map_')})
     maps = []
     for name in map_names:
         for part in ['lower', 'upper']:

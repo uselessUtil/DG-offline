@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 4";
+    public const string Build = "1.0.6 offline prototype 5";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -299,8 +299,29 @@ public static partial class DivineGateOffline
 
     private static Texture2D MapTexture(string bundle, string name)
     {
-        string map = bundle.Replace(".unity3d", "");
-        Texture2D texture = RecoveredTexture("map/" + map + "/lower");
+        return MapPartTexture(bundle, name, "lower");
+    }
+
+    private static Texture2D MapPartTexture(string bundle, string name, string part)
+    {
+        // A map bundle identifies the shared mesh, not the area's texture.
+        // Respect an explicit res_map request; mesh/material requests use the
+        // selected area's master entry so the simplified floor also matches.
+        string resource = name;
+        if (!(name.StartsWith("map_") && name.IndexOf("_tex") >= 0))
+        {
+            SceneGoesParam scene = Singleton<SceneGoesParam>.Instance;
+            if (scene != null && scene.m_SceneGoesParamToGameMain != null)
+            {
+                MasterDataArea area = MasterDataUtil.GetAreaParamFromID(
+                    scene.m_SceneGoesParamToGameMain.m_QuestAreaID);
+                if (area != null) resource = area.res_map;
+            }
+        }
+        string map = resource.StartsWith("map_") && resource.IndexOf("_tex") >= 0 ?
+            resource.Replace("_tex", "") : bundle.Replace(".unity3d", "");
+        Texture2D texture = RecoveredTexture("map/" + map + "/" + part);
+        if (part == "upper") return texture;
         return texture != null ? texture : CharacterTexture(name);
     }
 
@@ -428,7 +449,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 4");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 5");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :
