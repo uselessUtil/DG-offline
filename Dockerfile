@@ -4,6 +4,7 @@ FROM debian:trixie-slim
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         ca-certificates \
+        clamav \
         curl \
         file \
         git \
@@ -17,6 +18,7 @@ RUN apt-get update \
         apksigner \
         zipalign \
         aapt \
+        libsmali-java \
         adb \
         unzip \
         zip \
