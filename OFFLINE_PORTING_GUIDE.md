@@ -1,12 +1,12 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-21。實作基準：**1.0.6 offline prototype 16**。
+文件核對日期：2026-10-21。實作基準：**1.0.6 offline prototype 17**。
 
 本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
 
 2026-10-21 的 [三版比較與 1.0.6 資料移植實驗](offline/comparison/README.md) 補充了跨版欄位、API 與存檔差異：28 張舊表經有限轉換後可在兩版原後端通過部分流程。這是新版承載舊內容的可行性證據，尚未接入新版診斷 APK，不能視為完整內容或 Android 遊玩驗證。
 
-**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** 有些場景由圖片與簡化幾何替代；內建本機資料及抽卡權重也不能直接視為已核實的歷史營運資料。prototype 16 已通過程式與資料檢查，尚未記錄完整的 Android 實機驗證。
+**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** 有些場景由圖片與簡化幾何替代；內建本機資料及抽卡權重也不能直接視為已核實的歷史營運資料。prototype 17 的選關圖以七張 Wiki 圖及 77 個經使用者確認的門景裁切補齊；尚未記錄完整的 Android 實機驗證。
 
 ## 目錄
 
@@ -33,8 +33,9 @@
 | 原始 `ディバゲ_1.0.6.apk` | 31,047,374 | `ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2` |
 | 原始 `ディバゲ_2.1.0.apk` | 32,114,571 | `af40f477e5455caba4f4bbfa24d6fde94e174fc4614db39025c9411be207bb29` |
 | 1.0.6 prototype 16 | 184,636,132 | `9b54bdbe1301dc5637dc41e8600444e116a551f1696fd69e1fe9529c24308c88` |
+| 1.0.6 prototype 17 | 189,063,908 | `d98b73348e2f17a576f430153e00eec43caecb08422ed53a005435af023bf029` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 16 產物目錄](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 17 產物目錄](artifacts/1.0.6-offline-prototype17-area-map-crops-wiki-preserved/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -57,6 +58,7 @@
 | [offline/CollabGacha.cs](offline/CollabGacha.cs) | 四池選擇、原卡片重用、返回清理與動畫還原 |
 | [offline/build.py](offline/build.py)、[offline/manifest.py](offline/manifest.py) | 提取、編譯、二進位 Manifest 修改、封裝與簽章 |
 | [offline/recovered_images.py](offline/recovered_images.py)、[offline/EmbedImages.cs](offline/EmbedImages.cs) | 圖片核對、圖集產生及舊 Mono 可讀的圖片嵌入 |
+| [offline/area_icons.py](offline/area_icons.py) | 保留 Wiki 選關圖，其餘依各區域門景製作 A 構圖裁切與來源對照 |
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
@@ -219,13 +221,13 @@ flowchart TD
 - `shadow/<resource_id>`：白色 RGB＋立繪原 Alpha 的遮罩。
 - `atlas/AtlasCharaIcon_...`：五組角色圖集；圖示格為 128px。
 - `atlas/AtlasPanelIcon`：面板／陷阱合成圖集；格為 96px，以保持圖集在 2048px 以內。
-- `atlas/AtlasAreaIcon_000_020`：七個城鎮入口圖，保留來源長寬比。
+- `atlas/AtlasAreaIcon_000_020`：84 個入口圖（七張 Wiki 原圖＋77 個門景裁切），均為 207×131；名稱沿用原表，圖集為 2048×2048。
 - `map/<map_id>/lower`、`upper`：關卡上下貼圖。
 - `recovered-images.json`：資源 key、大小、索引、SHA-256、Sprite 矩形、角色映射、來源與限制。
 
 NGUI 使用的像素座標從頂端開始，不能直接套 Unity UV 原點。Alpha 變體圖集共用圖片配接；這不代表已找回原圖集的每個壓縮格式和切圖方式。
 
-舊版裁剪後 `mscorlib` 不保留 `Assembly.GetManifestResourceStream`。因此 `EmbedImages.cs` 將 PNG 嵌入 DLL 的 RVA 欄位，以原遊戲也使用的 `RuntimeHelpers.InitializeArray` 指令按需讀出；不是啟動時把全部圖片建成 Texture2D。原始圖片包約 149 MB，最新 APK 因而約 185 MB。
+舊版裁剪後 `mscorlib` 不保留 `Assembly.GetManifestResourceStream`。因此 `EmbedImages.cs` 將 PNG 嵌入 DLL 的 RVA 欄位，以原遊戲也使用的 `RuntimeHelpers.InitializeArray` 指令按需讀出；不是啟動時把全部圖片建成 Texture2D。圖片包約 154 MB，最新 APK 約 189 MB。
 
 圖片／物件快取在 `ClearTransientAssets` 配合原場景清理釋放非駐留持有關係；不是立刻銷毀仍被場景引用的材質／貼圖。長時間記憶體表現仍需裝置測試。
 
@@ -238,7 +240,7 @@ NGUI 使用的像素座標從頂端開始，不能直接套 Unity UV 原點。Al
 | 原 1.0.6 APK | 由原 APK 提取的 MasterData、Unity Data 及原生程式庫 | 原資料、UI、場景、引擎為主要基礎 |
 | [kennyfong19931/dgdb](https://github.com/kennyfong19931/dgdb) | `artifacts/web-asset-search-2026-10-20/` 的固定 commit 清單與圖片 | 目前大部分恢復圖片的實際來源 |
 | DGDB 完整 checkout | `external/dgdb/`；commit `1a15adf733bb02467d51303a110f361535a7b4bc` | 供查閱，不會自動取代建置清單 |
-| [Divine Gate Wiki](https://divine-gate.fandom.com/) 七個城鎮圖片 | `artifacts/fandom-area-search-2026-10-20/`、`fandom-area-images.json` | 已接入 `area_icon_0001..0007` |
+| [Divine Gate Wiki](https://divine-gate.fandom.com/) 七個城鎮圖片 | `artifacts/fandom-area-search-2026-10-20/`、`fandom-area-images.json` | `area_icon_0001..0007` 保留原 PNG，不以門景裁切取代 |
 | Wiki 完整媒體與頁面備份 | `external/divine-gate-wiki/` | 已保存，尚未整批接入 APK |
 | 原 CDN 的 Wayback 部分 bundle | `artifacts/cdn-investigation-2026-10-20/recovered/` | 已調查與保存，沒有作為 prototype 16 全部角色／地圖的載入來源 |
 | 圖鑑 XAPK | 根目錄及 `artifacts/encyclopedia-audit/` | 來源與覆蓋調查；目前建置不直接載入其 OBB／程式 |
@@ -261,6 +263,8 @@ DGDB 圖片依 `draw_id` 命名，原客戶端資源請求依 `res_chara_id_str`
 ### 7.3 地圖與別名
 
 原表需要 **83 種 `res_map`**，但共用模型包只有 27 種。最新版封裝 86 組上下圖：83 組所需貼圖＋先前依包名保存的額外 3 組。不能以共用模型編號推算目前區域應顯示的門景。
+
+prototype 17 經使用者確認，另外把缺少的選關圖以各區域 `res_map` 的上層門景裁切替代：座標 `(348,108,675,315)`、來源 1024×315、輸出 207×131、Lanczos 縮放。`area_icons.py` 依 `res_map_icon` 分組並檢查共用名稱是否指向同一地圖；76 張門景產生 77 個缺圖 Sprite，七張 Wiki 圖優先保留，合計涵蓋 101 筆有效區域。單圖、裁切座標、來源雜湊與對應關卡記錄於產物 `area-icons/`、`area-icon-manifest.json`。這是明示的替代方案，不是原選關美術復原。
 
 | 原請求名稱 | 備份圖片／來源名 | 限制 |
 | --- | --- | --- |
@@ -351,17 +355,16 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 
 ### 10.1 圖片清單的「缺」要區分版本
 
-原 [priority-image-filenames.txt](artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt) 是歷史 112 項需求。依 prototype 16 的 Sprite 索引比對，已有 28 項以來源圖／相容別名接入，**剩餘 84 項未配接**：
+原 [priority-image-filenames.txt](artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt) 是歷史 112 項需求。prototype 16 有 28 項來源圖／相容別名；prototype 17 再用使用者確認的門景裁切配接 77 個缺失選關圖，**目前共 105 項有顯示配接、剩餘 7 項未配接**：
 
 | 分類 | 數量 | 精確名稱／判定 |
 | --- | ---: | --- |
-| 選關入口圖示 | 77 | 原 84 個 `area_icon_...` 扣掉已補的 `0001..0007`；包含活動入口 |
 | 場地效果圖 | 4 | `heal_happytresure.png`、`heal_moneyup.png`、`heal_removetrap.png`、`heal_torch.png` |
 | 尚無可靠對應 | 3 | `mugen_box.png`、`panel_panic.png`、`panel_weekness.png` |
 
-保留原拼字 `happytresure`、`weekness`。DGDB 的 `icon_heal_happytreasure/moneyup/removetrap/torch.png` 已下載，但只是效果／狀態圖示候選，不直接當成原場地面板。無限迷宮與魔法禁書目錄的入口圖未配接。
+保留原拼字 `happytresure`、`weekness`。DGDB 的 `icon_heal_happytreasure/moneyup/removetrap/torch.png` 已下載，但只是效果／狀態圖示候選，不直接當成原場地面板。無限迷宮與魔法禁書目錄的入口已改用各自的門景裁切；原版獨立入口圖仍未找回。
 
-77 項可由原清單排除 `area_icon_0001..0007` 得到；原清單並非連續整數，例如有 `area_icon_2007_a`、`2007_b`。**不能用 `0008..6003` 連續範圍代替實際清單。** 後來完整 Wiki 備份是否能補更多仍待逐項核對，不能將「已備份」寫成「已接入」。
+77 個裁切配接名稱可由原清單排除 `area_icon_0001..0007` 得到；原清單並非連續整數，例如有 `area_icon_2007_a`、`2007_b`。**不能用 `0008..6003` 連續範圍代替實際清單。** 後來完整 Wiki 備份是否能補更多原圖仍待逐項核對，不能將「已備份」寫成「已接入」。
 
 ### 10.2 其他缺失與限制
 
@@ -518,7 +521,7 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 
 1. 角色分清 `fix_id`、`draw_id`、`res_chara_id_str`，檢查缺值／重複／編號範圍。
 2. 圖集分組不能假定仍每 200 個或只有五組；另查 Alpha 命名與跨圖集搜尋。
-3. 區域用 `res_map` 與入口圖示各自配對，不能用同編號地圖圖冒充選關圖。
+3. 區域用 `res_map` 與入口圖示各自配對；若採 prototype 17 經使用者確認的裁切替代，必須明示來源及裁切，不能冒充原選關美術。
 4. 保留 Alpha、尺寸、來源與裁切證據；JPG 不可自動當成透明立繪。
 5. 只把已確認素材加入輸入清單；相容替代／猜測候選／真正原檔分開標記。
 6. 新版 bundle 不保證舊引擎可讀。可先匯出資料重建；真正模型／動畫移植另查格式、Shader 與掛載關係。
@@ -565,10 +568,11 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 | prototype 14 | 重用原三卡、只補第四張、原 NGUI 階層與註冊 |
 | prototype 15 | 抽卡返回重新啟用造成的第四卡／Collider 殘留 |
 | prototype 16 | 快照前及返回後清除按壓／懸停 Tween，還原正常尺寸 |
+| prototype 17 | 保留七張 Wiki 圖，其餘 77 個選關圖示以各區域門景裁切替代 |
 
 延伸證據：
 
-- [目前使用說明](offline/README.md)、[prototype 16 交付報告](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)。
+- [目前使用說明](offline/README.md)、[prototype 17 交付報告](artifacts/1.0.6-offline-prototype17-area-map-crops-wiki-preserved/README.md)。
 - [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
 - [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。
