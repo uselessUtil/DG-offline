@@ -189,6 +189,10 @@ public static class Patch106
         il.InsertBefore(first, Instruction.Create(OpCodes.Ret));
         var setup = Method("MainMenuSeqGachaRoot", "PageSwitchSetting");
         il = setup.Body.GetILProcessor();
+        var firstSetup = setup.Body.Instructions.First();
+        il.InsertBefore(firstSetup, Instruction.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(firstSetup, Instruction.Create(OpCodes.Ldarg_1));
+        il.InsertBefore(firstSetup, Instruction.Create(OpCodes.Call, Helper("BeforeCollabRootRefresh")));
         foreach (var end in setup.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToArray())
         {
             end.OpCode = OpCodes.Ldarg_0;

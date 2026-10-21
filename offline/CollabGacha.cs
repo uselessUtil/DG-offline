@@ -14,6 +14,42 @@ public static partial class DivineGateOffline
     private static BoxCollider collabBackCollider;
     private static bool collabSelecting;
     private static string collabOriginalTitle;
+    private static Vector3 collabOriginalGroupPosition;
+    private static CollabCardView[] collabOriginalCards;
+
+    private sealed class CollabCardView
+    {
+        public GameObject root;
+        public Vector3 position, scale, labelScale, hintPosition, hintScale;
+        public string label, hint, sprite;
+        public UIAtlas atlas;
+        public bool hintActive, countActive;
+
+        public void Capture(GameObject card)
+        {
+            root = card; position = card.transform.localPosition; scale = card.transform.localScale;
+            GameObject labelNode = UnityUtil.GetChildNode(card, "ElementLabel");
+            GameObject hintNode = UnityUtil.GetChildNode(card, "ElementHint");
+            labelScale = labelNode.transform.localScale; label = labelNode.GetComponent<UILabel>().text;
+            hintPosition = hintNode.transform.localPosition; hintScale = hintNode.transform.localScale;
+            hint = hintNode.GetComponent<UILabel>().text; hintActive = hintNode.activeSelf;
+            countActive = UnityUtil.GetChildNode(card, "CountMark").activeSelf;
+            UISprite image = UnityUtil.GetChildNode(card, "ElementObj").GetComponent<UISprite>();
+            atlas = image.atlas; sprite = image.spriteName;
+        }
+
+        public void Restore()
+        {
+            root.transform.localPosition = position; root.transform.localScale = scale;
+            GameObject labelNode = UnityUtil.GetChildNode(root, "ElementLabel");
+            GameObject hintNode = UnityUtil.GetChildNode(root, "ElementHint");
+            labelNode.transform.localScale = labelScale; UnityUtil.SetUILabelValue(labelNode, label);
+            hintNode.transform.localPosition = hintPosition; hintNode.transform.localScale = hintScale;
+            UnityUtil.SetUILabelValue(hintNode, hint); hintNode.SetActive(hintActive);
+            UnityUtil.GetChildNode(root, "CountMark").SetActive(countActive);
+            UnityUtil.SetUIAtlasSprite(UnityUtil.GetChildNode(root, "ElementObj"), atlas, sprite);
+        }
+    }
 
     public static uint CollabPoolID(int index)
     {
@@ -67,76 +103,116 @@ public static partial class DivineGateOffline
 
     private static void SetCollabMode(bool selecting)
     {
-        collabSelecting = selecting;
-        UnityUtil.SetObjectEnabled(UnityUtil.GetChildNode(collabOwner.gameObject, "GachaType3"), !selecting);
-        UnityUtil.SetObjectEnabled(UnityUtil.GetChildNode(collabOwner.gameObject, "ListObject"), !selecting);
-        UnityUtil.SetObjectEnabled(collabChoices, selecting);
-        if (collabBackCollider != null)
+        if (selecting == collabSelecting) return;
+        if (selecting)
         {
-            collabBackCollider.enabled = selecting;
+            collabOriginalGroupPosition = collabChoices.transform.localPosition;
+            collabChoices.transform.localPosition = new Vector3(0, 0, collabOriginalGroupPosition.z);
+            for (int i = 0; i < 3; i++) collabOriginalCards[i].Capture(collabCards[i]);
+            for (int i = 0; i < collabCards.Length; i++) SetupCollabCard(collabCards[i], i);
         }
-        UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(collabOwner.gameObject, "PageTitleLabel"), (!selecting) ? collabOriginalTitle : "Collab Scratch");
+        else
+        {
+            for (int i = 0; i < 3; i++) collabOriginalCards[i].Restore();
+            collabCards[3].SetActive(false);
+            collabChoices.transform.localPosition = collabOriginalGroupPosition;
+        }
+        collabSelecting = selecting;
+        // Keep the three original visible cards in their original hierarchy.
+        // Hiding GachaType3 would also hide this selector.
+        UnityUtil.SetObjectEnabled(UnityUtil.GetChildNode(collabOwner.gameObject, "ListObject"), !selecting);
+        if (collabBackCollider != null) collabBackCollider.enabled = selecting;
+        UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(collabOwner.gameObject, "PageTitleLabel"),
+            selecting ? "Collab Scratch" : collabOriginalTitle);
+        Debug.Log("[DG offline] Collab selector " + (selecting ? "open: original 3 cards + fourth, native hierarchy" : "closed: original scratch restored"));
     }
 
+    private static void BindCollabWidgets(GameObject root, int layer)
+    {
+        root.layer = layer;
+        UIWidget widget = root.GetComponent<UIWidget>();
+        if (widget != null)
+        {
+            widget.enabled = true;
+            widget.alpha = 1;
+            widget.ParentHasChanged();
+            widget.CreatePanel();
+        }
+        for (int i = 0; i < root.transform.GetChildCount(); i++)
+            BindCollabWidgets(root.transform.GetChild(i).gameObject, layer);
+    }
+
+    private static void SetupCollabCard(GameObject card, int index)
+    {
+        card.transform.localPosition = CollabChoicePosition(index);
+        card.transform.localScale = new Vector3(1, 1, 1);
+        UIPanel panel = UIPanel.Find(collabChoices.transform, false);
+        int layer = panel != null ? panel.gameObject.layer : collabChoices.layer;
+        UnityUtil.SetObjectLayer(card, layer);
+        UnityUtil.SetObjectEnabled(card, true);
+        GameObject label = UnityUtil.GetChildNode(card, "ElementLabel");
+        label.transform.localScale = new Vector3(20, 20, 1);
+        UnityUtil.SetUILabelValue(label, collabCardNames[index]);
+        GameObject hint = UnityUtil.GetChildNode(card, "ElementHint");
+        hint.transform.localPosition = new Vector3(-70, 90, -100);
+        hint.transform.localScale = new Vector3(19, 19, 1);
+        UnityUtil.SetUILabelValue(hint, "5 chips / draw");
+        UnityUtil.SetUIAtlasSprite(UnityUtil.GetChildNode(card, "ElementObj"),
+            Singleton<SceneObjReferMainMenu>.Instance.m_MainMenuAtlasGacha, "gacha_event");
+        BindCollabWidgets(card, layer);
+        UnityUtil.GetChildNode(card, "CountMark").SetActive(false);
+    }
 
     private static bool CreateCollabSelector(MainMenuSeqGachaRoot page)
     {
-        if (collabOwner == page && collabChoices != null)
-        {
-            return true;
-        }
-        GameObject childNode = UnityUtil.GetChildNode(page.gameObject, "Element02");
-        GameObject childNode2 = UnityUtil.GetChildNode(page.gameObject, "PageRoot");
-        GameObject childNode3 = UnityUtil.GetChildNode(page.gameObject, "PageTitle");
-        GameObject childNode4 = UnityUtil.GetChildNode(page.gameObject, "PageTitleLabel");
-        if (childNode == null || childNode2 == null || childNode3 == null || childNode4 == null || childNode.GetComponent<BoxCollider>() == null)
-        {
-            return false;
-        }
+        if (collabOwner == page && collabChoices != null) return true;
+        GameObject source = UnityUtil.GetChildNode(page.gameObject, "Element02");
+        GameObject parent = UnityUtil.GetChildNode(page.gameObject, "GachaType3");
+        GameObject title = UnityUtil.GetChildNode(page.gameObject, "PageTitle");
+        GameObject titleLabel = UnityUtil.GetChildNode(page.gameObject, "PageTitleLabel");
+        if (source == null || parent == null || title == null || titleLabel == null ||
+            source.GetComponent<BoxCollider>() == null) return false;
         collabOwner = page;
-        collabOriginalTitle = childNode4.GetComponent<UILabel>().text;
-        collabChoices = new GameObject("DG offline collab pool choices");
-        collabChoices.transform.parent = childNode2.transform;
-        collabChoices.transform.localPosition = new Vector3(0f, 0f, -200f);
-        collabChoices.transform.localScale = new Vector3(1f, 1f, 1f);
+        collabSelecting = false;
+        collabOriginalTitle = titleLabel.GetComponent<UILabel>().text;
+        collabChoices = parent;
         collabCards = new GameObject[collabPoolIDs.Length];
-        for (int i = 0; i < collabCards.Length; i++)
+        collabOriginalCards = new CollabCardView[3];
+        for (int i = 0; i < 3; i++)
         {
-            GameObject gameObject = Object.Instantiate(childNode) as GameObject;
-            gameObject.name = "DG collab pool " + collabPoolIDs[i];
-            gameObject.transform.parent = collabChoices.transform;
-            gameObject.transform.localPosition = CollabChoicePosition(i);
-            gameObject.transform.localScale = new Vector3(1f, 1f, 1f);
-            collabCards[i] = gameObject;
-            UnityUtil.SetObjectEnabled(gameObject, true);
-            UnityUtil.SetObjectEnabled(UnityUtil.GetChildNode(gameObject, "CountMark"), false);
-            GameObject childNode5 = UnityUtil.GetChildNode(gameObject, "ElementLabel");
-            childNode5.transform.localScale = new Vector3(20f, 20f, 1f);
-            UnityUtil.SetUILabelValue(childNode5, collabCardNames[i]);
-            GameObject childNode6 = UnityUtil.GetChildNode(gameObject, "ElementHint");
-            UnityUtil.SetObjectEnabled(childNode6, true);
-            childNode6.transform.localPosition = new Vector3(-70f, 90f, -100f);
-            childNode6.transform.localScale = new Vector3(19f, 19f, 1f);
-            UnityUtil.SetUILabelValue(childNode6, "5 chips / draw");
-            UnityUtil.SetUIAtlasSprite(UnityUtil.GetChildNode(gameObject, "ElementObj"), Singleton<SceneObjReferMainMenu>.Instance.m_MainMenuAtlasGacha, "gacha_event");
+            collabCards[i] = UnityUtil.GetChildNode(parent, "Element0" + i);
+            if (collabCards[i] == null) return false;
+            collabOriginalCards[i] = new CollabCardView();
         }
-        collabBackCollider = childNode3.GetComponent<BoxCollider>();
-        if (collabBackCollider == null)
-        {
-            collabBackCollider = childNode3.AddComponent<BoxCollider>();
-        }
-        collabBackCollider.size = new Vector3(1f, 1f, 1f);
-        collabBackCollider.center = new Vector3(0.5f, 0f, 0f);
+        // Instantiate while inactive; assign the parent and layer before any
+        // cloned widget can register itself with an unrelated temporary panel.
+        bool sourceActive = source.activeSelf;
+        source.SetActive(false);
+        GameObject fourth;
+        try { fourth = Object.Instantiate(source) as GameObject; }
+        finally { source.SetActive(sourceActive); }
+        fourth.name = "DG collab pool 300400";
+        fourth.transform.parent = parent.transform;
+        fourth.transform.localRotation = source.transform.localRotation;
+        UnityUtil.SetObjectLayer(fourth, source.layer);
+        fourth.SetActive(false);
+        collabCards[3] = fourth;
+        collabBackCollider = title.GetComponent<BoxCollider>();
+        if (collabBackCollider == null) collabBackCollider = title.AddComponent<BoxCollider>();
+        collabBackCollider.size = new Vector3(1, 1, 1);
+        collabBackCollider.center = new Vector3(.5f, 0, 0);
         collabBackCollider.enabled = false;
-        collabChoices.SetActive(false);
         return true;
     }
 
+    public static void BeforeCollabRootRefresh(MainMenuSeqGachaRoot page, bool active)
+    {
+        if (active && collabOwner == page && collabSelecting) SetCollabMode(false);
+    }
 
     public static void RefreshCollabRoot(MainMenuSeqGachaRoot page, bool active)
     {
         if (!active) return;
-        if (collabOwner == page && collabChoices != null) SetCollabMode(false);
         GameObject entry = UnityUtil.GetChildNode(page.gameObject, "Element02");
         UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(entry, "ElementLabel"), "コラボ選択");
         GameObject hint = UnityUtil.GetChildNode(entry, "ElementHint");

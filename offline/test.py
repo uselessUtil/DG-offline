@@ -121,6 +121,8 @@ def main():
     for mode in [[], ['reload']]:
         collab_test += subprocess.check_output(['mono',str(test/'VerifyCollabGacha.exe'),*mode],
             env=collab_env,text=True,timeout=45)
+    from verify_collab_prefab import verify as verify_collab_prefab
+    collab_test += verify_collab_prefab(artifact, args.report.parent)
     print(collab_test)
     (args.report.parent/'collab-gacha-tests.txt').write_text(collab_test)
     report['collab_gacha_tests'] = collab_test.strip()

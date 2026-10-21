@@ -28,6 +28,25 @@ public static class VerifyCollabHooks
         foreach (var end in root.Methods.Single(m => m.Name == "PageSwitchSetting").Body.Instructions.Where(i => i.OpCode == OpCodes.Ret))
             if (!(end.Previous.Operand is MethodReference) || ((MethodReference)end.Previous.Operand).Name != "RefreshCollabRoot")
                 throw new Exception("Return to Scratch does not reset selector mode");
+        var setup = root.Methods.Single(m => m.Name == "PageSwitchSetting").Body.Instructions;
+        if (!(setup[2].Operand is MethodReference) || ((MethodReference)setup[2].Operand).Name != "BeforeCollabRootRefresh")
+            throw new Exception("Original card appearance must restore before the normal page refresh");
+        var runtime = adapter.Types.Single(t => t.Name == "DivineGateOffline");
+        var create = runtime.Methods.Single(m => m.Name == "CreateCollabSelector").Body.Instructions;
+        if (create.Any(i => i.OpCode == OpCodes.Newobj && ((MethodReference)i.Operand).DeclaringType.Name == "GameObject") ||
+            !create.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "GachaType3") ||
+            !create.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "Element0"))
+            throw new Exception("Selector must reuse the original three cards and parent, not a new container");
+        var createCalls = create.Where(i => i.Operand is MethodReference).Select(i => (MethodReference)i.Operand).ToArray();
+        if (createCalls.Count(m => m.Name == "Instantiate") != 1)
+            throw new Exception("Only the fourth card may be cloned");
+        var bind = runtime.Methods.Single(m => m.Name == "BindCollabWidgets").Body.Instructions;
+        foreach (string name in new[] { "set_layer", "set_enabled", "set_alpha", "ParentHasChanged", "CreatePanel" })
+            if (!bind.Any(i => i.Operand is MethodReference && ((MethodReference)i.Operand).Name == name))
+                throw new Exception("Missing explicit native widget registration " + name);
+        var mode = runtime.Methods.Single(m => m.Name == "SetCollabMode").Body.Instructions;
+        if (mode.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "GachaType3"))
+            throw new Exception("Selector must not hide its original card parent");
         // Confirmation and scratching are still the original instructions.
         foreach (var type in new[] { "MainMenuSeqGachaConfirm", "MainMenuSeqGachaMain" })
         {
