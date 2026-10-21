@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 1";
+    public const string Build = "1.0.6 offline prototype 2";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -276,6 +276,9 @@ public static partial class DivineGateOffline
         if (name.ToLower().IndexOf("mesh") >= 0)
         {
             GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            // A primitive cube includes a collider. Its top sits above the original
+            // GoalCollision and intercepts the ray intended for the boss entrance.
+            Object.Destroy(floor.GetComponent<Collider>());
             floor.transform.parent = root.transform;
             Material material = new Material(FlatShader());
             floor.transform.localPosition = new Vector3(0, -.1f, 0);
@@ -283,6 +286,18 @@ public static partial class DivineGateOffline
             floor.renderer.sharedMaterial = material;
         }
         return root;
+    }
+
+    public static void TraceDoorInput(InGameManager game)
+    {
+        Input3DManager input = Input3DManager.Instance;
+        if (input == null || !input.m_TouchInputTriger || !game.m_AcquireKey) return;
+        GameObject hit = input.m_TouchObject;
+        SceneObjReferGameMain scene = Singleton<SceneObjReferGameMain>.Instance;
+        Debug.Log("[DG offline] Door input: hit=" + (hit == null ? "none" : hit.name) +
+            " goal=" + (scene != null && hit == scene.m_MapGoalCollision) +
+            " cell=" + game.m_PlayerCellX + "," + game.m_PlayerCellZ +
+            " keyDisplayed=" + game.m_AcquireKeyDisplayed + " moveChain=" + game.m_PlayerMoveChain);
     }
 
     public static AssetBundleResource Request(string bundle, string name, ASSETBUNDLE_TAG tag, Type type)
@@ -331,7 +346,7 @@ public static partial class DivineGateOffline
         GUI.Label(new Rect(8, 2, Screen.width - 16, 26), "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 1");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 2");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 "Local account / save. No original server.\nMissing downloaded art uses numbered placeholders.\nAndroid gameplay verification is pending.");
             if (GUI.Button(new Rect(24, 145, 160, 36), "Continue")) showNotice = false;

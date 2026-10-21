@@ -115,6 +115,11 @@ public static class Patch106
             Reset(method).Emit(OpCodes.Ret);
         // Prevent the title from showing an unusable sign-in button.
         Boolean("PlayGameServiceUtil", "isSignedIn", true);
+        var touchCell = Method("InGameManager", "GetTouchCell");
+        var firstTouch = touchCell.Body.Instructions.First();
+        var touchIL = touchCell.Body.GetILProcessor();
+        touchIL.InsertBefore(firstTouch, Instruction.Create(OpCodes.Ldarg_0));
+        touchIL.InsertBefore(firstTouch, Instruction.Create(OpCodes.Call, Helper("TraceDoorInput")));
         var getSprite = Method("UIAtlas", "GetSprite");
         var first = getSprite.Body.Instructions.First();
         var spriteIL = getSprite.Body.GetILProcessor();
