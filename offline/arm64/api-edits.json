@@ -1,0 +1,817 @@
+[
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIAnchor.cs",
+    "before": "\t\tmAnim = base.animation;",
+    "after": "\t\tmAnim = base.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIAnchor.cs",
+    "before": "\t\tmNeedsHalfPixelOffset = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsWebPlayer || Application.platform == RuntimePlatform.WindowsEditor;",
+    "after": "\t\tmNeedsHalfPixelOffset = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == Arm64Compatibility.WindowsWebPlayer || Application.platform == RuntimePlatform.WindowsEditor;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MeshBattleReach.cs",
+    "before": "\t\tbase.gameObject.renderer.material = new Material(m_Atlas.spriteMaterial);",
+    "after": "\t\tbase.gameObject.GetComponent<Renderer>().material = new Material(m_Atlas.spriteMaterial);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/TweenVolume.cs",
+    "before": "\t\t\t\tmSource = base.audio;",
+    "after": "\t\t\t\tmSource = base.GetComponent<AudioSource>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIViewport.cs",
+    "before": "\t\tmCam = base.camera;",
+    "after": "\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuManager.cs",
+    "before": "\t\t\tm_MainMenuPageParam[(int)eMainMenuSeq].m_MainMenuSeq = m_MainMenuPageParam[(int)eMainMenuSeq].m_GameObject.AddComponent(m_MainMenuPageParam[(int)eMainMenuSeq].m_OriginComponent.Name) as MainMenuSeq;",
+    "after": "\t\t\tm_MainMenuPageParam[(int)eMainMenuSeq].m_MainMenuSeq = m_MainMenuPageParam[(int)eMainMenuSeq].m_GameObject.AddComponentByName(m_MainMenuPageParam[(int)eMainMenuSeq].m_OriginComponent.Name) as MainMenuSeq;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIOrthoCamera.cs",
+    "before": "\t\tmCam = base.camera;",
+    "after": "\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIStretch.cs",
+    "before": "\t\tmAnim = base.animation;",
+    "after": "\t\tmAnim = base.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIScrollBar.cs",
+    "before": "\t\t\t\tif (mBG.collider != null)",
+    "after": "\t\t\t\tif (mBG.GetComponent<Collider>() != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIScrollBar.cs",
+    "before": "\t\t\t\tif (mFG.collider != null)",
+    "after": "\t\t\t\tif (mFG.GetComponent<Collider>() != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InvEquipment.cs",
+    "before": "\t\t\t\t\tRenderer renderer = gameObject.renderer;",
+    "after": "\t\t\t\t\tRenderer renderer = gameObject.GetComponent<Renderer>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIScrollBar.cs",
+    "before": "\t\tif (background != null && background.collider != null)",
+    "after": "\t\tif (background != null && background.GetComponent<Collider>() != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIScrollBar.cs",
+    "before": "\t\tif (foreground != null && foreground.collider != null)",
+    "after": "\t\tif (foreground != null && foreground.GetComponent<Collider>() != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIDraggableCamera.cs",
+    "before": "\t\tmCam = base.camera;",
+    "after": "\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugPartyOffset.cs",
+    "before": "\t\t\tm_CharaMaterial[0] = m_LinkerObject[2].renderer.materials[0];",
+    "after": "\t\t\tm_CharaMaterial[0] = m_LinkerObject[2].GetComponent<Renderer>().materials[0];"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugPartyOffset.cs",
+    "before": "\t\t\tm_CharaMaterial[1] = m_LinkerObject[3].renderer.materials[0];",
+    "after": "\t\t\tm_CharaMaterial[1] = m_LinkerObject[3].GetComponent<Renderer>().materials[0];"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugPartyOffset.cs",
+    "before": "\t\t\tm_CharaMaterial[2] = m_LinkerObject[4].renderer.materials[0];",
+    "after": "\t\t\tm_CharaMaterial[2] = m_LinkerObject[4].GetComponent<Renderer>().materials[0];"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugPartyOffset.cs",
+    "before": "\t\t\tm_CharaMaterial[3] = m_LinkerObject[5].renderer.materials[0];",
+    "after": "\t\t\tm_CharaMaterial[3] = m_LinkerObject[5].GetComponent<Renderer>().materials[0];"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugPartyOffset.cs",
+    "before": "\t\t\tm_CharaMaterial[4] = m_LinkerObject[6].renderer.materials[0];",
+    "after": "\t\t\tm_CharaMaterial[4] = m_LinkerObject[6].GetComponent<Renderer>().materials[0];"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\tif (obj.renderer.material == null)",
+    "after": "\t\tif (obj.GetComponent<Renderer>().material == null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\tobj.renderer.material.mainTexture = atlas.texture;",
+    "after": "\t\tobj.GetComponent<Renderer>().material.mainTexture = atlas.texture;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\tobj.renderer.material.mainTextureOffset = mainTextureOffset;",
+    "after": "\t\tobj.GetComponent<Renderer>().material.mainTextureOffset = mainTextureOffset;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\tobj.renderer.material.mainTextureScale = mainTextureScale;",
+    "after": "\t\tobj.GetComponent<Renderer>().material.mainTextureScale = mainTextureScale;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/SceneMode.cs",
+    "before": "\t\t\tInputParam.m_CameraDialog = Singleton<SceneObjReferResident>.Instance.m_GameObjDialogCamera.camera;",
+    "after": "\t\t\tInputParam.m_CameraDialog = Singleton<SceneObjReferResident>.Instance.m_GameObjDialogCamera.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/SceneMode.cs",
+    "before": "\t\t\tInputParam.m_CameraTutorial = Singleton<TutorialManager>.Instance.m_TutorialCamera.camera;",
+    "after": "\t\t\tInputParam.m_CameraTutorial = Singleton<TutorialManager>.Instance.m_TutorialCamera.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqDebugCharaCutin.cs",
+    "before": "\t\t\tm_CharaMaterial = childNode.renderer.material;",
+    "after": "\t\t\tm_CharaMaterial = childNode.GetComponent<Renderer>().material;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UnityUtil.cs",
+    "before": "\t\t\tcomponent = cObj.AddComponent(strComponentName);",
+    "after": "\t\t\tcomponent = cObj.AddComponentByName(strComponentName);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UICursor.cs",
+    "before": "\t\t\tif (uiCamera.isOrthoGraphic)",
+    "after": "\t\t\tif (uiCamera.orthographic)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UISlider.cs",
+    "before": "\t\tmCol = base.collider as BoxCollider;",
+    "after": "\t\tmCol = base.GetComponent<Collider>() as BoxCollider;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UISlider.cs",
+    "before": "\t\tif (Application.isPlaying && thumb != null && thumb.collider != null)",
+    "after": "\t\tif (Application.isPlaying && thumb != null && thumb.GetComponent<Collider>() != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaTexture.cs",
+    "before": "\t\t\t\tif (base.gameObject.renderer.material != null)",
+    "after": "\t\t\t\tif (base.gameObject.GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaTexture.cs",
+    "before": "\t\t\t\t\tbase.gameObject.renderer.material.SetTexture(\"_MainTex\", texture2D);",
+    "after": "\t\t\t\t\tbase.gameObject.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", texture2D);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaTexture.cs",
+    "before": "\t\t\t\t\tTexture2D texture2D2 = base.gameObject.renderer.material.GetTexture(\"_MainTex\") as Texture2D;",
+    "after": "\t\t\t\t\tTexture2D texture2D2 = base.gameObject.GetComponent<Renderer>().material.GetTexture(\"_MainTex\") as Texture2D;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\t\t\tAnimation animation = Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceComboFinishAnim.animation;",
+    "after": "\t\t\t\tAnimation animation = Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceComboFinishAnim.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameUtil.cs",
+    "before": "\t\t\tAnimation animation = uIInstanceComboFinishAnim.animation;",
+    "after": "\t\t\tAnimation animation = uIInstanceComboFinishAnim.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UITextList.cs",
+    "before": "\t\tCollider collider = base.collider;",
+    "after": "\t\tCollider collider = base.GetComponent<Collider>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/TweenColor.cs",
+    "before": "\t\tRenderer renderer = base.renderer;",
+    "after": "\t\tRenderer renderer = base.GetComponent<Renderer>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/TweenColor.cs",
+    "before": "\t\tmLight = base.light;",
+    "after": "\t\tmLight = base.GetComponent<Light>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/LayoutSwitchManager.cs",
+    "before": "\t\t\tlayoutSwitchObj.m_LayoutSwitchSeq = layoutSwitchObj.m_LayoutGameObj.AddComponent(cComponentType.Name) as LayoutSwitchSeq;",
+    "after": "\t\t\tlayoutSwitchObj.m_LayoutSwitchSeq = layoutSwitchObj.m_LayoutGameObj.AddComponentByName(cComponentType.Name) as LayoutSwitchSeq;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/LayoutSwitchManager.cs",
+    "before": "\t\t\tlayoutSwitchObj.m_LayoutSwitchSeq = layoutSwitchObj.m_LayoutGameObj.AddComponent(layoutSwitchObj.m_OriginComponent.Name) as LayoutSwitchSeq;",
+    "after": "\t\t\tlayoutSwitchObj.m_LayoutSwitchSeq = layoutSwitchObj.m_LayoutGameObj.AddComponentByName(layoutSwitchObj.m_OriginComponent.Name) as LayoutSwitchSeq;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/SoundManager.cs",
+    "before": "\t\t\t\tbase.audio.volume = 0f;",
+    "after": "\t\t\t\tbase.GetComponent<AudioSource>().volume = 0f;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/SoundManager.cs",
+    "before": "\t\t\t\tbase.audio.volume = 1f;",
+    "after": "\t\t\t\tbase.GetComponent<AudioSource>().volume = 1f;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/TweenOrthoSize.cs",
+    "before": "\t\t\t\tmCam = base.camera;",
+    "after": "\t\t\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/SoundManager.cs",
+    "before": "\t\t\tbase.audio.PlayOneShot(m_SoundAudioClip[nSoundLabel]);",
+    "after": "\t\t\tbase.GetComponent<AudioSource>().PlayOneShot(m_SoundAudioClip[nSoundLabel]);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MeshInGameFoot.cs",
+    "before": "\t\tbase.gameObject.renderer.material = new Material(component.spriteMaterial);",
+    "after": "\t\tbase.gameObject.GetComponent<Renderer>().material = new Material(component.spriteMaterial);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UICamera.cs",
+    "before": "\t\t\t\tmCam = base.camera;",
+    "after": "\t\t\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaMesh.cs",
+    "before": "\t\t\tm_AssetBundleObjectShadow.renderer.material = null;",
+    "after": "\t\t\tm_AssetBundleObjectShadow.GetComponent<Renderer>().material = null;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawAcquireManager.cs",
+    "before": "\t\tm_AcquireMsgAnim[num] = gameObject.animation;",
+    "after": "\t\tm_AcquireMsgAnim[num] = gameObject.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaMesh.cs",
+    "before": "\t\t\t\tm_AssetBundleObjectShadow.renderer.material = null;",
+    "after": "\t\t\t\tm_AssetBundleObjectShadow.GetComponent<Renderer>().material = null;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaMesh.cs",
+    "before": "\t\t\t\t\tTexture2D texture2D = m_AssetBundleObject.renderer.material.GetTexture(\"_MainTex\") as Texture2D;",
+    "after": "\t\t\t\t\tTexture2D texture2D = m_AssetBundleObject.GetComponent<Renderer>().material.GetTexture(\"_MainTex\") as Texture2D;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetAutoSetCharaMesh.cs",
+    "before": "\t\t\t\t\t\tm_AssetBundleObjectShadow.renderer.material = Object.Instantiate(material) as Material;",
+    "after": "\t\t\t\t\t\tm_AssetBundleObjectShadow.GetComponent<Renderer>().material = Object.Instantiate(material) as Material;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIPanel.cs",
+    "before": "\t\tif (platform == RuntimePlatform.WindowsPlayer || platform == RuntimePlatform.WindowsWebPlayer || platform == RuntimePlatform.WindowsEditor)",
+    "after": "\t\tif (platform == RuntimePlatform.WindowsPlayer || platform == Arm64Compatibility.WindowsWebPlayer || platform == RuntimePlatform.WindowsEditor)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/Spin.cs",
+    "before": "\t\tmRb = base.rigidbody;",
+    "after": "\t\tmRb = base.GetComponent<Rigidbody>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillIcon.cs",
+    "before": "\t\t\tanimation = m_SkillIconGameObjAnim.animation;",
+    "after": "\t\t\tanimation = m_SkillIconGameObjAnim.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillIcon.cs",
+    "before": "\t\tif (m_SkillIconGameObjAnim.animation == null)",
+    "after": "\t\tif (m_SkillIconGameObjAnim.GetComponent<Animation>() == null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillIcon.cs",
+    "before": "\t\treturn m_SkillIconGameObjAnim.animation.isPlaying;",
+    "after": "\t\treturn m_SkillIconGameObjAnim.GetComponent<Animation>().isPlaying;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGamePanelAnim.cs",
+    "before": "\t\tm_PanelAnimation = base.gameObject.animation;",
+    "after": "\t\tm_PanelAnimation = base.gameObject.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\tif (childNode != null && childNode.renderer.material != null)",
+    "after": "\t\t\tif (childNode != null && childNode.GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTextureOffset(\"_MainTex\", offset);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureOffset(\"_MainTex\", offset);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTextureScale(\"_MainTex\", scale);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureScale(\"_MainTex\", scale);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTexture(\"_MainTex\", texture);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", texture);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillIcon.cs",
+    "before": "\t\tAnimation animation = m_SkillIconGameObjAnim.animation;",
+    "after": "\t\tAnimation animation = m_SkillIconGameObjAnim.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\tif (childNode != null && childNode.renderer.material != null)",
+    "after": "\t\t\t\tif (childNode != null && childNode.GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTextureOffset(\"_MainTex\", offset);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureOffset(\"_MainTex\", offset);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTextureScale(\"_MainTex\", scale);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureScale(\"_MainTex\", scale);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqPartyBuildUpResult.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTexture(\"_MainTex\", texture);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", texture);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tm_GameObjCard[l].panelF.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;",
+    "after": "\t\t\tm_GameObjCard[l].panelF.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tm_GameObjCard[l].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelBlank;",
+    "after": "\t\t\tm_GameObjCard[l].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelBlank;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/NGUITools.cs",
+    "before": "\tpublic static bool fileAccess => Application.platform != RuntimePlatform.WindowsWebPlayer && Application.platform != RuntimePlatform.OSXWebPlayer;",
+    "after": "\tpublic static bool fileAccess => Application.platform != Arm64Compatibility.WindowsWebPlayer && Application.platform != Arm64Compatibility.OSXWebPlayer;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/NGUITools.cs",
+    "before": "\t\t\t\tAudioSource audioSource = mListener.audio;",
+    "after": "\t\t\t\tAudioSource audioSource = mListener.GetComponent<AudioSource>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\tm_GameObjPlayerAnim = childNode.animation;",
+    "after": "\t\tm_GameObjPlayerAnim = childNode.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\tif (childNode != null && childNode.renderer.material != null)",
+    "after": "\t\t\tif (childNode != null && childNode.GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTextureOffset(\"_MainTex\", offset);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureOffset(\"_MainTex\", offset);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTextureScale(\"_MainTex\", scale);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureScale(\"_MainTex\", scale);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\tchildNode.renderer.material.SetTexture(\"_MainTex\", texture);",
+    "after": "\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", texture);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\tif (childNode != null && childNode.renderer.material != null)",
+    "after": "\t\t\t\tif (childNode != null && childNode.GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTextureOffset(\"_MainTex\", offset);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureOffset(\"_MainTex\", offset);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTextureScale(\"_MainTex\", scale);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTextureScale(\"_MainTex\", scale);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuSeqResultEvol.cs",
+    "before": "\t\t\t\t\t\tchildNode.renderer.material.SetTexture(\"_MainTex\", texture);",
+    "after": "\t\t\t\t\t\tchildNode.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", texture);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BannerSetting.cs",
+    "before": "\t\t\t\tm_BannerObj.renderer.material.SetTexture(\"_MainTex\", cWWW.texture);",
+    "after": "\t\t\t\tm_BannerObj.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", cWWW.texture);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BannerSetting.cs",
+    "before": "\t\t\tm_BannerObj.renderer.material.SetTexture(\"_MainTex\", Resources.Load(\"CardDM/Banner/DG_Banner\") as Texture2D);",
+    "after": "\t\t\tm_BannerObj.GetComponent<Renderer>().material.SetTexture(\"_MainTex\", Resources.Load(\"CardDM/Banner/DG_Banner\") as Texture2D);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIButtonColor.cs",
+    "before": "\t\t\tRenderer renderer = tweenTarget.renderer;",
+    "after": "\t\t\tRenderer renderer = tweenTarget.GetComponent<Renderer>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIButtonColor.cs",
+    "before": "\t\t\t\tLight light = tweenTarget.light;",
+    "after": "\t\t\t\tLight light = tweenTarget.GetComponent<Light>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DragDropItem.cs",
+    "before": "\t\t\tCollider collider = base.collider;",
+    "after": "\t\t\tCollider collider = base.GetComponent<Collider>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[0].renderer.material.color = color6;",
+    "after": "\t\t\t\tm_LinkerObject[0].GetComponent<Renderer>().material.color = color6;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[1].renderer.material.color = color6;",
+    "after": "\t\t\t\tm_LinkerObject[1].GetComponent<Renderer>().material.color = color6;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[2].renderer.material.color = color;",
+    "after": "\t\t\t\tm_LinkerObject[2].GetComponent<Renderer>().material.color = color;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[3].renderer.material.color = color4;",
+    "after": "\t\t\t\tm_LinkerObject[3].GetComponent<Renderer>().material.color = color4;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[4].renderer.material.color = color3;",
+    "after": "\t\t\t\tm_LinkerObject[4].GetComponent<Renderer>().material.color = color3;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[5].renderer.material.color = color2;",
+    "after": "\t\t\t\tm_LinkerObject[5].GetComponent<Renderer>().material.color = color2;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\t\tm_LinkerObject[6].renderer.material.color = color5;",
+    "after": "\t\t\t\tm_LinkerObject[6].GetComponent<Renderer>().material.color = color5;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/NGUIMath.cs",
+    "before": "\t\tif (platform == RuntimePlatform.WindowsPlayer || platform == RuntimePlatform.WindowsWebPlayer || platform == RuntimePlatform.WindowsEditor)",
+    "after": "\t\tif (platform == RuntimePlatform.WindowsPlayer || platform == Arm64Compatibility.WindowsWebPlayer || platform == RuntimePlatform.WindowsEditor)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.animation.Play(\"TitleSlide_00_in\");",
+    "after": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.GetComponent<Animation>().Play(\"TitleSlide_00_in\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\tif (Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceBackScreen.animation.isPlaying)",
+    "after": "\t\tif (Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceBackScreen.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceBackScreen.animation.Play(\"UIanimBattleFieldEnd\");",
+    "after": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceBackScreen.GetComponent<Animation>().Play(\"UIanimBattleFieldEnd\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.animation.Play(\"TitleSlide_00_out\");",
+    "after": "\t\t\tSingleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.GetComponent<Animation>().Play(\"TitleSlide_00_out\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\tif (Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.animation.isPlaying)",
+    "after": "\t\tif (Singleton<SceneObjReferGameMain>.Instance.m_UIInstanceLeaderSkill.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\tif (m_ProgressGetKey == null || m_ProgressGetKey.animation == null)",
+    "after": "\t\tif (m_ProgressGetKey == null || m_ProgressGetKey.GetComponent<Animation>() == null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\t\tm_ProgressGetKey.animation.Play(\"ProgressGetKeyIn\");",
+    "after": "\t\t\tm_ProgressGetKey.GetComponent<Animation>().Play(\"ProgressGetKeyIn\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\t\tif (!m_ProgressGetKey.animation.isPlaying)",
+    "after": "\t\t\tif (!m_ProgressGetKey.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\t\t\tm_ProgressGetKey.animation.Play(\"ProgressGetKeyOut\");",
+    "after": "\t\t\t\tm_ProgressGetKey.GetComponent<Animation>().Play(\"ProgressGetKeyOut\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\tif (!(m_ProgressSPLimit == null) && !(m_ProgressSPLimit.animation == null) && !m_ProgressSPLimit.animation.isPlaying)",
+    "after": "\t\tif (!(m_ProgressSPLimit == null) && !(m_ProgressSPLimit.GetComponent<Animation>() == null) && !m_ProgressSPLimit.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawProgressManager.cs",
+    "before": "\t\t\t\tm_ProgressSPLimit.animation.Play(\"progressSPLimitIn\");",
+    "after": "\t\t\t\tm_ProgressSPLimit.GetComponent<Animation>().Play(\"progressSPLimitIn\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\tif (m_LinkerObject[0] != null && m_LinkerObject[0].renderer != null && m_LinkerObject[0].renderer.material != null)",
+    "after": "\t\tif (m_LinkerObject[0] != null && m_LinkerObject[0].GetComponent<Renderer>() != null && m_LinkerObject[0].GetComponent<Renderer>().material != null)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MainMenuFixLayerLinker.cs",
+    "before": "\t\t\tMaterial material = m_LinkerObject[0].renderer.material;",
+    "after": "\t\t\tMaterial material = m_LinkerObject[0].GetComponent<Renderer>().material;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillCutinManager.cs",
+    "before": "\t\t\t\tMaterial material = m_acCutinObject[blankCutinObject].cutinChara.renderer.material;",
+    "after": "\t\t\t\tMaterial material = m_acCutinObject[blankCutinObject].cutinChara.GetComponent<Renderer>().material;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillCutinManager.cs",
+    "before": "\t\t\tAnimation animation = childNode.animation;",
+    "after": "\t\t\tAnimation animation = childNode.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/UIButton.cs",
+    "before": "\t\t\tCollider collider = base.collider;",
+    "after": "\t\t\tCollider collider = base.GetComponent<Collider>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/DrawSkillCutinManager.cs",
+    "before": "\t\t\t\t\tAnimation animation = gameObject.animation;",
+    "after": "\t\t\t\t\tAnimation animation = gameObject.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/MeshInGamePath.cs",
+    "before": "\t\tbase.gameObject.renderer.material = new Material(component.spriteMaterial);",
+    "after": "\t\tbase.gameObject.GetComponent<Renderer>().material = new Material(component.spriteMaterial);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\tobj.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelBlank;",
+    "after": "\t\t\tobj.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelBlank;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\tobj.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelKey;",
+    "after": "\t\t\tobj.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelKey;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\tobj.renderer.sharedMaterial = InGameUtil.GetTrapMaterial(cell.m_CellEventParam0);",
+    "after": "\t\t\tobj.GetComponent<Renderer>().sharedMaterial = InGameUtil.GetTrapMaterial(cell.m_CellEventParam0);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\tobj.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelTakarabako;",
+    "after": "\t\t\tobj.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelTakarabako;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\t\t\t\t\tobj.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelEnemy;",
+    "after": "\t\t\t\t\t\t\tobj.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelEnemy;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameCard.cs",
+    "before": "\t\t\tobj.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelSPHeal;",
+    "after": "\t\t\tobj.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelSPHeal;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/TweenFOV.cs",
+    "before": "\t\t\t\tmCam = base.camera;",
+    "after": "\t\t\t\tmCam = base.GetComponent<Camera>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\tm_BattleEnemyAnim = uIInstanceGroupBattleEnemy.animation;",
+    "after": "\t\t\tm_BattleEnemyAnim = uIInstanceGroupBattleEnemy.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\tAnimation animation = Singleton<SceneObjReferGameMain>.Instance.m_GameObjEvolve.animation;",
+    "after": "\t\tAnimation animation = Singleton<SceneObjReferGameMain>.Instance.m_GameObjEvolve.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tAnimation animation = m_BattleHandCardArray[i].animation;",
+    "after": "\t\t\t\t\tAnimation animation = m_BattleHandCardArray[i].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tAnimation animation2 = m_BattleCardBackArray[i].animation;",
+    "after": "\t\t\t\t\tAnimation animation2 = m_BattleCardBackArray[i].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\tAnimation animation = m_BattleHandCardArray[j].animation;",
+    "after": "\t\t\t\tAnimation animation = m_BattleHandCardArray[j].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\tAnimation animation2 = m_BattleCardBackArray[j].animation;",
+    "after": "\t\t\t\tAnimation animation2 = m_BattleCardBackArray[j].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tm_GameObjCard[i].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;",
+    "after": "\t\t\t\t\tm_GameObjCard[i].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tm_GameObjCard[i].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;",
+    "after": "\t\t\t\t\tm_GameObjCard[i].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tm_GameObjCard[i].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelSPHeal;",
+    "after": "\t\t\t\t\tm_GameObjCard[i].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelSPHeal;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tm_GameObjCard[i].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;",
+    "after": "\t\t\t\t\tm_GameObjCard[i].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tm_GameObjCard[k].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;",
+    "after": "\t\t\tm_GameObjCard[k].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\tm_GameObjCard[num].panelB.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;",
+    "after": "\t\t\t\tm_GameObjCard[num].panelB.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\tm_GameObjCard[num].panelB.renderer.sharedMaterial = expectToBackPasnelDesign2;",
+    "after": "\t\t\t\tm_GameObjCard[num].panelB.GetComponent<Renderer>().sharedMaterial = expectToBackPasnelDesign2;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\tm_GameObjCard[num].panelB.renderer.sharedMaterial = expectToBackPasnelDesign;",
+    "after": "\t\t\t\tm_GameObjCard[num].panelB.GetComponent<Renderer>().sharedMaterial = expectToBackPasnelDesign;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\tm_GameObjCard[num].panelB.renderer.sharedMaterial = expectToBackPasnelDesign3;",
+    "after": "\t\t\tm_GameObjCard[num].panelB.GetComponent<Renderer>().sharedMaterial = expectToBackPasnelDesign3;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\tAnimation animation = gameObject.animation;",
+    "after": "\t\t\t\tAnimation animation = gameObject.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/OfflineArm64/Runtime.cs",
+    "before": "        if (shadow == null || shadow.renderer == null) return;",
+    "after": "        if (shadow == null || shadow.GetComponent<Renderer>() == null) return;"
+  },
+  {
+    "path": "Assets/Scripts/OfflineArm64/Runtime.cs",
+    "before": "        Material previous = shadow.renderer.sharedMaterial;",
+    "after": "        Material previous = shadow.GetComponent<Renderer>().sharedMaterial;"
+  },
+  {
+    "path": "Assets/Scripts/OfflineArm64/Runtime.cs",
+    "before": "        shadow.renderer.sharedMaterial = material;",
+    "after": "        shadow.GetComponent<Renderer>().sharedMaterial = material;"
+  },
+  {
+    "path": "Assets/Scripts/OfflineArm64/Runtime.cs",
+    "before": "            floor.renderer.sharedMaterial = material;",
+    "after": "            floor.GetComponent<Renderer>().sharedMaterial = material;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\t\t\tAnimation animation = m_BattleFieldCardArray[m_BattleFieldTouch][l].animation;",
+    "after": "\t\t\t\t\t\t\tAnimation animation = m_BattleFieldCardArray[m_BattleFieldTouch][l].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\tm_GameObjSideCellEmphasis[i].renderer.material.SetColor(\"_Color\", m_EmphasisColor);",
+    "after": "\t\t\t\tm_GameObjSideCellEmphasis[i].GetComponent<Renderer>().material.SetColor(\"_Color\", m_EmphasisColor);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\t\tgameObject2.renderer.sharedMaterial = expectToBackPasnelDesign;",
+    "after": "\t\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = expectToBackPasnelDesign;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;",
+    "after": "\t\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelHeart;",
+    "after": "\t\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelHeart;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;",
+    "after": "\t\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;",
+    "after": "\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelExclamation;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;",
+    "after": "\t\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelQuestion;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelHeart;",
+    "after": "\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanelHeart;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/InGameManager.cs",
+    "before": "\t\t\t\t\tgameObject2.renderer.sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;",
+    "after": "\t\t\t\t\tgameObject2.GetComponent<Renderer>().sharedMaterial = Singleton<SceneObjReferGameMain>.Instance.m_MaterialInstancePanel;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\tAnimation animation = m_EnemyObjectCharaAnim[i].animation;",
+    "after": "\t\t\t\tAnimation animation = m_EnemyObjectCharaAnim[i].GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\tanimation = uIInstanceGroupBattleEnemy.animation;",
+    "after": "\t\t\tanimation = uIInstanceGroupBattleEnemy.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\tanimation2 = uIInstanceGroupBattleField.animation;",
+    "after": "\t\t\tanimation2 = uIInstanceGroupBattleField.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tAnimation animation = uIInstanceGroupBattleCountDown.animation;",
+    "after": "\t\t\t\t\tAnimation animation = uIInstanceGroupBattleCountDown.GetComponent<Animation>();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tif (!gameObject.animation.isPlaying)",
+    "after": "\t\t\t\t\tif (!gameObject.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tgameObject.animation.Play(\"TitleSlide_00_out\");",
+    "after": "\t\t\t\t\tgameObject.GetComponent<Animation>().Play(\"TitleSlide_00_out\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tgameObject2.animation.Play(\"TitleSlide_00_in\");",
+    "after": "\t\t\t\t\tgameObject2.GetComponent<Animation>().Play(\"TitleSlide_00_in\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\telse if (!gameObject2.animation.isPlaying)",
+    "after": "\t\t\t\telse if (!gameObject2.GetComponent<Animation>().isPlaying)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\tgameObject.animation.Stop();",
+    "after": "\t\t\tgameObject.GetComponent<Animation>().Stop();"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\tgameObject.animation.Play(\"TitleSlide_00_out\");",
+    "after": "\t\t\tgameObject.GetComponent<Animation>().Play(\"TitleSlide_00_out\");"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/ServerDataManager.cs",
+    "before": "\t\t\t\t\tHashtable cHashtable = cWWWForm.headers;",
+    "after": "\t\t\t\t\tvar cHashtable = cWWWForm.headers;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BGMManager.cs",
+    "before": "\tprivate AudioClip m_SoundBGMClip = new AudioClip();",
+    "after": "\tprivate AudioClip m_SoundBGMClip = null;"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetBundleManager.cs",
+    "before": "\t\t\t\tcRequestResource.m_ResultObject = m_AssetBundlePackage[num].m_AssetBundle.Load(cRequestResource.m_RequestName, cRequestResource.m_RequestType);",
+    "after": "\t\t\t\tcRequestResource.m_ResultObject = m_AssetBundlePackage[num].m_AssetBundle.LoadAsset(cRequestResource.m_RequestName, cRequestResource.m_RequestType);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetBundleManager.cs",
+    "before": "\t\t\tif (Caching.enabled)",
+    "after": "\t\t\tif (Caching.currentCacheForWriting.valid)"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/AssetBundleManager.cs",
+    "before": "\t\t\t\t\tm_AssetBundleResourceList[i].m_ResultObject = cAssetBundlePackage.m_AssetBundle.Load(m_AssetBundleResourceList[i].m_RequestName, m_AssetBundleResourceList[i].m_RequestType);",
+    "after": "\t\t\t\t\tm_AssetBundleResourceList[i].m_ResultObject = cAssetBundlePackage.m_AssetBundle.LoadAsset(m_AssetBundleResourceList[i].m_RequestName, m_AssetBundleResourceList[i].m_RequestType);"
+  },
+  {
+    "path": "Assets/Scripts/Assembly-CSharp/BattleManager.cs",
+    "before": "\t\t\t\t\tVector3 position = Vector3.Lerp(t: (m_TutorialCtrlTime == 0f || dat.controlTime == 0f) ? m_TutorialCtrlTime : (m_TutorialCtrlTime / dat.controlTime), from: dat.begin.transform.position, to: dat.end.transform.position);",
+    "after": "\t\t\t\t\tVector3 position = Vector3.Lerp(t: (m_TutorialCtrlTime == 0f || dat.controlTime == 0f) ? m_TutorialCtrlTime : (m_TutorialCtrlTime / dat.controlTime), a: dat.begin.transform.position, b: dat.end.transform.position);"
+  }
+]
