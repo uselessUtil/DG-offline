@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 7";
+    public const string Build = "1.0.6 offline prototype 8";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -201,6 +201,10 @@ public static partial class DivineGateOffline
             sprite = new UIAtlas.Sprite();
             sprite.name = name;
             int[] rect = RecoveredImages.Sprite(atlasName, name);
+            // InGameCard probes every character atlas with GetSprite. A fake
+            // sprite in the first (wrong) atlas makes that search stop early.
+            if (RecoveredImages.Enabled && rect == null &&
+                atlasName.StartsWith("AtlasCharaIcon_") && name.StartsWith("chara_icon_")) return;
             if (rect == null && recoveredAtlasMaterials.ContainsKey(atlasName))
                 rect = RecoveredImages.Sprite(atlasName, "__missing");
             if (rect != null)
@@ -518,7 +522,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 7");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 8");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :

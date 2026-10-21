@@ -107,6 +107,16 @@ def main():
         print(empty_result)
         (args.report.parent/'empty-slot-tests.txt').write_text(empty_result)
         report['empty_slot_tests'] = empty_result.strip()
+        icon_rows = test/'character-atlas-ownership.tsv'
+        icon_rows.write_text(''.join(str(c['fix_id'])+'\t'+c['resource_id']+'\n' for c in images['characters']))
+        run('mcs','-out:'+str(test/'VerifyEnemyAtlasSearch.exe'),
+            '-r:'+str(test/'Assembly-CSharp.dll'),'-r:'+str(test/'UnityEngine.dll'),
+            '-r:'+str(test/'EngineSupport.dll'),tests/'VerifyEnemyAtlasSearch.cs')
+        enemy_search = subprocess.check_output(['mono',str(test/'VerifyEnemyAtlasSearch.exe'),str(icon_rows)],
+            env=env,text=True,timeout=45)
+        print(enemy_search)
+        (args.report.parent/'enemy-atlas-tests.txt').write_text(enemy_search)
+        report['enemy_atlas_tests'] = enemy_search.strip()
         areas = json.loads((work/'tables/MasterDataArea.json').read_bytes(), strict=False)
         names = {a['res_map'].removesuffix('_tex') for a in areas if a.get('res_map','').startswith('map_')}
         for name in names:
