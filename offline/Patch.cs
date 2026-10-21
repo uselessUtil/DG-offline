@@ -129,6 +129,12 @@ public static class Patch106
         clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Call, Helper("ClearTransientAssets")));
         Empty("AssetBundleManager", "SetupAssetBundlePackageParam");
         BeforeEveryReturn("AssetAutoSetCharaMesh", "Update", "FixCharacterShadow");
+        var battleType = module.Types.Single(t => t.Name == "BattleManager");
+        if (battleType.Methods.Any(m => m.Name == "LateUpdate")) throw new Exception("Unexpected battle LateUpdate");
+        var hudUpdate = new MethodDefinition("LateUpdate", MethodAttributes.Private | MethodAttributes.HideBySig, module.TypeSystem.Void);
+        battleType.Methods.Add(hudUpdate);
+        var hudIL = hudUpdate.Body.GetILProcessor();
+        hudIL.Emit(OpCodes.Ldarg_0); hudIL.Emit(OpCodes.Call, Helper("RaiseEnemyHud")); hudIL.Emit(OpCodes.Ret);
         StartHelper("StoreManager", "DisableStore");
         Empty("StoreManager", "Update");
         foreach (var method in module.Types.Single(t => t.Name == "PlayGameServiceUtil").Methods.Where(m => m.IsStatic && m.ReturnType.FullName == "System.Void"))

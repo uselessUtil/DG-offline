@@ -14,6 +14,8 @@ public static partial class DivineGateOffline
     private static readonly Dictionary<string, UIAtlas.Sprite> sprites = new Dictionary<string, UIAtlas.Sprite>();
     private static readonly Dictionary<string, Texture2D> recoveredTextures = new Dictionary<string, Texture2D>();
     private static readonly Dictionary<string, Material> recoveredAtlasMaterials = new Dictionary<string, Material>();
+    private static readonly Dictionary<Material, Material> enemyHudMaterials = new Dictionary<Material, Material>();
+    private static readonly Dictionary<Material, Material> enemyHudOriginals = new Dictionary<Material, Material>();
     private static string error = "";
     private static bool showNotice = true;
 
@@ -410,6 +412,51 @@ public static partial class DivineGateOffline
             floor.renderer.sharedMaterial = material;
         }
         return root;
+    }
+
+    public static void RaiseEnemyHud(BattleManager battle)
+    {
+        // Keep original portrait size, HP values and collision objects. NGUI
+        // batches can otherwise sort behind the large replacement portrait.
+        // Clone only enemy HUD materials. The original HUD atlases use straight
+        // alpha; the included Overlay shader has the same blend plus queue +1.
+        if (battle.m_EnemyObjectHP == null) return;
+        bool foreground = true;
+        foreach (GameObject hp in battle.m_EnemyObjectHP)
+            if (hp != null) RaiseEnemyHudNode(hp.transform, foreground);
+    }
+
+    private static void RaiseEnemyHudNode(Transform node, bool foregroundAllowed)
+    {
+        UIWidget widget = node.gameObject.GetComponent<UIWidget>();
+        if (widget != null)
+        {
+            Material current = widget.material;
+            Material original;
+            if (current != null && enemyHudOriginals.TryGetValue(current, out original))
+            {
+                // Modal UI uses the original NGUI depth order. Restore only our
+                // cloned HUD materials; never modify a shared atlas material.
+                if (!foregroundAllowed) widget.material = original;
+            }
+            else if (foregroundAllowed && current != null)
+            {
+                Material foreground;
+                if (!enemyHudMaterials.TryGetValue(current, out foreground))
+                {
+                    foreground = Object.Instantiate(current) as Material;
+                    foreground.name = "DG foreground enemy HUD " + current.name;
+                    Shader overlay = Shader.Find("Unlit/Transparent Colored Overlay");
+                    if (overlay == null) return;
+                    foreground.shader = overlay;
+                    Object.DontDestroyOnLoad(foreground);
+                    enemyHudMaterials.Add(current, foreground);
+                    enemyHudOriginals.Add(foreground, current);
+                }
+                widget.material = foreground;
+            }
+        }
+        for (int i = 0; i < node.childCount; i++) RaiseEnemyHudNode(node.GetChild(i), foregroundAllowed);
     }
 
     public static void TraceDoorInput(InGameManager game)
