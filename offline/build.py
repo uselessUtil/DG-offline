@@ -160,7 +160,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 17 map-derived selection icons' if recovered else '1.0.6 offline prototype 17 placeholders'),
+              'version':('1.0.6 offline prototype 18 Wiki Empty icon' if recovered else '1.0.6 offline prototype 18 placeholders'),
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
@@ -169,7 +169,7 @@ def main():
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),
               'native_direct_loader':args.native_direct,
               'missing_downloaded_assets':('original map meshes/animations absent; recovered portraits/icons/panels, simplified textured floors and upper scenery planes' if recovered else 'numbered colored substitutes, not recovered artwork'),
-              'recovered_artwork':({key: recovered[key] for key in ['source','commit','portraits','character_icons','shadow_masks','maps','panel_and_trap_images','area_icons','area_icon_sources','image_pack_bytes','image_pack_sha256','limitations']} if recovered else None)}
+              'recovered_artwork':({key: recovered[key] for key in ['source','commit','portraits','character_icons','shadow_masks','maps','panel_and_trap_images','area_icons','area_icon_sources','ui_icon_sources','image_pack_bytes','image_pack_sha256','limitations']} if recovered else None)}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))

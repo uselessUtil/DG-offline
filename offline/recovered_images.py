@@ -24,6 +24,11 @@ def create(output: Path, tables: Path, source: Path):
     if fandom.exists():
         wiki_sources = json.loads(fandom.read_text())
         records += wiki_sources
+    ui_sources = json.loads((source / 'fandom-ui-images.json').read_text())
+    ui_overrides = {row['sprite_name']: row for row in ui_sources}
+    if len(ui_overrides) != len(ui_sources) or 'chara_icon_empty' not in ui_overrides:
+        raise ValueError('Missing or duplicate Wiki UI icon override')
+    records += ui_sources
     files = {row['path']: row for row in records}
     chars = json.loads((tables / 'MasterDataParamChara.json').read_bytes(), strict=False)
     payloads, sprites, provenance = {}, {}, []
@@ -64,7 +69,8 @@ def create(output: Path, tables: Path, source: Path):
                         'draw_id': draw, 'name': char['name']})
 
     groups['AtlasPanelIcon'] = [(Path(path).stem, read(path)) for path in sorted(files)
-                                if path.startswith(('public/img/panel/', 'public/img/trap/'))]
+                                if path.startswith(('public/img/panel/', 'public/img/trap/'))
+                                and Path(path).stem not in ui_overrides]
     areas = json.loads((tables / 'MasterDataArea.json').read_bytes(), strict=False)
     area_entries, area_sources = create_area_icons(areas, files, read, output / 'area-icons', wiki_sources)
     groups['AtlasAreaIcon_000_020'] = area_entries
@@ -82,7 +88,7 @@ def create(output: Path, tables: Path, source: Path):
         # Keep the full 128px icon resolution. Alpha variants share these textures.
         # Null friend/party slots request this sprite from the character atlas.
         # A transparent substitute exposes the prefab's white backing tile.
-        empty = read('public/img/panel/chara_icon_empty.png')
+        empty = read(ui_overrides['chara_icon_empty']['path'])
         missing = Image.new('RGBA', (128, 128), '#555568')
         ImageDraw.Draw(missing).text((56, 55), '?', fill='white')
         entries = [('__missing', missing), ('chara_icon_empty', empty),
@@ -159,6 +165,7 @@ public static byte[] Payload(int index) { return null; }
               'portraits': len(mapping), 'character_icons': len(mapping), 'shadow_masks': len(mapping), 'maps': maps,
               'panel_and_trap_images': len(groups['AtlasPanelIcon']),
               'area_icons': len(area_sources), 'area_icon_sources': area_sources,
+              'ui_icon_sources': ui_sources,
               'image_pack_bytes': pack.stat().st_size, 'image_pack_sha256': hashlib.sha256(pack.read_bytes()).hexdigest(),
               'payloads': {key: {'index': offsets[key][0], 'offset': offsets[key][1], 'size': len(data),
                                 'sha256': hashlib.sha256(data).hexdigest()} for key, data in payloads.items()},
