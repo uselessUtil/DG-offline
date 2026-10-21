@@ -34,6 +34,8 @@
 
 最新 APK、建置參數、修改項目與測試結果位於 [prototype 16 產物目錄](artifacts/1.0.6-offline-prototype16-collab-animation-fixed/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。**2.1.0 尚未依本指南完成離線移植**，不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
+**2.9.0 已另做安全檢查與移植嘗試，目前只有離線診斷原型，無法遊玩。** 該 APK 保留本機 `ServerForgery`，卻沒有其要求的 42 份 Resources 主資料；創角與關卡因此無法從 APK 單獨復原。版本限定補丁、證據範圍、缺失資料／素材及重現方式見 [2.9.0 報告](offline/v290/README.md)。不要將診斷版當成完成的單機版，也不要把 1.0.6 資料直接冒充 2.9.0。
+
 原版引擎為 Unity 4.1.0f4，使用舊 Mono 與 APK 中裁剪過的 .NET 程式庫。離線套件名稱為 `jp.gungho.dg.offline106`，顯示名稱為 `Divine Gate Offline 1.0.6`。Android `versionName=1.0.6`、`versionCode=8` 沿用原值；prototype 編號記錄在配接器、畫面及報告中，不是 Android versionCode。
 
 ## 2. 目錄與維護邊界

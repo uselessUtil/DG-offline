@@ -1,6 +1,6 @@
 # Prototype 提交索引
 
-此索引說明 1.0.6 離線改造的功能拆分，搭配 [實作與移植指南](OFFLINE_PORTING_GUIDE.md) 查閱。
+此索引說明 1.0.6 離線改造的功能拆分，搭配 [實作與移植指南](../OFFLINE_PORTING_GUIDE.md) 查閱。
 
 ## 歷史重建範圍
 
