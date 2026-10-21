@@ -1,4 +1,9 @@
 artifacts/
+# Local development instructions are not part of the public repository.
+/AGENTS.md
+/external/dgdb/
+/external/divine-gate-wiki/
+/external/image-preview.html
 __pycache__/
 *.pyc
 
@@ -14,6 +19,3 @@ __pycache__/
 *.pfx
 .env
 .env.*
-
-# Local developer instructions stay outside version control.
-/AGENTS.md
