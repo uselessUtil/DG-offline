@@ -40,6 +40,8 @@
 
 **2.9.0 已另做安全檢查與移植嘗試，目前只有離線診斷原型，無法遊玩。** 該 APK 保留本機 `ServerForgery`，卻沒有其要求的 42 份 Resources 主資料；創角與關卡因此無法從 APK 單獨復原。版本限定補丁、證據範圍、缺失資料／素材及重現方式見 [2.9.0 報告](offline/v290/README.md)。不要將診斷版當成完成的單機版，也不要把 1.0.6 資料直接冒充 2.9.0。
 
+**`sczm/184044_sczm.apk` 已確認為 1.1.0，完成修改前靜態安全檢查與離線診斷原型，仍不可遊玩。** 其本機後端要求的 36 份 Resources 主資料全部缺失；交付 APK 已移除網路、付款、電話與外部儲存權限，並通過靜態／managed 驗證。另以原後端驗證 28 張轉換後的 1.0.6 舊表可通過創角、初始隊伍、登入包與記憶體存檔往返；沒有接入診斷 APK，不能視為 1.1.0 完整內容。詳見 [1.1.0 報告](offline/v110/README.md) 與 [安全證據及限制](offline/v110/SECURITY_REVIEW.md)。
+
 原版引擎為 Unity 4.1.0f4，使用舊 Mono 與 APK 中裁剪過的 .NET 程式庫。離線套件名稱為 `jp.gungho.dg.offline106`，顯示名稱為 `Divine Gate Offline 1.0.6`。Android `versionName=1.0.6`、`versionCode=8` 沿用原值；prototype 編號記錄在配接器、畫面及報告中，不是 Android versionCode。
 
 ## 2. 目錄與維護邊界
