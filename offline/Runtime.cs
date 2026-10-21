@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 9";
+    public const string Build = "1.0.6 offline prototype 10";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -63,8 +63,31 @@ public static partial class DivineGateOffline
         server.m_MasterDataInformation = master.m_MasterDataInformation;
         master.m_MasterDataStoreProduct = new MasterDataStoreProduct[0];
         server.m_MasterDataStoreProduct = master.m_MasterDataStoreProduct;
+        OpenLocalEvents(master);
         server.UserParamLoad();
         Debug.Log("[DG offline] Local master data ready");
+    }
+
+    private static void OpenLocalEvents(MasterDataManager master)
+    {
+        // These are shared with ServerForgery. Change only the local area gates:
+        // event 0 means always available, without activating unrelated scheduled
+        // shops, bonus multipliers, guerrilla bosses or old server announcements.
+        foreach (MasterDataArea area in master.m_MasterDataArea)
+        {
+            if (area == null || (area.type != 2 && area.type != 3)) continue;
+            area.event_id = 0;
+            if (area.type == 2) area.pre_area = 0;
+        }
+    }
+
+    public static bool EventQuestPlayable(MasterDataQuest quest, bool original)
+    {
+        if (original || quest == null || quest.active != 2) return original;
+        MasterDataArea area = MasterDataUtil.GetAreaParamFromID(quest.area_id);
+        // Do not forge clear flags to expose difficulties. Reserved quests stay
+        // inactive, and story missions retain their original progression.
+        return area != null && area.type == 2;
     }
 
     public static void SetupPatch(PatchManager patch)
@@ -539,7 +562,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 9");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 10");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :

@@ -97,6 +97,33 @@ public static class Patch106
         il.Emit(OpCodes.Call, Method("LayoutSwitchSeq", "LayoutSwitchSetting"));
         il.Emit(OpCodes.Ret);
     }
+    static void EventMissionAccess()
+    {
+        var method = Method("MainMenuSeqQuestSelectMission", "PageSwitchSetting");
+        var writes = method.Body.Instructions.Where(i => i.OpCode == OpCodes.Stfld &&
+            ((FieldReference)i.Operand).Name == "m_QuestPlayable").ToArray();
+        // The second write enables the first uncleared mission. Keep it intact.
+        if (writes.Length != 2) throw new Exception("Unexpected quest-playable writes");
+        var write = writes.Single(i => i.Previous.OpCode == OpCodes.Ldloc_S);
+        if (writes.Count(i => i.Previous.OpCode == OpCodes.Ldc_I4_1) != 1)
+            throw new Exception("Unexpected first-uncleared quest access");
+        if (method.Body.Instructions.Any(i => i.Operand == write ||
+            (i.Operand is Instruction[] && ((Instruction[])i.Operand).Contains(write))))
+            throw new Exception("Unexpected branch into quest-playable assignment");
+        var owner = ((FieldReference)write.Operand).DeclaringType.Resolve();
+        var questField = owner.Fields.Single(f => f.Name == "m_QuestMasterData");
+        var original = new VariableDefinition(module.TypeSystem.Boolean);
+        method.Body.Variables.Add(original);
+        method.Body.InitLocals = true;
+        var il = method.Body.GetILProcessor();
+        // Stack before: [QuestParam, original bool]. Keep that object and pass
+        // its assigned master row to the scoped event-only access rule.
+        il.InsertBefore(write, Instruction.Create(OpCodes.Stloc, original));
+        il.InsertBefore(write, Instruction.Create(OpCodes.Dup));
+        il.InsertBefore(write, Instruction.Create(OpCodes.Ldfld, questField));
+        il.InsertBefore(write, Instruction.Create(OpCodes.Ldloc, original));
+        il.InsertBefore(write, Instruction.Create(OpCodes.Call, Helper("EventQuestPlayable")));
+    }
     public static void Main(string[] args)
     {
         var resolver = new DefaultAssemblyResolver();
@@ -113,6 +140,7 @@ public static class Patch106
         Constant("LocalSaveManager", "LoadFuncServerAddressIP", "");
         Append("ResidentManager", "Start", "Bootstrap");
         Append("ServerForgery", "Start", "Ready");
+        EventMissionAccess();
         StartHelper("PatchManager", "SetupPatch");
         CallHelper("PatchManager", "GetPatchText", "PatchText", 1);
         Empty("PatchManager", "PatchUpdateRequest");

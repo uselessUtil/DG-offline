@@ -79,6 +79,17 @@ def main():
     run('mcs','-out:'+str(test/'LocalApiTests.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
         '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'LocalApiTests.cs')
     env = dict(os.environ, DG_TEST_TABLES=str(work/'tables'),DG_TEST_PREFS=str(test/'player-prefs.txt'))
+    run('mcs','-out:'+str(tools/'VerifyEventPatch.exe'),'-r:'+CECIL,tests/'VerifyEventPatch.cs')
+    event_patch = subprocess.check_output(['mono',str(tools/'VerifyEventPatch.exe'),
+        str(managed/'Assembly-CSharp.dll'),str(test/'Assembly-CSharp.dll')],text=True)
+    run('mcs','-out:'+str(test/'VerifyEventUnlock.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
+        '-r:'+str(test/'DivineGateOffline.dll'),'-r:'+str(test/'Assembly-CSharp-firstpass.dll'),
+        '-r:'+str(test/'UnityEngine.dll'),tests/'VerifyEventUnlock.cs')
+    event_env = dict(env, DG_TEST_PREFS=str(test/'event-prefs.txt'))
+    event_test = subprocess.check_output(['mono',str(test/'VerifyEventUnlock.exe')],env=event_env,text=True,timeout=60)
+    print(event_patch + event_test)
+    (args.report.parent/'event-unlock-tests.txt').write_text(event_patch + event_test)
+    report['event_unlock_tests'] = (event_patch + event_test).strip()
     if report.get('recovered_artwork') and images.get('sprite_aliases'):
         from PIL import Image, ImageChops
         import io

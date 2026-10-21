@@ -12,6 +12,7 @@ import UnityPy
 from manifest import patch as patch_manifest
 from generate_images import create as create_images
 from recovered_images import create as create_recovered_images, disabled as disable_recovered_images
+from event_catalog import create as create_event_catalog
 
 SOURCE_HASH = 'ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
 CECIL = '/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
@@ -30,7 +31,7 @@ def digest(data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype9')
+    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype10')
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
@@ -68,6 +69,7 @@ def main():
                 counts[value.m_Name] = len(json.loads(raw, strict=False))
     if counts.get('MasterDataParamChara') != 523 or counts.get('MasterDataQuest') != 371:
         raise ValueError('Unexpected embedded master data')
+    event_catalog = create_event_catalog(tables, output)
     create_images(build/'Images.cs', tables)
     recovered = None
     if args.recovered_assets:
@@ -154,7 +156,8 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':'1.0.6 offline prototype 9',
+              'version':'1.0.6 offline prototype 10',
+              'local_events':event_catalog,
               'package':'jp.gungho.dg.offline106','tables':counts,
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),
