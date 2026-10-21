@@ -101,6 +101,16 @@ def main():
     print(shop_test)
     (args.report.parent/'free-chip-shop-tests.txt').write_text(shop_test)
     report['free_chip_shop_tests'] = shop_test.strip()
+    run('mcs','-out:'+str(tools/'VerifyShopPrefabHook.exe'),'-r:'+CECIL,tests/'VerifyShopPrefabHook.cs')
+    prefab_test = subprocess.check_output(['mono',str(tools/'VerifyShopPrefabHook.exe'),
+        str(test/'Assembly-CSharp.dll')],text=True)
+    import sys
+    sys.path.insert(0, str(tests))
+    from verify_shop_prefab import verify as verify_shop_prefab
+    prefab_test += verify_shop_prefab(artifact, args.report.parent)
+    print(prefab_test)
+    (args.report.parent/'shop-prefab-tests.txt').write_text(prefab_test)
+    report['shop_prefab_tests'] = prefab_test.strip()
     if report.get('recovered_artwork') and images.get('sprite_aliases'):
         from PIL import Image, ImageChops
         import io

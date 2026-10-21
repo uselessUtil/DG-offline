@@ -126,6 +126,12 @@ public static class Patch106
     }
     static void FreeChipShop()
     {
+        // The current PageShopBuyTip is only a title/container for dialogs.
+        // Our inline Yes/No flow needs the complete, still-bundled old prefab.
+        var pageResource = module.Types.Single(t => t.Name == "MainMenuManager").Methods
+            .Where(m => m.HasBody).SelectMany(m => m.Body.Instructions)
+            .Single(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == "Prefab/MainMenu/MainMenuPage/PageShopBuyTip");
+        pageResource.Operand = "Prefab/MainMenu/MainMenuPage/_old_PageShopBuyTip";
         var server = module.Types.Single(t => t.Name == "ServerForgery");
         var save = server.Fields.Single(f => f.Name == "m_ForgeryPlayerSave" && f.FieldType.Name == "ServerForgerySaveUser");
         if (server.Methods.Any(m => m.Name == "DGOfflineShopPlayer")) throw new Exception("Shop save accessor already exists");

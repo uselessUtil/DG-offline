@@ -31,7 +31,7 @@ def digest(data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype11')
+    parser.add_argument('--output', default='/workspace/artifacts/1.0.6-offline-prototype12')
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
@@ -156,7 +156,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':'1.0.6 offline prototype 11',
+              'version':'1.0.6 offline prototype 12',
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
               'package':'jp.gungho.dg.offline106','tables':counts,

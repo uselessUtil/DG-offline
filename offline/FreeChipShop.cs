@@ -99,7 +99,16 @@ public static partial class DivineGateOffline
         freeChipCommitted = !active;
         freeChipProduct = active ? MainMenuParam.m_ShopBuyProductID : null;
         if (!active) return;
+        // Validate the actual instantiated prefab, rather than assuming that
+        // a title-only page has the controls found in the legacy layout.
         GameObject messageNode = UnityUtil.GetChildNode(page.gameObject, "MessageMain");
+        if (messageNode == null || UnityUtil.GetChildNode(page.gameObject, "ButtonYes") == null ||
+            UnityUtil.GetChildNode(page.gameObject, "ButtonNo") == null)
+        {
+            Debug.LogError("[DG offline] Free chip confirmation controls missing; returning to shop");
+            LeaveFreeChipPage();
+            return;
+        }
         StoreProduct product = FreeChipProductByID(freeChipProduct);
         uint current = Singleton<UserDataAdmin>.Instance.m_StructPlayer.have_stone;
         string message = product == null ? "Unknown chip pack." :
