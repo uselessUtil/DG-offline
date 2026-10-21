@@ -410,8 +410,12 @@ public static partial class DivineGateOffline
             floor.transform.parent = root.transform;
             Material material = new Material(FlatShader());
             Texture2D lower = MapTexture(bundle, name);
-            floor.transform.localPosition = new Vector3(0, -.1f, 0);
-            floor.transform.localScale = new Vector3(12f, .1f, 12f);
+            // The old 12x12 floor extended below the upper backdrop. With
+            // transparent shaders, distance sorting painted it over the door.
+            // Preserve the image aspect and stop exactly at the grid's far edge.
+            float depth = 5f * lower.height / lower.width;
+            floor.transform.localPosition = new Vector3(0, -.1f, 2.5f - depth * .5f);
+            floor.transform.localScale = new Vector3(5f, .1f, depth);
             material.mainTexture = lower;
             floor.renderer.sharedMaterial = material;
         }
