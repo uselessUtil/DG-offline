@@ -14,7 +14,7 @@ def png(image):
     return data.getvalue()
 
 
-def create(output: Path, tables: Path, source: Path):
+def create(output: Path, tables: Path, source: Path, backup: Path = None):
     records = json.loads((source / 'dgdb-downloaded-assets.json').read_text())
     supplement = source / 'dgdb-additional-assets.json'
     if supplement.exists():
@@ -131,6 +131,14 @@ def create(output: Path, tables: Path, source: Path):
             payloads['map/' + name + '/' + part] = png(read(path))
         maps.append(name)
 
+    backup_import = None
+    if backup:
+        from backup_images import apply as apply_backup
+        backup_import, area_sources = apply_backup(backup, output, tables, payloads,
+            sprites, mapping, areas, maps, alias_records)
+        ui_sources = [{'sprite_name':n, 'source_kind':'native UnityCache atlas'}
+                      for n in ['chara_icon_empty','chara_icon_question','chara_icon_reject','lock1']]
+
     offsets = {}
     pack = output / 'RecoveredImages.bin'
     with pack.open('wb') as stream:
@@ -172,6 +180,15 @@ public static byte[] Payload(int index) { return null; }
               'sprites': sprites, 'sprite_aliases': alias_records,
               'characters': mapping, 'provenance': provenance,
               'limitations': 'PNG art with rebuilt quads and simplified map geometry; original map meshes and animations remain absent.'}
+    if backup_import:
+        report['backup_import'] = backup_import
+        report['source'] = str(backup)
+        report['fallback_source'] = 'https://github.com/kennyfong19931/dgdb'
+        report['fallback_commit'] = report['commit']
+        report['commit'] = None  # A local cache is not the DGDB Git revision.
+        report['native_panel_frames'] = 108
+        report['fallback_panel_frames'] = len(backup_import['fallback_sprites'])
+        report['limitations'] = backup_import['limitations']
     (output / 'recovered-images.json').write_text(json.dumps(report, ensure_ascii=False, indent=2))
     (output / 'image-offsets.tsv').write_text(''.join(
         f'{index}\t{offset}\t{size}\n' for index, offset, size in offsets.values()))

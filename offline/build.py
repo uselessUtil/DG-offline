@@ -35,7 +35,10 @@ def main():
     parser.add_argument('--work', help='New temporary build directory outside the repository')
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
+    parser.add_argument('--backup-assets', type=Path, help='Native jp.gungho.dg UnityCache; overrides every matching recovered image')
     args = parser.parse_args()
+    if args.backup_assets and not args.recovered_assets:
+        parser.error('--backup-assets requires the existing --recovered-assets fallback dataset')
     source = ROOT / 'ディバゲ_1.0.6.apk'
     if digest(source.read_bytes()) != SOURCE_HASH:
         raise ValueError('Source APK hash mismatch; refusing a patch for another build')
@@ -73,10 +76,14 @@ def main():
     create_images(build/'Images.cs', tables)
     recovered = None
     if args.recovered_assets:
-        recovered = create_recovered_images(build, tables, args.recovered_assets)
+        recovered = create_recovered_images(build, tables, args.recovered_assets, args.backup_assets)
         shutil.copy2(build/'recovered-images.json', output/'recovered-images.json')
         shutil.copytree(build/'area-icons', output/'area-icons')
         shutil.copy2(build/'area-icon-manifest.json', output/'area-icon-manifest.json')
+        if args.backup_assets:
+            shutil.copy2(build/'backup-image-import.json', output/'backup-image-import.json')
+            for name in ['chara_icon_empty','chara_icon_question','chara_icon_reject','lock1']:
+                shutil.copy2(build/(name+'.png'), output/(name+'.png'))
     else:
         disable_recovered_images(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
@@ -160,7 +167,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 18 Wiki Empty icon' if recovered else '1.0.6 offline prototype 18 placeholders'),
+              'version':('1.0.6 offline prototype 19 native cache images' if args.backup_assets else '1.0.6 offline prototype 19'),
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
@@ -168,8 +175,13 @@ def main():
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),
               'native_direct_loader':args.native_direct,
-              'missing_downloaded_assets':('original map meshes/animations absent; recovered portraits/icons/panels, simplified textured floors and upper scenery planes' if recovered else 'numbered colored substitutes, not recovered artwork'),
+              'missing_downloaded_assets':('native cache images prioritized; existing simplified meshes retained; backup geometry/animations/effects not imported' if args.backup_assets else 'original map meshes/animations absent; recovered portraits/icons/panels, simplified textured floors and upper scenery planes' if recovered else 'numbered colored substitutes, not recovered artwork'),
               'recovered_artwork':({key: recovered[key] for key in ['source','commit','portraits','character_icons','shadow_masks','maps','panel_and_trap_images','area_icons','area_icon_sources','ui_icon_sources','image_pack_bytes','image_pack_sha256','limitations']} if recovered else None)}
+    if args.backup_assets:
+        report['backup_image_import'] = {k:recovered['backup_import'][k] for k in [
+            'source','portraits','character_icons','area_icons','native_maps','area_texture_coverage',
+            'fallback_maps','fallback_sprites','source_hashes_unchanged','master_data_imported',
+            'original_geometry_imported','limitations']}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
