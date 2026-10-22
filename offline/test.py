@@ -85,6 +85,9 @@ def main():
         sys.path.insert(0,str(tests))
         from verify_account_rules import verify as verify_account_rules
         report['account_rules_tests'] = verify_account_rules(test,tools,env,args.report.parent)
+        if report.get('automatic_news'):
+            from verify_notice_routing import verify as verify_notice_routing
+            report['notice_routing_tests'] = verify_notice_routing(test,tools,env,args.report.parent)
     if report.get('backup_stage_import'):
         env['DG_TEST_STAGE_TABLES'] = str(args.report.parent/'stage-tables')
         import sys
