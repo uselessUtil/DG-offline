@@ -7,6 +7,7 @@ public static partial class DivineGateOffline
     public const uint StartingRank = 184;
     public const uint WarehouseCapacity = 2000;
     public const double StaminaSeconds = 180;
+    public const uint FiveStarMultiplier = 3;
     private static uint MaxUInt(uint a, uint b) { return a > b ? a : b; }
 
     // Called on create/save/load and before serializing a player response.
@@ -85,7 +86,7 @@ public static partial class DivineGateOffline
                 if (FiveStar(server, rows[i].assign_chara_id))
                     odds.five += (uint)((long)weight + (i == 0 ? 1 : 0) - (i == rows.Count - 1 ? 1 : 0));
             }
-            if (odds.total == 0 || odds.five * 2 > odds.total)
+            if (odds.total == 0 || odds.five * FiveStarMultiplier > odds.total)
                 throw new InvalidOperationException("Unexpected scratch odds " + id);
             scratchOdds.Add(id, odds);
         }
@@ -133,20 +134,20 @@ public static partial class DivineGateOffline
             ScratchOdds odds = scratchOdds[pool.fix_id];
             pool.detail_2 = "[ffc000]Offline Scratch[-]\n" +
                 (pool.fix_id == 200100 ? "42 five-star units (18 restored).\n" : pool.name + "\n") +
-                "5-star chance: " + ((float)(200.0 * odds.five / odds.total)).ToString() +
-                "% (2x previous offline pool).\n5 chips per draw.";
+                "5-star chance: " + ((float)(100.0 * FiveStarMultiplier * odds.five / odds.total)).ToString() +
+                "% (3x original local pool).\n5 chips per draw.";
         }
     }
 
     // The original game subtracts weights then tests <=0: return a 1-based
-    // ticket, not zero-based. Two-stage sampling doubles total 5-star odds
+    // ticket, not zero-based. Two-stage sampling triples total 5-star odds
     // exactly while preserving conditional unit/plus weights in each category.
     public static uint ScratchTicket(uint min, uint total, ServerForgery server, SendGachaPlay request)
     {
         ScratchOdds odds;
         if (!scratchOdds.TryGetValue(request.gacha_id, out odds))
             return RandManager.GetRand(0u, total); // friendship/tutorial unchanged
-        bool five = RandManager.GetRand(0u, odds.total) < 2 * odds.five;
+        bool five = RandManager.GetRand(0u, odds.total) < FiveStarMultiplier * odds.five;
         uint category = five ? odds.fiveWeight : odds.otherWeight;
         if (category == 0) throw new InvalidOperationException("Empty scratch category");
         uint chosen = RandManager.GetRand(0u, category), offset = 0;
