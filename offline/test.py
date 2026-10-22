@@ -136,7 +136,10 @@ def main():
     print(collab_test)
     (args.report.parent/'collab-gacha-tests.txt').write_text(collab_test)
     report['collab_gacha_tests'] = collab_test.strip()
-    if report.get('recovered_artwork') and images.get('sprite_aliases'):
+    if report.get('recovered_artwork') and images.get('backup_import'):
+        from verify_backup_images import verify as verify_backup_images
+        report.update(verify_backup_images(images, work, args.report.parent, test, tools, env))
+    if report.get('recovered_artwork') and images.get('sprite_aliases') and not images.get('backup_import'):
         from PIL import Image, ImageChops
         import io
         source = ROOT/'artifacts/web-asset-search-2026-10-20'
