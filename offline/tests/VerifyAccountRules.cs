@@ -69,11 +69,11 @@ public static class VerifyAccountRules
         var f=DivineGateOffline.WarehouseFriend(helper);
         Check(!ReferenceEquals(helper,f.unit) && f.unit.unique_id==helper.unique_id && f.unit.level==2 && f.friend_state==0,"Support snapshot");
         Check(DivineGateOffline.WarehouseFriend(helper).user_id==f.user_id && DivineGateOffline.WarehouseFriend(otherCopy).user_id!=f.user_id,"Duplicate character identities");
-        Check(!DivineGateOffline.WarehouseQuestEligible(baseUnit) && DivineGateOffline.WarehouseQuestEligible(helper),"Party instance filter");
+        Check(!DivineGateOffline.WarehouseQuestEligible(baseUnit) && !DivineGateOffline.WarehouseQuestEligible(helper),"Low-star warehouse candidates not filtered");
         var questPage=new MainMenuSeqQuestSelectFriend();var go=EngineSupport.CreateScaleTestObject();EngineSupport.RegisterComponent(go,questPage);
         var view=(WarehouseSupportView)EngineSupport.AddComponentType(go,typeof(WarehouseSupportView));view.warehouse=true;
         var list=DivineGateOffline.QuestSupportList(new TemplateList<MainMenuSeqQuestSelectFriend.SortParamFriend>(),questPage);
-        Check(list.m_BufferSize==3,"Warehouse quest candidates");
+        Check(list.m_BufferSize==0,"Low-star warehouse candidates visible");
         Check(Singleton<LocalSaveManager>.Instance.GetLocalSaveUseFriend(f.user_id)!=null,"Own support friendship points not disabled");
         string saveBefore=LocalSaveUtil.GetValueString("SERVER_SAVE","");Singleton<LocalSaveManager>.Instance.SaveFuncUseFriend(f.user_id);
         Check(LocalSaveUtil.GetValueString("SERVER_SAVE","")==saveBefore,"Own support writes cooldown account state");

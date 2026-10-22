@@ -18,6 +18,13 @@ def verify(test, tools, env, output):
     account_env=dict(env,DG_TEST_PREFS=str(test/'rules-prefs.txt'))
     for mode in [[],['reload']]:
         log+=subprocess.check_output(['mono',str(test/'VerifyAccountRules.exe'),*mode],env=account_env,text=True,timeout=60)
+    run('mcs','-out:'+str(test/'VerifyAcquisitionAndSupports.exe'),*refs,tests/'VerifyAcquisitionAndSupports.cs')
+    acquisition_log=''
+    acquisition_env=dict(env,DG_TEST_PREFS=str(test/'acquisition-prefs.txt'))
+    for mode in [[],['reload']]:
+        acquisition_log+=subprocess.check_output(['mono',str(test/'VerifyAcquisitionAndSupports.exe'),*mode],env=acquisition_env,text=True,timeout=60)
+    (output/'acquisition-support-tests.txt').write_text(acquisition_log)
+    log+=acquisition_log
     odds=test/'rules-odds';odds.mkdir()
     for p in test.glob('*.dll'):shutil.copy2(p,odds/p.name)
     run('mcs','-out:'+str(tools/'PrepareRulesOdds.exe'),'-r:'+CECIL,tests/'PrepareRulesOdds.cs')

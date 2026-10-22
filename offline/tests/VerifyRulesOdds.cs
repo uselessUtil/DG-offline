@@ -65,7 +65,9 @@ public static class VerifyRulesOdds
                 Ticket(t,0);var selected=Decode(rows,DivineGateOffline.ScratchTicket(0,newTotal,server,request));
                 if(five[selected.assign_chara_id])actualFive++;
             }
-            Check(actualFive==2*oldFive,"Not exactly doubled relative to original actual sampler");
+            Check(actualFive==3*oldFive,"Not exactly tripled relative to original actual sampler");
+            var poolMaster=MasterDataUtil.GetGachaParamFromID(pool);
+            Check(poolMaster.detail_2.Contains("3x original local pool") && !poolMaster.detail_2.Contains("2x"),"Pool description has stale multiplier");
             foreach(bool isFive in new[]{true,false})
             {
                 uint weight=0;foreach(var row in rows)if(five[row.assign_chara_id]==isFive)weight+=row.assign_rate;
