@@ -1,12 +1,14 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 20**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 21**。
+
+prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投影後，嵌入配接器並於 `Ready` 開頭套用；原 TextAsset、玩家角色／技能／抽卡資料保留。禁書目錄使用原存檔 ID，28 關後期新增任務未匯入，22 筆需要新版角色的歷史亂入規則停用。既有交付報告記錄舊存檔升級與 364 個 active 任務／706 層生成、本機 API 測試通過；本次提交整理未重跑編譯或完整回歸測試。完整來源、重建命令與限制見 [prototype21 交付報告](artifacts/1.0.6-offline-prototype21-backup-stages/README.md)。prototype 20 章節保留原生模型與動畫的實作背景；目前關卡主資料的有限匯入範圍見第 7.7 節。
 
 本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
 
 2026-10-21 的 [三版比較與 1.0.6 資料移植實驗](offline/comparison/README.md) 補充了跨版欄位、API 與存檔差異：28 張舊表經有限轉換後可在兩版原後端通過部分流程。這是新版承載舊內容的可行性證據，尚未接入新版診斷 APK，不能視為完整內容或 Android 遊玩驗證。
 
-**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** prototype 20 將備份無損包為本機 UnityRaw，接回 99 區原地圖／門／動畫、98 區效果與 522 個原角色 prefab，缺失或載入失敗才回到既有簡化 fallback。原圖、圖集與玩法沿用前版。備份年代未確定，不能把其主資料直接覆蓋舊版；Android 真正載入／渲染與操作待使用者驗證。
+**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** prototype 20 將備份無損包為本機 UnityRaw，接回 99 區原地圖／門／動畫、98 區效果與 522 個原角色 prefab，缺失或載入失敗才回到既有簡化 fallback。prototype 21 沿用原圖、圖集及原生載入，關卡資料另經舊版欄位與引用相容性檢查後有限匯入。備份年代未確定，不能整批覆蓋舊版主資料；Android 真正載入／渲染與操作待使用者驗證。
 
 ## 目錄
 
@@ -37,8 +39,9 @@
 | 1.0.6 prototype 18 | 189,133,540 | `2805fe356a0b2701322a3101b94932dcb1ab65a2dcb99521523bf6993861bbff` |
 | 1.0.6 prototype 19 | 128,942,820 | `ad49d9b12ee7aa2573f67c0320ad9732f0a272586d5742a46ebfc7c8dac80c3d` |
 | 1.0.6 prototype 20 | 175,826,218 | `68a5e639add63b9009a496c4d82612de08af388a67504d3356009c64a27055bc` |
+| 1.0.6 prototype 21 | 176,022,826 | `c17afcb856395fb7728075cb6db2215978eac3e48e3f8425589909948d303163` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 20 產物目錄](artifacts/1.0.6-offline-prototype20-native-models/README.md)，其中 `build-report.json`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 21 產物目錄](artifacts/1.0.6-offline-prototype21-backup-stages/README.md)，其中 `build-report.json`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -67,6 +70,9 @@
 | [offline/audit_native_restore.py](offline/audit_native_restore.py) | 唯讀核對原 prefab 階層、UV、材質與門動畫綁定，輸入原快取盤點及 1.0.6 資料表 |
 | [offline/native_bundles.py](offline/native_bundles.py) | 將匹配 CAB 無損封裝為 UnityRaw，產生路由索引與雜湊清單 |
 | [offline/NativeAssets.cs](offline/NativeAssets.cs) | APK 本機非同步原生載入、共用物件快取、錯誤／逾時降級與資源清理 |
+| [offline/backup_stages.py](offline/backup_stages.py)、[offline/BackupStages.cs](offline/BackupStages.cs) | 關卡表投影、既有 ID 保留、資料嵌入與啟動套用 |
+| [offline/audit_stage_differences.py](offline/audit_stage_differences.py) | 核對原 APK／交付 APK／備份關卡的欄位及實際遭遇差異 |
+| [offline/audit_collab_gacha.py](offline/audit_collab_gacha.py) | 聯動角色、名目權重及本機抽選票號機率盤點 |
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
@@ -181,7 +187,7 @@ flowchart TD
 
 ### 5.2 資料來源及關聯
 
-主來源是 **原 APK 的 TextAsset**。`build.py` 用 UnityPy 提取 `MasterData*.json` 供建置與核對。部分舊 JSON 含控制字元，分析腳本使用 `json.loads(..., strict=False)`；遊戲內仍用原 LitJson。
+主來源是 **原 APK 的 TextAsset**；啟用 `--backup-stages` 時，僅第 7.7 節的 11 張關卡表在記憶體中改用相容備份資料。`build.py` 用 UnityPy 提取 `MasterData*.json` 供建置與核對。部分舊 JSON 含控制字元，分析腳本使用 `json.loads(..., strict=False)`；遊戲內仍用原 LitJson。
 
 | 資料類別 | 主要原表／用途 |
 | --- | --- |
@@ -321,6 +327,24 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 完整原因、缺失、測試界線與重建命令見 [交付報告](artifacts/1.0.6-offline-prototype20-native-models/README.md)，靜態模型／動畫綁定證據見 [實作前核對](artifacts/native-model-audit-2026-10-22/README.md)。
 
+### 7.7 備份關卡設定（prototype 21）
+
+`backup_stages.py` 僅將原 371 筆任務對應到備份設定，再投影成 1.0.6 欄位。禁書目錄的備份 ID 436～440 對回原 ID 420～424；樓層保留原 ID 及陣列順序，既有通關旗標與存檔欄位不改寫。匯入前會檢查敵群連鎖、角色／掉落與面板引用；需要新版角色或非零新版行動欄位的普通遭遇會拒絕建置，22 筆不相容歷史亂入規則則停用。28 筆後期新增任務不在匯入範圍。
+
+範圍為 `MasterDataArea`、`MasterDataQuest`、`MasterDataQuestFloor`、`MasterDataCategoryPattern`、`MasterDataExpectPattern`、`MasterDataParamPanel`、`MasterDataParamPanelGroup`、`MasterDataEnemyChara`、`MasterDataEnemyGroup`、`MasterDataAreaAmend`、`MasterDataGuerrillaBoss`。角色、技能、抽卡、經濟與全域活動表仍用原 APK；區域加成及相容亂入保留備份歷史日期，沒有強制常駐。
+
+生成的 `BackupStageData.cs` 將 JSON 嵌入配接器，`BackupStages.cs` 在 `Ready` 開頭先解析完整 11 表，再交給原本機 API 與選單共用；解析失敗保留原表。原 TextAsset 不改寫。產物 `stage-tables/` 與 `backup-stage-import.json` 保存實際資料、雜湊、ID 映射及略過項目；進行中的舊地圖快照須重新進入關卡才完整採用新遭遇。
+
+建置需明確加 `--backup-stages --backup-assets` 並提供素材資料集。轉換工具及關卡差異盤點還會讀取 `artifacts/cache-backup-audit-2026-10-22/objects.json`；這份清單由 `audit_cached_backup.py` 產生，不隨 Git 提供，執行前須準備相符備份及盤點。路徑目前固定於程式，跨配置使用前需核對。
+
+### 7.8 關卡與聯動機率盤點工具
+
+`audit_stage_differences.py` 以 `--original-apk`、`--current-apk`、`--backup`、`--output` 比較欄位及有效遭遇，區分固定敵群數量、隨機候選、Boss 連戰與新增行動。若交付版有關卡覆蓋，還須保留同目錄的 `build-report.json` 及 `stage-tables/`，工具會核對 APK 雜湊與配接器內的 JSON。輸出包含 `source-proof.json`、逐關差異、Boss 流程與測試樣本。
+
+`audit_collab_gacha.py` 使用同組 APK／備份參數，另以 `--stage-proof` 指向上述 `source-proof.json`，輸出四個聯動池的角色、加值變體、權重及逐票號結果。原本機抽選的 `<= 0` 邊界使第一列多一個票號、最後一列少一個；報告保留此差異，不修改抽卡程式或權重。備份未找到抽卡表，這些結果不能作為歷史官方伺服器機率。
+
+`VerifyStageAudit.cs` 與 `PrepareGachaAuditProbe.cs`／`VerifyCollabOdds.cs` 是獨立盤點用測試入口，未自動接入 `test.py`；後者僅在拋棄式 DLL 副本供給固定票號並替換存檔／領卡 I/O。來源 APK、真實玩家存檔及正式抽選程式不因盤點而改寫。
+
 ## 8. 已修正問題及原因
 
 | 症狀 | 確認原因／限制 | 現行處理 |
@@ -438,6 +462,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `--recovered-assets` | 指定包含來源 manifests 與已核對素材的資料集 |
 | `--backup-assets` | 指定 `jp.gungho.dg` 原快取，優先覆蓋每個匹配圖片；須搭配 web 資料集供缺圖保留 |
 | `--restore-native` | 搭配備份路徑，封裝原角色／地圖 prefab 與動畫；啟用本機非同步載入及 missing/error/timeout fallback |
+| `--backup-stages` | 搭配備份與既有快取盤點，匯入 11 張相容關卡表；保留原任務／存檔 ID，不加入後期新任務 |
 | `--output` | 指定新的產物目錄，不覆寫既有 APK |
 | `--work` | 指定獨立的中間檔工作目錄 |
 
@@ -446,9 +471,9 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 `build.py` 的步驟：
 
 1. 檢查原 APK SHA-256、ZIP 完整性，拒絕錯版／已有輸出 APK。
-2. 提取原 Unity Data 至獨立工作目錄，讀表、檢查數量及產生活動清單。
+2. 提取原 Unity Data 至獨立工作目錄，讀表並檢查數量；選用備份關卡時先投影、驗證及嵌入資料，再依實際生效表產生活動清單。
 3. 生成替代圖與核對素材，建圖集、PNG 包、索引及來源報告；啟用 `--restore-native` 時，另核對原 CAB 依賴／元件 schema，無損封裝本機資源包及原生路由索引。
-4. `mcs -nostdlib` 對**原 APK 的 mscorlib／System／System.Core／UnityEngine／遊戲 DLL** 編譯配接器。
+4. `mcs -nostdlib` 對**原 APK 的 mscorlib／System／System.Core／UnityEngine／遊戲 DLL（含 Assembly-CSharp-firstpass）** 編譯配接器。
 5. Cecil 嵌入 PNG，執行 `Patch.cs` 修改原遊戲 DLL；封裝前執行聯動掛鉤契約檢查。
 6. 在 mainData 的 MonoManager 登錄新 DLL，核對其他物件原始資料沒有改動。
 7. 二進位修改 Manifest；依 `--native-direct` 放入自帶真正引擎。
@@ -480,6 +505,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `VerifyMapTextureRouting.cs` 等 | 404 次貼圖路由，包含原 61 個材質與模型編號不同的區域 |
 | `verify_backup_images.py` | 232 檔雜湊不變；612 個貼圖、690 個立繪／地圖 payload 與 834 個原圖／共用框像素核對，18 個原色星數與 84 張選關圖 |
 | `verify_native_bundles.py`、`VerifyNativeHooks.cs`、`NativeAssetTests.cs` | 實際 APK 82 包／CAB 位元組、原始門流程保留、原生陰影保護、載入成功／錯誤／逾時／缺物件降級與清理；WWW/GPU／fallback 工廠由替身提供 |
+| `verify_backup_stages.py`、`VerifyBackupStages.cs` | 交付版 11 張關卡表雜湊／內容與共用參照、prototype 20 隔離存檔升級、364 個 active 任務生成及 API 流程；需備妥前版 APK |
 
 1,223 是封裝 payload 數，包含 522 立繪、522 衍生陰影、172 地圖圖及 7 張合成圖集；不是所有來源小圖的數量。七張合成圖集為五組角色、一組面板、一組城鎮圖。
 

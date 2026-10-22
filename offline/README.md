@@ -8,17 +8,17 @@
 
 2.9.0 的安全檢查與獨立移植嘗試見 [版本報告](v290/README.md)：原 APK 缺 42 份主資料，目前僅交付離線診斷版，尚無可玩的 2.9.0 單機版。以下內容仍專指 1.0.6。
 
-目前實作基準為 **prototype 20 原生模型與動畫版**。82 個本機資源包接回 99 區地圖／門與原動畫、98 區環境效果及 522 個角色 prefab；缺失或載入失敗時保留既有簡化 fallback。prototype 19 的原圖、選關圖與 Empty／Lock 保留。主資料與玩法未更換；**Android 真正載入、渲染與操作交由使用者驗證**。來源與年代限制見 [備份檢查](../artifacts/cache-backup-audit-2026-10-22/README.md)。
+目前實作基準為 **prototype 21 備份關卡版**。既有 371 筆任務透過 11 張相容主表套用備份設定；禁書目錄保留舊 ID，既有交付報告記錄 prototype 20 存檔升級檢查通過。13 關多餘 Boss 階段、蛋關卡、寶箱、體力及連戰設定已對齊。保留 prototype20 的 82 個原生資源包與缺失／載入失敗備援。28 關後期新增內容尚未匯入；22 筆引用新版角色的亂入規則停用，維持普通遭遇。**Android 渲染與操作交由使用者驗證**。
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
 ## 最新產物
 
-- APK：`artifacts/1.0.6-offline-prototype20-native-models/ディバゲ_1.0.6.apk`
+- APK：`artifacts/1.0.6-offline-prototype21-backup-stages/ディバゲ_1.0.6.apk`
 - 使用與舊離線版相同的套件 `jp.gungho.dg.offline106` 及測試簽章，更新安裝時不需先清除資料。
-- 大小：175,826,218 bytes。
-- SHA-256：`68a5e639add63b9009a496c4d82612de08af388a67504d3356009c64a27055bc`。
-- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype20-native-models/README.md)。
+- 大小：176,022,826 bytes。
+- SHA-256：`c17afcb856395fb7728075cb6db2215978eac3e48e3f8425589909948d303163`。
+- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype21-backup-stages/README.md)。
 - 2026-10-21 [僅 ARM64 的 Android 16 裝置安裝檢查](../artifacts/android16-tb323fu-prototype17-test-2026-10-21/README.md)：低 SDK 繞過後仍因 `INSTALL_FAILED_NO_MATCHING_ABIS` 無法安裝；裝置僅 ARM64，而 APK 僅 ARM32。未修改 APK，原生 ARM64 移植尚未完成。
 - 全部活動原名、任務數及範圍：[活動清單](../artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。七筆無樓層的 reserve 維持停用，並未加入後期版本活動。
 
@@ -38,8 +38,9 @@
 - prototype 18 從 `fandom-ui-images.json` 載入經核對的 Wiki `Empty-icon.png`，覆蓋 `chara_icon_empty` 並排除面板圖集內舊的同名來源；`lock1` 搜尋結果記錄在本次交付說明。
 - prototype 19 新增 `backup_images.py` 與 `--backup-assets`，逐檔驗證備份，將六個原圖集的 JSON／UIAtlas 座標交叉核對後以原尺寸像素重新排圖。原 805 個框全數保留，另有共用 UI 框；五組角色需求中最後一組仍提供 Empty／Lock 等共用圖。
 - prototype 20 新增 `native_bundles.py`、`NativeAssets.cs` 與 `--restore-native`。原 CAB 不改位元組，重包 UnityRaw v3 後由 APK 本機非同步載入，原模型／材質／動畫關聯保留；共用 mapMaterial 依模型包選取。原生角色跳過矩形陰影補丁，恢復原 Opaque 輪廓網格與陰影深度契約；missing/error/timeout 退回舊簡化路徑。
+- prototype 21 新增 `backup_stages.py`、`BackupStages.cs`、`--backup-stages`。原 TextAsset 保留；相容備份表嵌入配接器，啟動時先全部解析，再同時交給本機 API 與選單。角色／技能／抽卡表不在本次匯入範圍。原地圖快照可能仍帶舊遭遇，更新後請重新進入關卡。資料範圍及必備盤點清單見 [移植指南第 7.7 節](../OFFLINE_PORTING_GUIDE.md#77-備份關卡設定prototype-21)。
 - prototype 10 只取消活動區域時段／玩家分組、前置區域與正式難度順序限制；六種進化神殿常駐。教學、主線順序、體力、獎勵及既有通關紀錄維持原規則，不會修改全域活動日期表。
-- 522 張立繪、522 個 128px 角色頭像及全部 84 張選關圖已改用原快取；Panel 原圖優先，189 個未找到備份對應的相容圖仍保留。備份主資料未匯入。
+- 522 張立繪、522 個 128px 角色頭像及全部 84 張選關圖已改用原快取；Panel 原圖優先，189 個未找到備份對應的相容圖仍保留。圖片匯入階段不含主資料；prototype21 的關卡表另由 `BackupStages.cs` 套用。
 - prototype 7 把備份中的 `chara_icon_empty.png` 補進五組角色圖集，修正未選好友／空隊伍格因透明空圖而露出白色底層的問題。
 - prototype 8 保留跨圖集搜尋的「找不到」結果，讓 `InGameCard` 繼續搜尋真正包含敵人頭像的圖集；先前在第一組建立替代 Sprite 會使搜尋錯誤地成功。地板按 lower 圖片比例縮到棋盤遠端 z=2.5，避免與 upper 門景重疊。
 - prototype 9 從 Fandom 公開圖片 CDN 取得七個城鎮門圖，對應 `area_icon_0001..0007`，保留原圖 207×131 的比例／像素。它們是 Wiki 圖片，未證明與原 1.0.6 圖集像素完全一致。
