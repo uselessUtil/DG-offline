@@ -77,10 +77,20 @@ public static class VerifyBackupStages
         server=new ServerForgery();Singleton<ServerForgery>.Instance=server;
         typeof(ServerForgery).GetMethod("Start",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(server,null);
         if(args.Length>0 && args[0]=="seed") {Seed();return;}
-        Check(Save!=null && JsonMapper.ToJson(Save)==File.ReadAllText(Snapshot),"Upgrade changed existing save fields");
+        var expectedSave=JsonMapper.ToObject<ServerForgerySaveUser>(File.ReadAllText(Snapshot));
+        if(Environment.GetEnvironmentVariable("DG_TEST_ACCOUNT_RULES")=="22")
+        {
+            var rank=server.m_MasterDataUserRank[183];
+            expectedSave.player_rank=184;expectedSave.player_exp=rank.exp_next_total;
+            expectedSave.party_base=rank.party_cost;expectedSave.party_total=rank.party_cost+expectedSave.party_paid;
+            expectedSave.friend_base=rank.friend_max;expectedSave.friend_total=rank.friend_max+expectedSave.friend_paid;
+            expectedSave.unit_base=rank.unit_max;expectedSave.unit_paid=2000-rank.unit_max;expectedSave.unit_total=2000;
+            expectedSave.stamina_max=rank.stamina;
+        }
+        Check(Save!=null && JsonMapper.ToJson(Save)==JsonMapper.ToJson(expectedSave),"Upgrade changed non-authorized existing save fields");
         Check(Save.quest_id==420 && ServerDataUtil.ChkBitFlag(ref Save.flag_quest_clear,420),"Index save ID lost");
         Check(MasterDataUtil.GetQuestParamFromID(436)==null && MasterDataUtil.GetQuestParamFromID(420)!=null,"Duplicate or migrated quest ID");
-        Console.WriteLine("PASS prototype20-to-candidate upgrade: complete saved account unchanged; in-progress quest and clear flags still use original Index IDs.");
+        Console.WriteLine("PASS prototype20-to-candidate upgrade: only explicitly requested account defaults change; all other fields, pending quest and Index clear flags preserved.");
         Compare<MasterDataArea>("MasterDataArea","m_MasterDataArea");
         Compare<MasterDataQuest>("MasterDataQuest","m_MasterDataQuest");
         Compare<MasterDataQuestFloor>("MasterDataQuestFloor","m_MasterDataQuestFloor");

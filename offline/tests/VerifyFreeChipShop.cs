@@ -11,11 +11,11 @@ public static class VerifyFreeChipShop
     static uint serial = 1;
     static ServerForgerySaveUser Save { get { return (ServerForgerySaveUser)typeof(ServerForgery).GetField("m_ForgeryPlayerSave", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(server); } }
     static void Check(bool test, string message) { if (!test) throw new Exception(message); }
-    static void Api(SERVER_API api, object request)
+    static void Api(SERVER_API api, object request, bool success = true)
     {
         var packet = new PacketData(); packet.m_PacketAPI = api; packet.m_PacketUniqueNum = serial++;
         var response = JsonMapper.ToObject(server.CreateRecvForgery(ref packet, JsonMapper.ToJson(request)));
-        Check((int)response["header"]["code"] == (int)API_CODE.API_CODE_SUCCESS, "API failed: " + api);
+        Check(((int)response["header"]["code"] == (int)API_CODE.API_CODE_SUCCESS) == success, "API outcome: " + api);
     }
     static void SetField(string name, object value)
     {
@@ -109,11 +109,20 @@ public static class VerifyFreeChipShop
         // The original API can spend the new free currency on capacity.
         Save.have_stone_free = 10; Save.have_stone_pay = 0; Save.have_stone = 10;
         uint oldCapacity = Save.unit_total;
-        Api(SERVER_API.SERVER_API_STONE_USE_UNIT, new SendStoneUsedUnit());
-        Check(Save.have_stone_free == 9 && Save.have_stone == 9 && Save.unit_total == oldCapacity + 5, "Granted free chips cannot be spent");
+        if(Environment.GetEnvironmentVariable("DG_TEST_ACCOUNT_RULES")=="22")
+        {
+            Api(SERVER_API.SERVER_API_STONE_USE_UNIT,new SendStoneUsedUnit(),false);
+            Check(oldCapacity==2000 && Save.unit_total==2000 && Save.have_stone==10 && Save.have_stone_free==10,
+                "Full warehouse charged chips or expanded beyond cap");
+        }
+        else
+        {
+            Api(SERVER_API.SERVER_API_STONE_USE_UNIT, new SendStoneUsedUnit());
+            Check(Save.have_stone_free == 9 && Save.have_stone == 9 && Save.unit_total == oldCapacity + 5, "Granted free chips cannot be spent");
+        }
         Save.have_stone_free = 35; Save.have_stone_pay = 3; Save.have_stone = 38;
         server.UserParamSave();
         Console.WriteLine("PASS free chip shop: exact six original quantities/IDs, FREE prices, no billing, valid account required, free-only grants, immediate UI balance, unchanged paid history/account fields.");
-        Console.WriteLine("PASS free chip boundaries: invalid packs, 999 cap/overflow, whole-pack rejection, one grant per confirmation, cancelled/foreign pages, repeat visits, original unit-expansion spending API. Android UI remains unverified.");
+        Console.WriteLine("PASS free chip boundaries: invalid packs, 999 cap/overflow, whole-pack rejection, one grant per confirmation, cancelled/foreign pages, repeat visits; warehouse API follows configured cap and does not charge at full capacity. Android UI remains unverified.");
     }
 }

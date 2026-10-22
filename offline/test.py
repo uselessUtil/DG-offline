@@ -79,6 +79,12 @@ def main():
     run('mcs','-out:'+str(test/'LocalApiTests.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
         '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'LocalApiTests.cs')
     env = dict(os.environ, DG_TEST_TABLES=str(work/'tables'),DG_TEST_PREFS=str(test/'player-prefs.txt'))
+    if report.get('account_rules'):
+        env['DG_TEST_ACCOUNT_RULES'] = '22'
+        import sys
+        sys.path.insert(0,str(tests))
+        from verify_account_rules import verify as verify_account_rules
+        report['account_rules_tests'] = verify_account_rules(test,tools,env,args.report.parent)
     if report.get('backup_stage_import'):
         env['DG_TEST_STAGE_TABLES'] = str(args.report.parent/'stage-tables')
         import sys

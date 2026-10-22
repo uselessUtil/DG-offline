@@ -34,6 +34,7 @@ public static class VerifyCollabGacha
         for (int i = 0; i < expected.Length; i++)
         {
             var row = expected[i]; var actual = master.m_MasterDataGacha[i];
+            if(Environment.GetEnvironmentVariable("DG_TEST_ACCOUNT_RULES")=="22" && row.fix_id==200100) row.detail_2=actual.detail_2;
             if (row.type == 3)
             {
                 unlocked++; Check(actual.event_id == 0 && actual.price == 5 && actual.name != "限定スクラッチ", "Pool not open/named");
@@ -42,7 +43,15 @@ public static class VerifyCollabGacha
             Check(JsonMapper.ToJson(row) == JsonMapper.ToJson(actual), "Unexpected pool mutation " + row.fix_id);
         }
         Check(unlocked == 4, "Wrong pool count");
-        Check(JsonMapper.ToJson(server.m_MasterDataGachaAssign) == JsonMapper.ToJson(Original<MasterDataGachaAssign>("MasterDataGachaAssign")), "Original weights/levels/pluses changed");
+        var oldAssign=Original<MasterDataGachaAssign>("MasterDataGachaAssign");
+        foreach(var row in oldAssign)
+        {
+            MasterDataGachaAssign found=null;
+            foreach(var actual in server.m_MasterDataGachaAssign)if(actual.fix_id==row.fix_id) {found=actual;break;}
+            Check(found!=null && JsonMapper.ToJson(found)==JsonMapper.ToJson(row),"Original assignment changed "+row.fix_id);
+        }
+        Check(server.m_MasterDataGachaAssign.Length==oldAssign.Length+
+            (Environment.GetEnvironmentVariable("DG_TEST_ACCOUNT_RULES")=="22" ? 54 : 0),"Unexpected added assignment count");
         Check(ReferenceEquals(server.m_MasterDataGacha, master.m_MasterDataGacha), "Menu/API table mismatch");
         Check(DivineGateOffline.CollabPoolID(-1) == 0 && DivineGateOffline.CollabPoolID(4) == 0, "Invalid pool index accepted");
         for (int i = 0; i < 4; i++)
