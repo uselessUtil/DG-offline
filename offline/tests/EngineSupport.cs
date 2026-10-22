@@ -21,6 +21,61 @@ public static class EngineSupport
     static Dictionary<object, List<object>> components = new Dictionary<object, List<object>>(new IdentityComparer());
     static Dictionary<object, object> transforms = new Dictionary<object, object>(new IdentityComparer());
     static Dictionary<object, Vector3> scales = new Dictionary<object, Vector3>(new IdentityComparer());
+    sealed class NativeWwwState
+    {
+        public string Url, Error;
+        public bool Done, Disposed;
+        public AssetBundle Bundle;
+    }
+    static Dictionary<object, NativeWwwState> nativeWww = new Dictionary<object, NativeWwwState>(new IdentityComparer());
+    static Dictionary<object, Dictionary<string, UnityEngine.Object>> nativeBundleObjects = new Dictionary<object, Dictionary<string, UnityEngine.Object>>(new IdentityComparer());
+    public static float NativeTime;
+    public static string NativeApkPath = "/data/app/dg.test/base.apk";
+    public static int NativeUnloads;
+    public static string NativeDataPath() { return NativeApkPath; }
+    public static float NativeRealtime() { return NativeTime; }
+    public static void NativeWwwInit(object obj, string url, byte[] post, string[] headers)
+    { nativeWww[obj] = new NativeWwwState { Url = url }; }
+    public static bool NativeWwwDone(object obj) { return nativeWww[obj].Done; }
+    public static string NativeWwwError(object obj) { return nativeWww[obj].Error; }
+    public static AssetBundle NativeWwwBundle(object obj) { return nativeWww[obj].Bundle; }
+    public static void NativeWwwDestroy(object obj, bool cancel) { nativeWww[obj].Disposed = true; }
+    public static string[] NativeUrls()
+    {
+        List<string> urls = new List<string>();
+        foreach (NativeWwwState s in nativeWww.Values) if (!s.Disposed) urls.Add(s.Url);
+        return urls.ToArray();
+    }
+    public static AssetBundle NativeComplete(string id, string error)
+    {
+        foreach (NativeWwwState s in nativeWww.Values)
+        {
+            if (s.Disposed || s.Done || s.Url.IndexOf(id) < 0) continue;
+            s.Done = true; s.Error = error;
+            if (error == null)
+            {
+                s.Bundle = (AssetBundle)FormatterServices.GetUninitializedObject(typeof(AssetBundle));
+                nativeBundleObjects[s.Bundle] = new Dictionary<string,UnityEngine.Object>();
+            }
+            return s.Bundle;
+        }
+        throw new Exception("No active native WWW for " + id);
+    }
+    public static void NativeSetAsset(AssetBundle bundle, string name, UnityEngine.Object obj)
+    { nativeBundleObjects[bundle][name] = obj; }
+    public static UnityEngine.Object NativeLoad(object bundle, string name, Type type)
+    {
+        UnityEngine.Object value;
+        return nativeBundleObjects[bundle].TryGetValue(name,out value) && type.IsInstanceOfType(value) ? value : null;
+    }
+    public static void NativeUnload(object bundle, bool destroy)
+    { if (destroy) throw new Exception("Native cleanup must preserve scene instances"); NativeUnloads++; }
+    public static Component AddComponentType(object go, Type type)
+    {
+        var component = (Component)FormatterServices.GetUninitializedObject(type);
+        RegisterComponent(go,component);
+        return component;
+    }
     public static void SetActiveState(object obj, bool active) { activeObjects[obj] = active; }
     public static bool GameObjectActive(object obj) { bool active; return activeObjects.TryGetValue(obj, out active) && active; }
     public static void SetColliderEnabled(object obj, bool enabled) { enabledColliders[obj] = enabled; }

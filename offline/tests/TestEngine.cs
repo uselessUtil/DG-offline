@@ -32,6 +32,20 @@ public static class TestEngine
         {
             string helperName = null;
             if (type.FullName == "UnityEngine.Resources" && method.Name == "Load" && method.Parameters.Count > 0) helperName = "Load";
+            if (type.FullName == "UnityEngine.Application" && method.Name == "get_dataPath") helperName = "NativeDataPath";
+            if (type.FullName == "UnityEngine.Time" && method.Name == "get_realtimeSinceStartup") helperName = "NativeRealtime";
+            if (type.FullName == "UnityEngine.WWW")
+            {
+                if (method.Name == "InitWWW") helperName = "NativeWwwInit";
+                if (method.Name == "get_isDone") helperName = "NativeWwwDone";
+                if (method.Name == "get_error") helperName = "NativeWwwError";
+                if (method.Name == "get_assetBundle") helperName = "NativeWwwBundle";
+                if (method.Name == "DestroyWWW") helperName = "NativeWwwDestroy";
+            }
+            if (type.FullName == "UnityEngine.AssetBundle" && method.Name == "Load") helperName = "NativeLoad";
+            if (type.FullName == "UnityEngine.AssetBundle" && method.Name == "Unload") helperName = "NativeUnload";
+            if (type.FullName == "UnityEngine.GameObject" && method.Name == "AddComponent" &&
+                method.Parameters.Count == 1 && method.Parameters[0].ParameterType.FullName == "System.Type") helperName = "AddComponentType";
             if (type.FullName == "UnityEngine.TextAsset" && method.Name == "get_text") helperName = "Text";
             if (type.FullName == "UnityEngine.Component" && method.Name == "get_gameObject") helperName = "ComponentGameObject";
             if (type.FullName == "UnityEngine.Object" && method.Name == "get_name") helperName = "ObjectName";
@@ -61,6 +75,11 @@ public static class TestEngine
                 {
                     il.Emit(OpCodes.Ldarg_0);
                     foreach (var parameter in method.Parameters) il.Emit(OpCodes.Ldarg, parameter);
+                }
+                else if (new[] { "NativeWwwInit", "NativeWwwDone", "NativeWwwError", "NativeWwwBundle", "NativeWwwDestroy", "NativeLoad", "NativeUnload", "AddComponentType" }.Contains(helperName))
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    foreach (var parameter in method.Parameters) il.Emit(OpCodes.Ldarg,parameter);
                 }
                 else for (int i = 0; i < target.Parameters.Count; i++) il.Emit(OpCodes.Ldarg, method.Parameters[i]);
                 il.Emit(OpCodes.Call, module.ImportReference(target));
