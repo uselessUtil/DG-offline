@@ -102,7 +102,8 @@ public static partial class DivineGateOffline
     public static bool WarehouseQuestEligible(PacketStructUnit unit)
     {
         UserDataAdmin admin = Singleton<UserDataAdmin>.Instance;
-        if (unit == null || MasterDataUtil.GetCharaParamFromID(unit.id) == null) return false;
+        MasterDataParamChara master = unit == null ? null : MasterDataUtil.GetCharaParamFromID(unit.id);
+        if (master == null || master.rare < 4) return false;
         PacketStructPlayer player = admin.m_StructPlayer;
         return !PartyContains(player.unit_party_assign[player.unit_party_current],unit.unique_id);
     }
@@ -135,7 +136,7 @@ public static partial class DivineGateOffline
         {
             view.party = party; RebuildQuestSupports(page);
             MainMenuFixLayerLinker.UnderMsgRequest(view.warehouse ?
-                "倉庫のユニットを助っ人に選択。使用中の4体は除外します。" : GameTextUtil.GetText("MM_UNDERMSG_QUEST_HELPER"));
+                "倉庫の★5以上を助っ人に選択。使用中の4体は除外します。" : GameTextUtil.GetText("MM_UNDERMSG_QUEST_HELPER"));
             return true;
         }
         view.party = party; return false;
