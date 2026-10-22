@@ -57,29 +57,39 @@ public static partial class DivineGateOffline
         if (source == null) return;
         if (view.button == null)
         {
-            bool active = source.activeSelf; source.SetActive(false);
-            try { view.button = Object.Instantiate(source) as GameObject; }
-            finally { source.SetActive(active); }
+            GameObject prefab = Resources.Load("Prefab/MainMenu/MainMenuPage/PagePartyBlendBuildUp") as GameObject;
+            GameObject template = prefab == null ? null : UnityUtil.GetChildNode(prefab,"SwitchButtonClear");
+            if (template == null) return;
+            bool active = template.activeSelf; template.SetActive(false);
+            try { view.button = Object.Instantiate(template) as GameObject; }
+            finally { template.SetActive(active); }
             view.button.name = "DGWarehouseSource";
             view.button.transform.parent = source.transform.parent;
             view.button.transform.localRotation = source.transform.localRotation;
             Vector3 p = source.transform.localPosition;
-            view.button.transform.localPosition = new Vector3(p.x + 330, p.y, p.z);
             view.button.transform.localScale = source.transform.localScale;
+            BoxCollider hit = view.button.GetComponent<BoxCollider>();
+            // Mirror the original left inset, and align the new right edge
+            // using the native centered clear-button collider (184 x 38).
+            float right = -p.x;
+            float edge = (hit.center.x + hit.size.x * 0.5f) * view.button.transform.localScale.x;
+            view.button.transform.localPosition = new Vector3(right - edge, p.y, p.z);
+            foreach (LabelSetter setter in view.button.GetComponentsInChildren<LabelSetter>(true))
+            { setter.m_LabelTextKey = ""; setter.enabled = false; }
             BindCollabWidgets(view.button,source.layer);
             foreach (UILabel label in view.button.GetComponentsInChildren<UILabel>(true)) label.text = "";
-            GameObject text = UnityUtil.GetChildNode(view.button,"ListSortLabel");
+            GameObject text = UnityUtil.GetChildNode(view.button,"ButtonMsg");
             if (text != null)
             {
                 Vector3 pText = text.transform.localPosition;
-                text.transform.localPosition = new Vector3(125,pText.y,pText.z);
+                text.transform.localPosition = new Vector3(0,pText.y,pText.z);
                 text.transform.localScale = new Vector3(22,22,1);
             }
         }
         UnityUtil.SetObjectEnabledFix(view.button,visible && !SupportTutorialActive());
         if (visible)
         {
-            UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(view.button,"ListSortLabel"),
+            UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(view.button,"ButtonMsg"),
                 view.warehouse ? "フレンドに戻る" : "倉庫から選択");
             ResetCollabCardAnimation(view.button);
         }
