@@ -59,9 +59,36 @@ public static partial class Patch106
     }
     static void OfflineQualityOfLife()
     {
-        var notice = Method("MainMenuSeqSwitchPage","Update").Body.Instructions.Single(i =>
-            i.OpCode == OpCodes.Ldsfld && ((FieldReference)i.Operand).Name == "m_StartingFirstInformation");
-        notice.OpCode = OpCodes.Ldc_I4_1; notice.Operand = null;
+        var add = Method("ServerForgery","AddUnit");
+        var allocations = add.Body.Instructions.Where(i => i.OpCode == OpCodes.Newobj &&
+            ((MethodReference)i.Operand).DeclaringType.FullName == "ServerDataDefine.PacketStructUnit").ToArray();
+        if (allocations.Length != 1) throw new Exception("Unexpected new-unit allocation");
+        var addIL = add.Body.GetILProcessor();
+        var duplicate = Instruction.Create(OpCodes.Dup);
+        var server = Instruction.Create(OpCodes.Ldarg_0);
+        addIL.InsertAfter(allocations[0],duplicate); addIL.InsertAfter(duplicate,server);
+        addIL.InsertAfter(server,Instruction.Create(OpCodes.Call,Helper("InitializeAcquisitionTime")));
+        foreach (var spec in new[]{new[]{"SortCreateID_GetTime","AcquisitionSortKey"},
+            new[]{"SortCreateID_VerForm_GetTime","AcquisitionSortKeyForParty"}})
+        {
+            var sort = Method("MainMenuListSort",spec[0]); var sortIL = Reset(sort);
+            foreach (var parameter in sort.Parameters) sortIL.Emit(OpCodes.Ldarg,parameter);
+            sortIL.Emit(OpCodes.Call,Helper(spec[1])); sortIL.Emit(OpCodes.Ret);
+        }
+        // General news and scratch news are separate automatic pages.
+        // Both flags reset with the resident/menu lifecycle; bypass each gate.
+        foreach (string field in new[]{"m_StartingFirstInformation","m_StartingFirstScratch"})
+        {
+            var notice = Method("MainMenuSeqSwitchPage","Update").Body.Instructions.Single(i =>
+                i.OpCode == OpCodes.Ldsfld && ((FieldReference)i.Operand).Name == field);
+            notice.OpCode = OpCodes.Ldc_I4_1; notice.Operand = null;
+        }
+        Prefix("MainMenuSeqSwitchPage","Update","QuietHelperRewardNotice");
+        var presents = Method("MainMenuSeqSwitchPage","Update").Body.Instructions.Where(i =>
+            i.OpCode == OpCodes.Ldfld && ((FieldReference)i.Operand).Name == "m_StructPresentList").ToArray();
+        if (presents.Length != 7) throw new Exception("Unexpected automatic-present reads: " + presents.Length);
+        foreach (var present in presents)
+        { present.OpCode = OpCodes.Call; present.Operand = Helper("NotificationPresents"); }
         foreach (var pair in new[] {new[]{"ServerForgery","StaminaAutoRecovery"},
             new[]{"UserDataAdmin","Update"},new[]{"MainMenuFixPlayerParam","Update"}})
         {
