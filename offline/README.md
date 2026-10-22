@@ -10,17 +10,17 @@
 
 2.9.0 的安全檢查與獨立移植嘗試見 [版本報告](v290/README.md)：原 APK 缺 42 份主資料，目前僅交付離線診斷版，尚無可玩的 2.9.0 單機版。以下內容仍專指 1.0.6。
 
-目前實作基準為 **prototype 22r5 五星率三倍版**。新角色記錄獲得時間，舊角色時間不補寫；第五位倉庫助戰僅顯示目前五星以上且未在當前隊伍中的角色。新舊帳號至少 Rank 184／倉庫 2,000 格，保留更高進度；回體間隔為 180 秒。標準池補入 18 種既有五星，標準與四個聯動池的五星總機率改為 prototype 21 實際本機機率的三倍。強化頁維持原好友流程。沿用 prototype 21 的 11 張相容關卡表及 prototype 20 的原生素材。28 筆後期任務與 22 筆不相容亂入規則仍未開放。**Android 渲染、操作與實際遊玩仍待驗證**。
+目前實作基準為 **prototype 22r6 倉庫切換按鈕樣式版**。倉庫來源按鈕重用原版紫色清除按鈕背景，靠列表內容右緣對齊。新角色記錄獲得時間，舊角色時間不補寫；第五位倉庫助戰僅顯示目前五星以上且未在當前隊伍中的角色。新舊帳號至少 Rank 184／倉庫 2,000 格，保留更高進度；回體間隔為 180 秒。標準池補入 18 種既有五星，標準與四個聯動池的五星總機率改為 prototype 21 實際本機機率的三倍。強化頁維持原好友流程。沿用 prototype 21 的 11 張相容關卡表及 prototype 20 的原生素材。28 筆後期任務與 22 筆不相容亂入規則仍未開放。**Android 渲染、操作與實際遊玩仍待驗證**。
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
 ## 最新產物
 
-- APK：`artifacts/1.0.6-offline-prototype22r5-triple-five-star/ディバゲ_1.0.6.apk`
+- APK：`artifacts/1.0.6-offline-prototype22r6-warehouse-button/ディバゲ_1.0.6.apk`
 - 使用與舊離線版相同的套件 `jp.gungho.dg.offline106` 及測試簽章，更新安裝時不需先清除資料。
 - 大小：176,031,018 bytes。
-- SHA-256：`3b69fa16fb6ee3610c83362bdbc0c8f8d2cce7ae78dc302d6f1669fe78e5522b`。
-- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype22r5-triple-five-star/README.md)。
+- SHA-256：`700428a2fcdc0ad76e810453f1f2bb5ef5e726aad8157add981c51c3358a2202`。
+- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)。
 - 2026-10-21 [僅 ARM64 的 Android 16 裝置安裝檢查](../artifacts/android16-tb323fu-prototype17-test-2026-10-21/README.md)：低 SDK 繞過後仍因 `INSTALL_FAILED_NO_MATCHING_ABIS` 無法安裝；裝置僅 ARM64，而 APK 僅 ARM32。未修改 APK，原生 ARM64 移植尚未完成。
 - 全部活動原名、任務數及範圍：[活動清單](../artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。七筆無樓層的 reserve 維持停用，並未加入後期版本活動。
 
@@ -32,6 +32,7 @@
 
 ## 素材與限制
 
+- prototype 22r6 的倉庫來源按鈕改為複製原生 `PagePartyBlendBuildUp/SwitchButtonClear`，使用參考截圖的 `buttonn_small` 背景與184×38碰撞框；按排序列原左側留白鏡像對齊右緣，文字改為置中。原 `LabelSetter` 的清除文字鍵清空，避免覆蓋倉庫切換文字。來源切換及五星以上篩選規則維持原設定。
 - prototype 22r5 將標準及四個聯動池的五星總機率改為原始本機抽選實際機率的三倍，透過兩階段抽選保留各星等類別內的角色與加值權重。倍率基準在補入18種標準五星前擷取，並納入原抽選器首尾票號偏差；池內說明同步顯示三倍與實際百分比。
 - prototype 22r4 新增 `AcquisitionOrder.cs`：只在 `ServerForgery.AddUnit` 建立新角色物件時記錄伺服器格式秒數，載入／存檔不補寫舊角色獲得時間。兩種共用獲得順序鍵改用秒級時間，同秒按原始倉庫插入順序區分；零時間舊卡仍按原圖鑑編號排列，其他排序保留。倉庫助戰候選增加目前 `rare >= 4` 條件，即五星以上；一般好友清單與強化流程不變。
 - prototype 22r3 依使用者截圖修正真正的 Present Info「助人獎勵／友情點」自動通知。先前22r2只處理一般／卡池公告，未解決這張通知。現在僅消耗待顯示的助人計數，不變更FP入帳；無真正禮物的占位清單也不再開啟空通知。既有交付報告透過原本機 login-pack 入帳及回覆處理重現 6245+20=6265，再驗證100次返回與存檔餘額保留。

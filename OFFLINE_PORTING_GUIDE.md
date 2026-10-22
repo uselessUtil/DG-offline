@@ -2,7 +2,9 @@
 
 本專案有權授權的原創工具、補丁實作、測試及文件採用 [MIT License](LICENSE)。原遊戲、Unity 引擎、第三方資料及素材不在此重新授權範圍；詳見 [第三方權利聲明](THIRD_PARTY_NOTICES.md)。
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 22r5**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 22r6**。
+
+prototype 22r6 更新：倉庫來源按鈕改用原紫色清除按鈕背景，依原排序列的左側留白鏡像對齊右緣，文字置中並停用原文字初始化鍵。功能及既有規則沿用 22r5；細節與結構檢查範圍見第 9.7 節。本次整理僅做靜態檢查，未編譯或執行完整回歸。
 
 prototype 22r5 更新：一般／抽卡公告、助人友情點與空禮物清單的自動通知分流已修正；新角色記錄獲得時間並以秒級排序，舊角色不補寫；倉庫助戰清單只顯示目前五星以上且不在出戰隊伍中的角色。五星總機率現為 prototype 21 實際本機機率的三倍。新增來源與測試範圍見第 9.6 節；本次整理僅做靜態檢查，未編譯或執行完整回歸。
 
@@ -48,8 +50,9 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | 1.0.6 prototype 21 | 176,022,826 | `c17afcb856395fb7728075cb6db2215978eac3e48e3f8425589909948d303163` |
 | 1.0.6 prototype 22r1 | 176,026,922 | `f647017a7613a27d85ea3c8ef684b00fef608c52624ed138ec0bf151a77877cd` |
 | 1.0.6 prototype 22r5 | 176,031,018 | `3b69fa16fb6ee3610c83362bdbc0c8f8d2cce7ae78dc302d6f1669fe78e5522b` |
+| 1.0.6 prototype 22r6 | 176,031,018 | `700428a2fcdc0ad76e810453f1f2bb5ef5e726aad8157add981c51c3358a2202` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r5 產物目錄](artifacts/1.0.6-offline-prototype22r5-triple-five-star/README.md)，其中 `build-report.json`、`notice-routing-tests.txt`、`acquisition-support-tests.txt`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r6 產物目錄](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)，其中 `build-report.json`、`warehouse-prefab-evidence.json`、`notice-routing-tests.txt`、`acquisition-support-tests.txt`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -443,7 +446,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 每抽仍為 5 枚，友情／教學池不套用增幅。等級與加值沿用各資料列；五星類別內的選擇依補齊後權重，並非每個五星角色的個別機率都加倍。這是新增離線規則，不是復原官方歷史機率。
 
-`WarehouseSupport.cs` 在一般關卡助戰頁複製原排序按鈕，切換好友／倉庫清單；排除目前出戰四個角色實例，複製所選角色資料作助戰快照。後端驗證角色仍屬於該帳號、等級及加值等一致、不在所選隊伍且不領友情點；過期或偽造請求拒絕。倉庫角色不消耗、不給友情點、不寫使用冷卻，教學保留原流程。
+`WarehouseSupport.cs` 在 22r1 的一般關卡助戰頁複製原排序按鈕，切換好友／倉庫清單；22r6 改用下述原紫色清除按鈕樣式。助戰邏輯仍會排除目前出戰四個角色實例，複製所選角色資料作助戰快照。後端驗證角色仍屬於該帳號、等級及加值等一致、不在所選隊伍且不領友情點；過期或偽造請求拒絕。倉庫角色不消耗、不給友情點、不寫使用冷卻，教學保留原流程。
 
 prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按鈕及後端掛鉤，強化回到原好友流程。22r1 的歷史提交採其最終來源，沒有重建中間 prototype 22 強化功能的提交。交付 APK 及既有檢查詳見 [22r1 說明](artifacts/1.0.6-offline-prototype22r1-quest-support-only/README.md)，Android 按鈕顯示、操作與戰鬥仍待驗證。
 
@@ -468,6 +471,14 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 通知測試的 `verify_notice_routing.py` 需要另備 22r2 APK，並核對固定雜湊；路徑見該檔，前版 APK 不隨 Git 提供。`PrepareNoticeProbe.cs` 僅修改拋棄式測試副本的淡入淡出、輸出頁面請求、傳輸及獎勵文字等，不把測試控制放入正式 APK。`VerifyAcquisitionAndSupports.cs` 檢查原本機抽卡／禮物發卡、舊角色保存、排序及五星候選，仍使用引擎替身。
 
 本次提交按功能拆分目前 22r5 維護來源，沒有重建 22r2～22r4 的逐版 APK 或完整原始碼快照。既有 [22r5 交付說明](artifacts/1.0.6-offline-prototype22r5-triple-five-star/README.md) 記錄通知反例、100 次分流循環、獲得時間及逐票號檢查；本次未重跑編譯或完整回歸。Android 畫面、觸控及實際遊玩仍待驗證。
+
+### 9.7 倉庫來源按鈕樣式與對齊（prototype 22r6）
+
+`WarehouseSupport.cs` 改為從原資源 `Prefab/MainMenu/MainMenuPage/PagePartyBlendBuildUp` 複製 `SwitchButtonClear`，沿用 `buttonn_small` 紫色背景。按鈕仍放在一般關卡助戰頁，沒有重新加入強化頁倉庫功能。原背景為 184×41、中心式碰撞框為 184×38；位置、旋轉與縮放依原排序列配置，使用左側留白的鏡像決定右緣。`ButtonMsg` 置中並更新來源切換文字，原 `LabelSetter` 清空文字鍵且停用，避免套回清除按鈕文字。
+
+`verify_warehouse_prefab.py` 由交付 APK 解讀原 prefab、外部引用、UISprite 序列化名稱及 atlas，核對背景／碰撞框尺寸、子物件不攔截點擊、靠右後與排序按鈕不重疊；輸出 `warehouse-prefab-evidence.json`。這是結構檢查，不能證明 Android 實際顯示或觸控已通過。
+
+來源切換、五星以上篩選、新舊角色獲得時間及三倍五星規則沿用 22r5。既有結果與來源說明見 [22r6 交付報告](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)；本次提交整理未重跑編譯或完整回歸。Android 更新後應完全重啟，確認版本及按鈕背景、右緣和好友／倉庫切換。
 
 ## 10. 仍缺失或尚未驗證的部分
 
@@ -572,7 +583,7 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 | `verify_backup_stages.py`、`VerifyBackupStages.cs` | 交付版 11 張關卡表雜湊／內容與共用參照、prototype 20 隔離存檔升級、364 個 active 任務生成及 API 流程；需備妥前版 APK |
 | `verify_account_rules.py`、`VerifyAccountRules.cs`、`VerifyRulesHooks.cs` | 帳號最低條件及較高進度、180 秒邊界、倉庫助戰、所有權拒絕、強化原始 IL 保留及掛鉤 |
 | `PrepareRulesOdds.cs`、`VerifyRulesOdds.cs` | 拋棄式 DLL 逐票號核對五星總比例、類別內權重、加值及實際扣幣邊界 |
-| `verify_warehouse_prefab.py` | 交付 APK 的一般關卡來源按鈕、Collider、標籤與排列；不代替 Android 觸控驗證 |
+| `verify_warehouse_prefab.py` | 交付 APK 的原清除按鈕 prefab、`buttonn_small` 圖集引用、中心碰撞框、右緣及不重疊排列；不代替 Android 顯示／觸控驗證 |
 | `VerifyAcquisitionAndSupports.cs` | 新角色時間、零／非零舊時間保存、同秒及九連順序、跨程序重載、五星以上與隊伍實例篩選 |
 | `verify_notice_routing.py`、`PrepareNoticeProbe.cs`、`VerifyNoticeRouting.cs` | 22r2 助人獎勵通知反例與修正後分流、友情點保存、真禮物／登入獎勵及結算／退休；需另備基準 APK |
 
