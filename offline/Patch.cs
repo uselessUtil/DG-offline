@@ -239,6 +239,12 @@ public static class Patch106
         clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Call, Helper("ClearTransientAssets")));
         Empty("AssetBundleManager", "SetupAssetBundlePackageParam");
         BeforeEveryReturn("AssetAutoSetCharaMesh", "Update", "FixCharacterShadow");
+        var residentType = module.Types.Single(t => t.Name == "ResidentManager");
+        if (residentType.Methods.Any(m => m.Name == "Update")) throw new Exception("Unexpected resident Update");
+        var nativePump = new MethodDefinition("Update", MethodAttributes.Private | MethodAttributes.HideBySig, module.TypeSystem.Void);
+        residentType.Methods.Add(nativePump);
+        nativePump.Body.GetILProcessor().Emit(OpCodes.Call, Helper("PumpNativeAssets"));
+        nativePump.Body.GetILProcessor().Emit(OpCodes.Ret);
         var battleType = module.Types.Single(t => t.Name == "BattleManager");
         if (battleType.Methods.Any(m => m.Name == "LateUpdate")) throw new Exception("Unexpected battle LateUpdate");
         var hudUpdate = new MethodDefinition("LateUpdate", MethodAttributes.Private | MethodAttributes.HideBySig, module.TypeSystem.Void);

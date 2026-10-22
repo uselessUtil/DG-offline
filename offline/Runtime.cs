@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 19";
+    public const string Build = "1.0.6 offline prototype 20";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -304,7 +304,7 @@ public static partial class DivineGateOffline
         // Match AssetBundle.Unload(false): discard our template/cache ownership,
         // while existing scene instances retain their own materials and textures.
         // Full portraits are much larger than the old numbered substitutes.
-        bool removed = false;
+        bool removed = ClearNativeAssets();
         List<string> keys = new List<string>();
         foreach (string key in assets.Keys) keys.Add(key);
         foreach (string key in keys)
@@ -376,6 +376,10 @@ public static partial class DivineGateOffline
     {
         GameObject shadow = view.m_AssetBundleObjectShadow;
         if (shadow == null || shadow.renderer == null) return;
+        // The restored silhouette mesh and original opaque body material use
+        // the game's original depth/shadow contract. Quad-only repairs would
+        // change that contract again, so never apply them to native instances.
+        if (shadow.GetComponent<DGNativeCharacterMarker>() != null) return;
         Material previous = shadow.renderer.sharedMaterial;
         if (previous == null || previous.name.StartsWith("DG alpha shadow ")) return;
         Texture2D mask = RecoveredTexture("shadow/" + Number(shadow.name));
@@ -518,6 +522,12 @@ public static partial class DivineGateOffline
 
     public static AssetBundleResource Request(string bundle, string name, ASSETBUNDLE_TAG tag, Type type)
     {
+        AssetBundleResource native = RequestNative(bundle,name,tag,type);
+        return native != null ? native : FallbackRequest(bundle,name,tag,type);
+    }
+
+    private static AssetBundleResource FallbackRequest(string bundle, string name, ASSETBUNDLE_TAG tag, Type type)
+    {
         AssetBundleResource result = new AssetBundleResource();
         result.m_RequestAssetBundleName = "[offline106]" + bundle;
         result.m_RequestName = name;
@@ -563,10 +573,10 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 19");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 20");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
-                "Local account / save. No original server.\nRecovered character art, icons and panel images.\nMap geometry remains simplified. Testing pending." :
+                "Local account / save. No original server.\nNative models / animations where available.\nMissing assets use simplified fallback. Testing pending." :
                 "Local account / save. No original server.\nMissing downloaded art uses numbered placeholders.\nGameplay compatibility is still being tested.");
             if (GUI.Button(new Rect(24, 145, 160, 36), "Continue")) showNotice = false;
         }

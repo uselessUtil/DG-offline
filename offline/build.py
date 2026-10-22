@@ -13,6 +13,7 @@ from manifest import patch as patch_manifest
 from generate_images import create as create_images
 from recovered_images import create as create_recovered_images, disabled as disable_recovered_images
 from event_catalog import create as create_event_catalog
+from native_bundles import create as create_native_bundles, disabled as disable_native_bundles
 
 SOURCE_HASH = 'ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
 CECIL = '/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
@@ -36,9 +37,12 @@ def main():
     parser.add_argument('--native-direct', action='store_true', help='Install the original engine binaries directly instead of obsolete proxy loaders')
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
     parser.add_argument('--backup-assets', type=Path, help='Native jp.gungho.dg UnityCache; overrides every matching recovered image')
+    parser.add_argument('--restore-native', action='store_true', help='Restore original map/character prefabs, shaders and animations from the backup; missing/failed resources retain the simplified fallback')
     args = parser.parse_args()
     if args.backup_assets and not args.recovered_assets:
         parser.error('--backup-assets requires the existing --recovered-assets fallback dataset')
+    if args.restore_native and not args.backup_assets:
+        parser.error('--restore-native requires --backup-assets')
     source = ROOT / 'ディバゲ_1.0.6.apk'
     if digest(source.read_bytes()) != SOURCE_HASH:
         raise ValueError('Source APK hash mismatch; refusing a patch for another build')
@@ -86,9 +90,15 @@ def main():
                 shutil.copy2(build/(name+'.png'), output/(name+'.png'))
     else:
         disable_recovered_images(build)
+    native = None
+    if args.restore_native:
+        native = create_native_bundles(args.backup_assets,build,tables)
+        shutil.copy2(build/'native-bundle-manifest.json',output/'native-bundle-manifest.json')
+    else:
+        disable_native_bundles(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs')
+        ROOT/'offline/Runtime.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
     if recovered:
         run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
         run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
@@ -124,6 +134,9 @@ def main():
             for name in ['libmono.so','libunity.so']:
                 replacements['lib/armeabi-v7a/'+name] = archive.read('assets/libs/armeabi-v7a/'+name)
     unsigned = build/'unsigned.apk'
+    if native:
+        for row in native['bundles']:
+            replacements['assets/dg-native/'+row['file']] = (build/'native-bundles'/row['file']).read_bytes()
     with zipfile.ZipFile(source) as src, zipfile.ZipFile(unsigned,'w') as dst:
         for info in src.infolist():
             if info.filename.upper().startswith('META-INF/'):
@@ -167,7 +180,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 19 native cache images' if args.backup_assets else '1.0.6 offline prototype 19'),
+              'version':('1.0.6 offline prototype 20 native models and animations' if native else '1.0.6 offline prototype 20'),
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
@@ -182,6 +195,12 @@ def main():
             'source','portraits','character_icons','area_icons','native_maps','area_texture_coverage',
             'fallback_maps','fallback_sprites','source_hashes_unchanged','master_data_imported',
             'original_geometry_imported','limitations']}
+    if native:
+        report['native_restoration']={k:native[k] for k in ['source','container','characters','areas','effects','native_bytes','source_hashes_unchanged','cached_master_data_imported','fallback_policy','android_load_and_render_verified']}
+        report['native_restoration']['packages']=len(native['bundles'])
+        report['missing_downloaded_assets']='99 areas and 522 characters routed to original native prefabs; two missing maps, ef_stage_0012 and native loading failures use the existing simplified fallback. Android verification pending.'
+        report['recovered_artwork']['limitations']='PNG UI/fallback image pack; see native_restoration for native character/map geometry, shaders and animation packages. Actual Android rendering remains unverified.'
+        report['backup_image_import']['scope']='PNG import phase only; native geometry is packaged separately under native_restoration.'
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
