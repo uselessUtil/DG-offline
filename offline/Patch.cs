@@ -5,7 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 // Fail-closed, version-specific IL edits. Never rebuild the decompiled project.
-public static class Patch106
+public static partial class Patch106
 {
     static ModuleDefinition module;
     static ModuleDefinition adapter;
@@ -223,6 +223,8 @@ public static class Patch106
         EventMissionAccess();
         FreeChipShop();
         CollabGachaSelector();
+        OfflineQualityOfLife();
+        WarehouseSupports();
         StartHelper("PatchManager", "SetupPatch");
         CallHelper("PatchManager", "GetPatchText", "PatchText", 1);
         Empty("PatchManager", "PatchUpdateRequest");

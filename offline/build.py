@@ -111,13 +111,13 @@ def main():
         disable_native_bundles(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',ROOT/'offline/BackupStages.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',build/'BackupStageData.cs')
+        ROOT/'offline/Runtime.cs',ROOT/'offline/AccountRules.cs',ROOT/'offline/WarehouseSupport.cs',ROOT/'offline/BackupStages.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',build/'BackupStageData.cs')
     if recovered:
         run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
         run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
             build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
         shutil.move(build/'WithImages.dll',build/'DivineGateOffline.dll')
-    run('mcs','-out:'+str(build/'Patch.exe'),'-r:'+CECIL,ROOT/'offline/Patch.cs')
+    run('mcs','-out:'+str(build/'Patch.exe'),'-r:'+CECIL,ROOT/'offline/Patch.cs',ROOT/'offline/PatchRules.cs')
     run('mono',build/'Patch.exe',managed/'Assembly-CSharp.dll',build/'DivineGateOffline.dll',build/'Assembly-CSharp.dll')
     run('mcs','-out:'+str(build/'VerifyCollabHooks.exe'),'-r:'+CECIL,ROOT/'offline/tests/VerifyCollabHooks.cs')
     run('mono',build/'VerifyCollabHooks.exe',managed/'Assembly-CSharp.dll',build/'Assembly-CSharp.dll',build/'DivineGateOffline.dll')
@@ -193,7 +193,10 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 21 backup stages and native models' if stages else '1.0.6 offline prototype 21'),
+              'version':('1.0.6 offline prototype 22r1 quest warehouse support and balance'),
+              'account_rules':{'rank_floor':184,'warehouse_floor':2000,'warehouse_shop_cap':2000,'stamina_seconds':180,'automatic_notices':False},
+              'scratch_rules':{'five_star_multiplier':2,'baseline':'actual prototype21 pool probability before adding characters','standard_five_star_units':42,'added_fix_ids':[335,337,339,341,343,345,418,420,422,424,426,428,610,612,614,616,618,620]},
+              'warehouse_support':{'quest_fifth_slot':True,'strengthening_friend_slot':False,'inventory_units_consumed':False,'friendship_points':False,'cooldown':False,'tutorial_flow':'original','evolution_selector':'unchanged'},
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
