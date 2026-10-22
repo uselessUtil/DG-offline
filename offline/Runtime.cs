@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 public static partial class DivineGateOffline
 {
-    public const string Build = "1.0.6 offline prototype 20";
+    public const string Build = "1.0.6 offline prototype 21";
     private static GameObject templates;
     private static Texture2D atlasTexture;
     private static Material atlasMaterial;
@@ -29,6 +29,7 @@ public static partial class DivineGateOffline
 
     public static void Ready(ServerForgery server)
     {
+        RestoreBackupStages(server);
         MasterDataManager master = Singleton<MasterDataManager>.Instance;
         master.m_MasterDataUserRank = server.m_MasterDataUserRank;
         master.m_MasterDataLoginChain = server.m_MasterDataLoginChain;
@@ -573,7 +574,7 @@ public static partial class DivineGateOffline
             "DG 1.0.6 OFFLINE TEST | recovered artwork" : "DG 1.0.6 OFFLINE TEST | placeholder assets");
         if (showNotice)
         {
-            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 20");
+            GUI.Box(new Rect(12, 35, Screen.width - 24, 160), "Offline prototype 21");
             GUI.Label(new Rect(24, 65, Screen.width - 48, 80),
                 RecoveredImages.Enabled ?
                 "Local account / save. No original server.\nNative models / animations where available.\nMissing assets use simplified fallback. Testing pending." :

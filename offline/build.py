@@ -14,6 +14,7 @@ from generate_images import create as create_images
 from recovered_images import create as create_recovered_images, disabled as disable_recovered_images
 from event_catalog import create as create_event_catalog
 from native_bundles import create as create_native_bundles, disabled as disable_native_bundles
+from backup_stages import create as create_backup_stages, disabled as disable_backup_stages
 
 SOURCE_HASH = 'ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
 CECIL = '/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
@@ -38,11 +39,14 @@ def main():
     parser.add_argument('--recovered-assets', type=Path, help='Verified DGDB investigation directory containing its image manifest and downloads')
     parser.add_argument('--backup-assets', type=Path, help='Native jp.gungho.dg UnityCache; overrides every matching recovered image')
     parser.add_argument('--restore-native', action='store_true', help='Restore original map/character prefabs, shaders and animations from the backup; missing/failed resources retain the simplified fallback')
+    parser.add_argument('--backup-stages', action='store_true', help='Apply backup settings to all existing 1.0.6 stages, preserving save IDs; newer quests/AI are not imported')
     args = parser.parse_args()
     if args.backup_assets and not args.recovered_assets:
         parser.error('--backup-assets requires the existing --recovered-assets fallback dataset')
     if args.restore_native and not args.backup_assets:
         parser.error('--restore-native requires --backup-assets')
+    if args.backup_stages and not args.backup_assets:
+        parser.error('--backup-stages requires --backup-assets')
     source = ROOT / 'ディバゲ_1.0.6.apk'
     if digest(source.read_bytes()) != SOURCE_HASH:
         raise ValueError('Source APK hash mismatch; refusing a patch for another build')
@@ -76,7 +80,16 @@ def main():
                 counts[value.m_Name] = len(json.loads(raw, strict=False))
     if counts.get('MasterDataParamChara') != 523 or counts.get('MasterDataQuest') != 371:
         raise ValueError('Unexpected embedded master data')
-    event_catalog = create_event_catalog(tables, output)
+    stages = create_backup_stages(args.backup_assets,tables,build,output) if args.backup_stages else None
+    if not stages:
+        disable_backup_stages(build)
+    event_tables = tables
+    if stages:
+        event_tables = work/'effective-tables'
+        shutil.copytree(tables,event_tables)
+        for path in (output/'stage-tables').glob('*.json'):
+            shutil.copy2(path,event_tables/path.name)
+    event_catalog = create_event_catalog(event_tables, output, 'backup stage settings on original 1.0.6 quest IDs' if stages else 'original 1.0.6 embedded tables')
     create_images(build/'Images.cs', tables)
     recovered = None
     if args.recovered_assets:
@@ -96,9 +109,9 @@ def main():
         shutil.copy2(build/'native-bundle-manifest.json',output/'native-bundle-manifest.json')
     else:
         disable_native_bundles(build)
-    refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll']]
+    refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
+        ROOT/'offline/Runtime.cs',ROOT/'offline/BackupStages.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',build/'BackupStageData.cs')
     if recovered:
         run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
         run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
@@ -180,7 +193,7 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 20 native models and animations' if native else '1.0.6 offline prototype 20'),
+              'version':('1.0.6 offline prototype 21 backup stages and native models' if stages else '1.0.6 offline prototype 21'),
               'collab_gacha':{'pool_ids':[300100,300200,300300,300400],'price_per_draw':5,'maximum_multi_draw':9,'selector':'original 3 cards plus one clone; clear hover and freeze scale tween at cached neutral size before snapshot, after setup and restore; normal-page fourth-card/Back cleanup retained'},
               'free_chip_shop':{'amounts':[1,6,12,25,52,85],'repeatable':True,'balance_limit':999,'paid':False},
               'local_events':event_catalog,
@@ -188,6 +201,7 @@ def main():
               'modified_original_entries':changed,'removed_manifest_items':removed,'work_directory':str(work),
               'original_assets_and_native_libraries':('assets and engine bytes unchanged; install-directory proxy libraries replaced by bundled engine binaries' if args.native_direct else 'unchanged'),
               'native_direct_loader':args.native_direct,
+              'backup_stage_import':stages,
               'missing_downloaded_assets':('native cache images prioritized; existing simplified meshes retained; backup geometry/animations/effects not imported' if args.backup_assets else 'original map meshes/animations absent; recovered portraits/icons/panels, simplified textured floors and upper scenery planes' if recovered else 'numbered colored substitutes, not recovered artwork'),
               'recovered_artwork':({key: recovered[key] for key in ['source','commit','portraits','character_icons','shadow_masks','maps','panel_and_trap_images','area_icons','area_icon_sources','ui_icon_sources','image_pack_bytes','image_pack_sha256','limitations']} if recovered else None)}
     if args.backup_assets:

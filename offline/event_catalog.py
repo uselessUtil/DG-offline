@@ -3,7 +3,7 @@ import csv
 import json
 
 
-def create(tables, output):
+def create(tables, output, source_label='original 1.0.6 embedded tables'):
     def load(name):
         return json.loads((tables/(name+'.json')).read_bytes(), strict=False)
     areas = load('MasterDataArea')
@@ -56,16 +56,16 @@ def create(tables, output):
         writer = csv.DictWriter(stream, fieldnames=list(playable[0]))
         writer.writeheader(); writer.writerows(playable)
     text = '# 1.0.6 內建活動關卡\n\n'
-    text += '資料來源：原始 1.0.6 APK 的 MasterDataArea／Quest／QuestFloor；不是後期活動總表。\n\n'
+    text += '資料來源：'+source_label+'（MasterDataArea／Quest／QuestFloor）。\n\n'
     text += '49 個活動區域，132 個正式任務；prototype 10 開放所有活動區域及正式難度。完成原本教學後，可在「イベントエリア」橫向捲動選擇。部分選關縮圖仍是替代圖。\n\n'
     text += '| 區域 ID | 原名 | 英文名 | 任務數 |\n|---|---|---|---:|\n'
     text += ''.join(f"| {r['area_id']} | {r['name_ja']} | {r['name_en']} | {r['playable_missions']} |\n" for r in rows)
     text += '\n另將六種進化神殿改為常駐，仍從原本進化流程進入：\n\n'
     text += ''.join(f"- {a['area_name']}（{a['area_name_eng']}）\n" for a in areas if a['type'] == 3)
     text += '\n保留停用的 7 筆 reserve：' + '、'.join(str(q['fix_id']) for q in reserved) + '。它們是擴充預留欄位，沒有樓層，不能視為可玩的難度。\n\n'
-    text += '解除限制：活動日期／玩家分組、活動區域前置條件、正式活動難度的順序限制。主線進度、體力、獎勵及通關旗標維持原規則；不會替玩家標記已通關。\n\n'
+    text += '解除限制：活動日期／玩家分組、活動區域前置條件、正式活動難度的順序限制。主線進度、體力、獎勵及通關旗標依建置資料表規則；不會替玩家標記已通關。\n\n'
     text += '容器內確認所有正式活動任務具有主樓層及 Boss 樓層，敵人群組（包含連戰）、角色與掉落 ID 可解析。這不代表已完成每關的 Android 遊玩驗證。\n'
     (output/'EVENTS.md').write_text(text, encoding='utf-8')
     return dict(areas=len(rows), playable_missions=len(playable), reserved_missions=len(reserved),
                 evolution_temples=sum(a['type'] == 3 for a in areas), checked_enemy_groups=len(checked),
-                source='original 1.0.6 embedded tables', android_gameplay='pending user verification')
+                source=source_label, android_gameplay='pending user verification')
