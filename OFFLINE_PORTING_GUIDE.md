@@ -1,12 +1,12 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 19**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 20**。
 
 本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
 
 2026-10-21 的 [三版比較與 1.0.6 資料移植實驗](offline/comparison/README.md) 補充了跨版欄位、API 與存檔差異：28 張舊表經有限轉換後可在兩版原後端通過部分流程。這是新版承載舊內容的可行性證據，尚未接入新版診斷 APK，不能視為完整內容或 Android 遊玩驗證。
 
-**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** prototype 19 依使用者新指示，以 `jp.gungho.dg/` 備份優先取代原 Wiki、DGDB 與裁切替代圖：522 個角色、84 張選關圖、84 組地圖與原面板已接圖；主資料及簡化幾何保留。備份版本未確定，不能把主資料直接覆蓋舊版；完整 Android 實機驗證待使用者進行。
+**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** prototype 20 將備份無損包為本機 UnityRaw，接回 99 區原地圖／門／動畫、98 區效果與 522 個原角色 prefab，缺失或載入失敗才回到既有簡化 fallback。原圖、圖集與玩法沿用前版。備份年代未確定，不能把其主資料直接覆蓋舊版；Android 真正載入／渲染與操作待使用者驗證。
 
 ## 目錄
 
@@ -36,8 +36,9 @@
 | 1.0.6 prototype 17 | 189,063,908 | `d98b73348e2f17a576f430153e00eec43caecb08422ed53a005435af023bf029` |
 | 1.0.6 prototype 18 | 189,133,540 | `2805fe356a0b2701322a3101b94932dcb1ab65a2dcb99521523bf6993861bbff` |
 | 1.0.6 prototype 19 | 128,942,820 | `ad49d9b12ee7aa2573f67c0320ad9732f0a272586d5742a46ebfc7c8dac80c3d` |
+| 1.0.6 prototype 20 | 175,826,218 | `68a5e639add63b9009a496c4d82612de08af388a67504d3356009c64a27055bc` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 19 產物目錄](artifacts/1.0.6-offline-prototype19-native-cache/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 20 產物目錄](artifacts/1.0.6-offline-prototype20-native-models/README.md)，其中 `build-report.json`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -63,6 +64,9 @@
 | [offline/area_icons.py](offline/area_icons.py) | 保留 Wiki 選關圖，其餘依各區域門景製作 A 構圖裁切與來源對照 |
 | [offline/audit_cached_backup.py](offline/audit_cached_backup.py) | 唯讀核對原快取、物件、主資料 schema 及區域／角色覆蓋 |
 | [offline/backup_images.py](offline/backup_images.py) | 解碼快取原貼圖，核對原 UIAtlas 座標並優先接入圖片，保留缺圖後備來源 |
+| [offline/audit_native_restore.py](offline/audit_native_restore.py) | 唯讀核對原 prefab 階層、UV、材質與門動畫綁定，輸入原快取盤點及 1.0.6 資料表 |
+| [offline/native_bundles.py](offline/native_bundles.py) | 將匹配 CAB 無損封裝為 UnityRaw，產生路由索引與雜湊清單 |
+| [offline/NativeAssets.cs](offline/NativeAssets.cs) | APK 本機非同步原生載入、共用物件快取、錯誤／逾時降級與資源清理 |
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
@@ -96,8 +100,10 @@ flowchart TD
     TABLE[APK 內建 MasterData TextAsset] --> LOCAL
     TABLE --> READY[新增 Ready 資料表配接]
     READY --> MASTER[原 MasterDataManager]
-    ASSET[原 AssetBundleManager.Request] --> ADAPTER[新增本機資源工廠]
-    ADAPTER --> ART[已核對 PNG／重建 UIAtlas／簡化網格]
+    ASSET[原 AssetBundleManager.Request] --> ADAPTER[新增本機資源配接器]
+    ADAPTER --> NATIVE[可匹配資源：本機 UnityRaw 原模型／材質／動畫]
+    ADAPTER --> ART[其餘資源：已核對 PNG／重建 UIAtlas／簡化網格]
+    NATIVE -->|錯誤或逾時| ART
 ```
 
 ### 3.2 為何只切換 API 還不夠
@@ -114,6 +120,7 @@ flowchart TD
 | --- | --- |
 | `assets/bin/Data/Managed/Assembly-CSharp.dll` | 以 Cecil 修改少量方法／呼叫點，加入離線掛鉤與商店存檔存取器 |
 | `assets/bin/Data/Managed/DivineGateOffline.dll` | 新增；編譯配接器及生成圖片索引，包含圖片位元資料 |
+| `assets/dg-native/*.unity3d` | `--restore-native` 時加入原生素材包；內含原 CAB 位元組及原物件關聯 |
 | `assets/bin/Data/mainData` | 在 MonoManager 的 `m_AssemblyNames` 登錄新增 DLL；其他 Unity 物件原始資料逐一核對不變 |
 | `AndroidManifest.xml` | 改套件／顯示名稱、移除指定網路與付款權限及服務登錄 |
 | `lib/armeabi-v7a/libmono.so` | `--native-direct` 時以 APK 自帶 `assets/libs/armeabi-v7a/libmono.so` 取代舊代理載入器 |
@@ -130,6 +137,7 @@ flowchart TD
 | --- | --- |
 | `LocalSaveManager.LoadFuncServerAddressIP` | 固定回傳空字串，使用原本機路由 |
 | `ResidentManager.Start` | 原流程結尾呼叫 `Bootstrap`，必要時 AddComponent 建立 `ServerForgery` |
+| `ResidentManager` 新增 `Update` | 呼叫 `PumpNativeAssets` 推進本機載入；未啟用原生素材時直接返回 |
 | `ServerForgery.Start` | 原流程結尾呼叫 `Ready`，資料表配接及載入本機存檔 |
 | `PatchManager.Start` | 保留 base Start，改呼叫 `SetupPatch`，設定空清單與已取得狀態 |
 | `PatchManager.GetPatchText` | 改呼叫 `PatchText`，提供本機版本／更新計數等值 |
@@ -301,7 +309,17 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 
 `jp.gungho.dg/` 有 100 個可解析的 Unity 4.1.0f4 CAB，共 791 個 Texture2D、738 個 Mesh、120 個 AnimationClip。最新建置選用 612 個原貼圖物件（522 立繪、84 地圖、6 原圖集），全部圖集框保留原尺寸像素，再加共用 UI 及未匹配的 web 相容圖。84 張選關原圖取代先前全部 Wiki／門景裁切圖；Empty、`lock1`、18 個風險星數面板與 4 個 heal 原面板已接入。`map_6001`／`6002` 無備份貼圖，保留 web 素材。
 
-CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 8 月時間值；不能據此確定備份日期或 APK 版本。備份主表列數與 1.0.6 不同，且 `AssetBundleMasterData` schema hash 不同；沒有匯入主資料、模型或動畫。原始檔雜湊、原物件／矩形、每張圖實際來源與剩餘限制見 [檢查](artifacts/cache-backup-audit-2026-10-22/README.md) 及 [導入紀錄](artifacts/1.0.6-offline-prototype19-native-cache/backup-image-import.json)。
+CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 8 月時間值；不能據此確定備份日期或 APK 版本。備份主表列數與 1.0.6 不同，且 `AssetBundleMasterData` schema hash 不同；prototype 19 沒有匯入主資料、模型或動畫。prototype 20 另接回原模型及動畫（見下節），仍不匯入備份主資料。原始檔雜湊、原物件／矩形、每張圖實際來源與剩餘限制見 [檢查](artifacts/cache-backup-audit-2026-10-22/README.md) 及 [導入紀錄](artifacts/1.0.6-offline-prototype19-native-cache/backup-image-import.json)。
+
+### 7.6 原生模型、動畫與降級（prototype 20）
+
+`native_bundles.py` 將 82 個相關角色／地圖 CAB 原封不動放入 UnityRaw v3 容器，以 `assets/dg-native/` 加入 APK；沒有把 SerializedFile 直接假裝完整 AssetBundle，也不改寫原物件。原依賴只有引擎預設資源，AnimationArray／AnimationEvent schema 與 1.0.6 相符；備份主資料、圖集及不相關包不進入原生載入路徑。
+
+`NativeAssets.cs` 透過原引擎保留的 WWW／AssetBundle.Load API 讀 APK 本機 jar URL，ResidentManager 新增的 Update 負責每幀推進、最多兩包並行。請求在完成前保持 LOADING，正常完成後保留原共用物件；`mapMaterial` 依模型包而非全域同名圖找出。原 `SceneModeGameMain` 會將該區完整 `res_map` 指派給原材質。原 `InGameManager.DoorOpen` 與樓層動畫控制程式均未改動。
+
+可匹配原資料的 99 區與 522 角色使用原 prefab；原生角色帶識別元件，其陰影不再套用矩形專用 alpha 修補，恢復原輪廓／Opaque 深度契約。缺失的萬聖節／聖誕節兩區、`ef_stage_0012`，以及原生包讀取錯誤／30 秒逾時等狀況，改用原 `FallbackRequest`；同一快取週期內不無限重試。清理時 Unload(false)，不丟棄未完成請求。這些載入狀態及原始資料完整性已通過自動測試，仍未驗證真正的 Android WWW 解包／GPU／動畫／觸控。
+
+完整原因、缺失、測試界線與重建命令見 [交付報告](artifacts/1.0.6-offline-prototype20-native-models/README.md)，靜態模型／動畫綁定證據見 [實作前核對](artifacts/native-model-audit-2026-10-22/README.md)。
 
 ## 8. 已修正問題及原因
 
@@ -381,8 +399,8 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 | 項目 | 現況／需要補什麼 |
 | --- | --- |
-| 原關卡模型、門及房間動畫 | 備份含 99 區地面／門物件名稱對應、Mesh 與動畫；尚未處理 prefab／材質關聯並接入，仍使用簡化幾何 |
-| 原整張 `map_XXXX_tex` | 備份模式已取用 84 張全貼圖，分割供現行平面使用；萬聖節／聖誕節兩張仍缺 |
+| 原關卡模型、門及房間動畫 | prototype 20 已接入 99 區原資料／載入路徑，Android 動態待測；萬聖節／聖誕節仍無原資料而 fallback |
+| 原整張 `map_XXXX_tex` | 原生模型使用原全貼圖；既有分拆圖僅供缺失／載入錯誤時 fallback |
 | 原 `IconPackPanel`／`IconPackArea` 圖集 | 原框座標／像素已核對，以新位置重排；18 個顏色星數面板已復原，仍有 3 個精確需求缺圖 |
 | 部分效果、粒子、音訊、聯動刮卡專屬美術 | 沒有完整逐項復原／驗證；外部音訊備份沒有整批接入 |
 | 官方伺服器資料及帳號 | 沒有恢復歷史帳號、真實好友、線上活動狀態、官方存檔或完整營運規則 |
@@ -419,6 +437,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `--native-direct` | 使用 APK 自帶的真正引擎，替代舊代理載入器 |
 | `--recovered-assets` | 指定包含來源 manifests 與已核對素材的資料集 |
 | `--backup-assets` | 指定 `jp.gungho.dg` 原快取，優先覆蓋每個匹配圖片；須搭配 web 資料集供缺圖保留 |
+| `--restore-native` | 搭配備份路徑，封裝原角色／地圖 prefab 與動畫；啟用本機非同步載入及 missing/error/timeout fallback |
 | `--output` | 指定新的產物目錄，不覆寫既有 APK |
 | `--work` | 指定獨立的中間檔工作目錄 |
 
@@ -428,7 +447,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 1. 檢查原 APK SHA-256、ZIP 完整性，拒絕錯版／已有輸出 APK。
 2. 提取原 Unity Data 至獨立工作目錄，讀表、檢查數量及產生活動清單。
-3. 生成替代圖與核對素材，建圖集、PNG 包、索引及來源報告。
+3. 生成替代圖與核對素材，建圖集、PNG 包、索引及來源報告；啟用 `--restore-native` 時，另核對原 CAB 依賴／元件 schema，無損封裝本機資源包及原生路由索引。
 4. `mcs -nostdlib` 對**原 APK 的 mscorlib／System／System.Core／UnityEngine／遊戲 DLL** 編譯配接器。
 5. Cecil 嵌入 PNG，執行 `Patch.cs` 修改原遊戲 DLL；封裝前執行聯動掛鉤契約檢查。
 6. 在 mainData 的 MonoManager 登錄新 DLL，核對其他物件原始資料沒有改動。
@@ -460,6 +479,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `VerifyHudPopup.cs` | 23 個戰鬥／選單／過渡／對話框狀態 |
 | `VerifyMapTextureRouting.cs` 等 | 404 次貼圖路由，包含原 61 個材質與模型編號不同的區域 |
 | `verify_backup_images.py` | 232 檔雜湊不變；612 個貼圖、690 個立繪／地圖 payload 與 834 個原圖／共用框像素核對，18 個原色星數與 84 張選關圖 |
+| `verify_native_bundles.py`、`VerifyNativeHooks.cs`、`NativeAssetTests.cs` | 實際 APK 82 包／CAB 位元組、原始門流程保留、原生陰影保護、載入成功／錯誤／逾時／缺物件降級與清理；WWW/GPU／fallback 工廠由替身提供 |
 
 1,223 是封裝 payload 數，包含 522 立繪、522 衍生陰影、172 地圖圖及 7 張合成圖集；不是所有來源小圖的數量。七張合成圖集為五組角色、一組面板、一組城鎮圖。
 
@@ -584,10 +604,11 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | prototype 17 | 保留七張 Wiki 圖，其餘 77 個選關圖示以各區域門景裁切替代 |
 | prototype 18 | 改用使用者指定的 Wiki Empty-icon.png，排除舊同名來源；記錄 lock1 搜尋範圍與缺失 |
 | prototype 19 | 使用者提供 UnityCache；522 個角色、84 選關、84 地圖、原 Panel、Empty／lock1 優先換成備份原圖，主資料／幾何未匯入 |
+| prototype 20 | 無損包裝 82 個原生包，接入 99 區模型／門動畫、98 區效果及 522 角色，原生角色不再走矩形陰影修補，缺失／錯誤降級 |
 
 延伸證據：
 
-- [目前使用說明](offline/README.md)、[prototype 19 交付報告](artifacts/1.0.6-offline-prototype19-native-cache/README.md)、[備份檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+- [目前使用說明](offline/README.md)、[prototype 20 交付報告](artifacts/1.0.6-offline-prototype20-native-models/README.md)、[備份檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 - [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
 - [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。
