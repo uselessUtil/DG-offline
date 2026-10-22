@@ -1,12 +1,12 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 18**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 19**。
 
 本文件供公開查閱及後續移植，說明實際修改、資料與素材的補充位置、已知缺失、建置驗證，以及分析其他 APK 版本的方法。文中原始碼與資料目錄均使用專案相對路徑；APK 內部路徑則保留原有名稱。
 
 2026-10-21 的 [三版比較與 1.0.6 資料移植實驗](offline/comparison/README.md) 補充了跨版欄位、API 與存檔差異：28 張舊表經有限轉換後可在兩版原後端通過部分流程。這是新版承載舊內容的可行性證據，尚未接入新版診斷 APK，不能視為完整內容或 Android 遊玩驗證。
 
-**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** 有些場景由圖片與簡化幾何替代；內建本機資料及抽卡權重也不能直接視為已核實的歷史營運資料。prototype 17 的選關圖以七張 Wiki 圖及 77 個經使用者確認的門景裁切補齊；尚未記錄完整的 Android 實機驗證。
+**目前完成的是沿用原客戶端與內建本機 API 的離線原型，並非官方伺服器完整重建。** prototype 19 依使用者新指示，以 `jp.gungho.dg/` 備份優先取代原 Wiki、DGDB 與裁切替代圖：522 個角色、84 張選關圖、84 組地圖與原面板已接圖；主資料及簡化幾何保留。備份版本未確定，不能把主資料直接覆蓋舊版；完整 Android 實機驗證待使用者進行。
 
 ## 目錄
 
@@ -35,8 +35,9 @@
 | 1.0.6 prototype 16 | 184,636,132 | `9b54bdbe1301dc5637dc41e8600444e116a551f1696fd69e1fe9529c24308c88` |
 | 1.0.6 prototype 17 | 189,063,908 | `d98b73348e2f17a576f430153e00eec43caecb08422ed53a005435af023bf029` |
 | 1.0.6 prototype 18 | 189,133,540 | `2805fe356a0b2701322a3101b94932dcb1ab65a2dcb99521523bf6993861bbff` |
+| 1.0.6 prototype 19 | 128,942,820 | `ad49d9b12ee7aa2573f67c0320ad9732f0a272586d5742a46ebfc7c8dac80c3d` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 18 產物目錄](artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 19 產物目錄](artifacts/1.0.6-offline-prototype19-native-cache/README.md)，其中 `build-report.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -60,6 +61,8 @@
 | [offline/build.py](offline/build.py)、[offline/manifest.py](offline/manifest.py) | 提取、編譯、二進位 Manifest 修改、封裝與簽章 |
 | [offline/recovered_images.py](offline/recovered_images.py)、[offline/EmbedImages.cs](offline/EmbedImages.cs) | 圖片核對、圖集產生及舊 Mono 可讀的圖片嵌入 |
 | [offline/area_icons.py](offline/area_icons.py) | 保留 Wiki 選關圖，其餘依各區域門景製作 A 構圖裁切與來源對照 |
+| [offline/audit_cached_backup.py](offline/audit_cached_backup.py) | 唯讀核對原快取、物件、主資料 schema 及區域／角色覆蓋 |
+| [offline/backup_images.py](offline/backup_images.py) | 解碼快取原貼圖，核對原 UIAtlas 座標並優先接入圖片，保留缺圖後備來源 |
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
@@ -218,17 +221,17 @@ flowchart TD
 
 `recovered_images.py` 讀取已核對的來源清單，逐檔比對 SHA-256，再生成：
 
-- `portrait/<resource_id>`：角色透明立繪，保留已核對 PNG 原始位元組。
+- `portrait/<resource_id>`：角色透明立繪；原快取模式使用 GPU 貼圖解碼像素，無快取模式保留已核對 web PNG。
 - `shadow/<resource_id>`：白色 RGB＋立繪原 Alpha 的遮罩。
 - `atlas/AtlasCharaIcon_...`：五組角色圖集；圖示格為 128px。
-- `atlas/AtlasPanelIcon`：面板／陷阱合成圖集；格為 96px，以保持圖集在 2048px 以內。
-- `atlas/AtlasAreaIcon_000_020`：84 個入口圖（七張 Wiki 原圖＋77 個門景裁切），均為 207×131；名稱沿用原表，圖集為 2048×2048。
+- `atlas/AtlasPanelIcon`：原快取框為 128px，缺少對應的舊相容框保持 96px；圖集限制在 2048px。
+- `atlas/AtlasAreaIcon_000_020`：84 個入口原圖，均為 207×131；名稱沿用原表。無快取模式才回到七張 Wiki 圖與 77 個裁切圖。
 - `map/<map_id>/lower`、`upper`：關卡上下貼圖。
 - `recovered-images.json`：資源 key、大小、索引、SHA-256、Sprite 矩形、角色映射、來源與限制。
 
-NGUI 使用的像素座標從頂端開始，不能直接套 Unity UV 原點。Alpha 變體圖集共用圖片配接；這不代表已找回原圖集的每個壓縮格式和切圖方式。
+NGUI 使用的像素座標從頂端開始，不能直接套 Unity UV 原點。Alpha 變體圖集共用圖片配接。`backup_images.py` 將原圖集 JSON 與 UIAtlas 序列化座標逐框核對，裁出原尺寸像素再排入新圖集，產生的座標與來源座標分別記錄；不是沿用 web 圖示的推測位置。
 
-舊版裁剪後 `mscorlib` 不保留 `Assembly.GetManifestResourceStream`。因此 `EmbedImages.cs` 將 PNG 嵌入 DLL 的 RVA 欄位，以原遊戲也使用的 `RuntimeHelpers.InitializeArray` 指令按需讀出；不是啟動時把全部圖片建成 Texture2D。圖片包約 154 MB，最新 APK 約 189 MB。
+舊版裁剪後 `mscorlib` 不保留 `Assembly.GetManifestResourceStream`。因此 `EmbedImages.cs` 將 PNG 嵌入 DLL 的 RVA 欄位，以原遊戲也使用的 `RuntimeHelpers.InitializeArray` 指令按需讀出；不是啟動時把全部圖片建成 Texture2D。prototype 19 APK 為 128,942,820 bytes。
 
 圖片／物件快取在 `ClearTransientAssets` 配合原場景清理釋放非駐留持有關係；不是立刻銷毀仍被場景引用的材質／貼圖。長時間記憶體表現仍需裝置測試。
 
@@ -294,6 +297,12 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 
 圖片預覽用 `external/image-preview.html` 或 Wiki 的 `catalog.html`。來源描述／授權見保存的 File 頁與 metadata，不能把全部遊戲圖片一概當成同一種開源授權。
 
+### 7.5 原 UnityCache 備份（prototype 19）
+
+`jp.gungho.dg/` 有 100 個可解析的 Unity 4.1.0f4 CAB，共 791 個 Texture2D、738 個 Mesh、120 個 AnimationClip。最新建置選用 612 個原貼圖物件（522 立繪、84 地圖、6 原圖集），全部圖集框保留原尺寸像素，再加共用 UI 及未匹配的 web 相容圖。84 張選關原圖取代先前全部 Wiki／門景裁切圖；Empty、`lock1`、18 個風險星數面板與 4 個 heal 原面板已接入。`map_6001`／`6002` 無備份貼圖，保留 web 素材。
+
+CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 8 月時間值；不能據此確定備份日期或 APK 版本。備份主表列數與 1.0.6 不同，且 `AssetBundleMasterData` schema hash 不同；沒有匯入主資料、模型或動畫。原始檔雜湊、原物件／矩形、每張圖實際來源與剩餘限制見 [檢查](artifacts/cache-backup-audit-2026-10-22/README.md) 及 [導入紀錄](artifacts/1.0.6-offline-prototype19-native-cache/backup-image-import.json)。
+
 ## 8. 已修正問題及原因
 
 | 症狀 | 確認原因／限制 | 現行處理 |
@@ -358,24 +367,23 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 
 ### 10.1 圖片清單的「缺」要區分版本
 
-原 [priority-image-filenames.txt](artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt) 是歷史 112 項需求。prototype 16 有 28 項來源圖／相容別名；prototype 17 再用使用者確認的門景裁切配接 77 個缺失選關圖，**目前共 105 項有顯示配接、剩餘 7 項未配接**：
+原 [priority-image-filenames.txt](artifacts/missing-image-audit-2026-10-20/priority-image-filenames.txt) 是歷史 112 項需求。prototype 19 共有 **109 項配接、剩餘 3 項**；全部 84 個選關圖與四個 heal 已採用備份原圖或可靠拼字別名。
 
 | 分類 | 數量 | 精確名稱／判定 |
 | --- | ---: | --- |
-| 場地效果圖 | 4 | `heal_happytresure.png`、`heal_moneyup.png`、`heal_removetrap.png`、`heal_torch.png` |
 | 尚無可靠對應 | 3 | `mugen_box.png`、`panel_panic.png`、`panel_weekness.png` |
 
-保留原拼字 `happytresure`、`weekness`。DGDB 的 `icon_heal_happytreasure/moneyup/removetrap/torch.png` 已下載，但只是效果／狀態圖示候選，不直接當成原場地面板。無限迷宮與魔法禁書目錄的入口已改用各自的門景裁切；原版獨立入口圖仍未找回。
+保留原請求拼字 `happytresure`、`weekness`，前者以備份原面板 `heal_happytreasure` 配接。無限迷宮與魔法禁書目錄選關圖已從備份 Area 圖集復原。最新精確名單見 [覆蓋清單](artifacts/1.0.6-offline-prototype19-native-cache/priority-image-coverage.json)。
 
-77 個裁切配接名稱可由原清單排除 `area_icon_0001..0007` 得到；原清單並非連續整數，例如有 `area_icon_2007_a`、`2007_b`。**不能用 `0008..6003` 連續範圍代替實際清單。** 後來完整 Wiki 備份是否能補更多原圖仍待逐項核對，不能將「已備份」寫成「已接入」。
+原清單並非連續整數，例如有 `area_icon_2007_a`、`2007_b`，不能用整數範圍代替實際名稱。歷史版本的 77 個門景裁切只保留於舊產物與無快取建置路徑。
 
 ### 10.2 其他缺失與限制
 
 | 項目 | 現況／需要補什麼 |
 | --- | --- |
-| 原關卡模型、門及房間動畫 | 仍缺完整原 AssetBundle 的 Mesh、UV、材質關聯與 AnimationClip；PNG 不能提供這些資訊 |
-| 原整張 `map_XXXX_tex` | 使用 lower／upper 分拆圖重建顯示，沒有宣稱原整張貼圖已找回 |
-| 原 `IconPackPanel`／`IconPackArea` 圖集 | 自建圖集與別名替代；原座標／壓縮／顏色變體未完全復原 |
+| 原關卡模型、門及房間動畫 | 備份含 99 區地面／門物件名稱對應、Mesh 與動畫；尚未處理 prefab／材質關聯並接入，仍使用簡化幾何 |
+| 原整張 `map_XXXX_tex` | 備份模式已取用 84 張全貼圖，分割供現行平面使用；萬聖節／聖誕節兩張仍缺 |
+| 原 `IconPackPanel`／`IconPackArea` 圖集 | 原框座標／像素已核對，以新位置重排；18 個顏色星數面板已復原，仍有 3 個精確需求缺圖 |
 | 部分效果、粒子、音訊、聯動刮卡專屬美術 | 沒有完整逐項復原／驗證；外部音訊備份沒有整批接入 |
 | 官方伺服器資料及帳號 | 沒有恢復歷史帳號、真實好友、線上活動狀態、官方存檔或完整營運規則 |
 | 全關卡可玩性 | 132 活動的本機 API 啟動／結算檢查不等於每關已在 Android 實際通關 |
@@ -410,6 +418,7 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 | --- | --- |
 | `--native-direct` | 使用 APK 自帶的真正引擎，替代舊代理載入器 |
 | `--recovered-assets` | 指定包含來源 manifests 與已核對素材的資料集 |
+| `--backup-assets` | 指定 `jp.gungho.dg` 原快取，優先覆蓋每個匹配圖片；須搭配 web 資料集供缺圖保留 |
 | `--output` | 指定新的產物目錄，不覆寫既有 APK |
 | `--work` | 指定獨立的中間檔工作目錄 |
 
@@ -449,7 +458,8 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 | `VerifyRenderFixes.cs`、Alpha 比對 | 透明陰影、HUD 掛鉤、上層景無新增 Collider；522 遮罩 Alpha 與立繪一致 |
 | `VerifyEnemyAtlasSearch.cs` | 1,044 次角色／Alpha 圖集搜尋選到真正擁有者 |
 | `VerifyHudPopup.cs` | 23 個戰鬥／選單／過渡／對話框狀態 |
-| `VerifyMapTextureRouting.cs` 等 | 404 次貼圖路由；166 張必需地圖分拆圖、23 個別名與來源像素對照 |
+| `VerifyMapTextureRouting.cs` 等 | 404 次貼圖路由，包含原 61 個材質與模型編號不同的區域 |
+| `verify_backup_images.py` | 232 檔雜湊不變；612 個貼圖、690 個立繪／地圖 payload 與 834 個原圖／共用框像素核對，18 個原色星數與 84 張選關圖 |
 
 1,223 是封裝 payload 數，包含 522 立繪、522 衍生陰影、172 地圖圖及 7 張合成圖集；不是所有來源小圖的數量。七張合成圖集為五組角色、一組面板、一組城鎮圖。
 
@@ -573,10 +583,11 @@ Wayback 取回兩包 UnityWeb：1.1.0 路徑的 `Unit_000_009.unity3d`，以及 
 | prototype 16 | 快照前及返回後清除按壓／懸停 Tween，還原正常尺寸 |
 | prototype 17 | 保留七張 Wiki 圖，其餘 77 個選關圖示以各區域門景裁切替代 |
 | prototype 18 | 改用使用者指定的 Wiki Empty-icon.png，排除舊同名來源；記錄 lock1 搜尋範圍與缺失 |
+| prototype 19 | 使用者提供 UnityCache；522 個角色、84 選關、84 地圖、原 Panel、Empty／lock1 優先換成備份原圖，主資料／幾何未匯入 |
 
 延伸證據：
 
-- [目前使用說明](offline/README.md)、[prototype 18 交付報告](artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)。
+- [目前使用說明](offline/README.md)、[prototype 19 交付報告](artifacts/1.0.6-offline-prototype19-native-cache/README.md)、[備份檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 - [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。
 - [圖鑑 XAPK 分析](offline/ENCYCLOPEDIA_AUDIT.md)、[原始缺圖核對](offline/MISSING_IMAGES.md)、[DGDB 命名對照](artifacts/dgdb-name-mapping-2026-10-20/README.md)。

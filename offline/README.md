@@ -8,17 +8,17 @@
 
 2.9.0 的安全檢查與獨立移植嘗試見 [版本報告](v290/README.md)：原 APK 缺 42 份主資料，目前僅交付離線診斷版，尚無可玩的 2.9.0 單機版。以下內容仍專指 1.0.6。
 
-目前實作基準為 **prototype 18 Wiki Empty 圖示修正版**，依使用者指定改用 82×82 的 `Empty-icon.png`，取代先前另一種灰色 Empty 圖，並排除舊的同名來源覆蓋。七張 Wiki 選關圖、77 個 A 裁切選關圖及既有功能保留。進化材料欄原名 `lock1` 的獨立圖片目前尚未找到。**Android 實機顯示交由使用者驗證**。
+目前實作基準為 **prototype 19 備份原圖版**。依使用者新指示，以 `jp.gungho.dg/` UnityCache 優先取代 Wiki、DGDB 與裁切圖：522 個角色立繪／頭像、84 張選關圖、84 組地圖貼圖、原星數面板、Empty 與 `lock1` 已接入。只在備份缺少對應時保留舊素材。主資料與簡化幾何保留；**Android 實機顯示交由使用者驗證**。來源與年代限制見 [備份檢查](../artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
 ## 最新產物
 
-- APK：`artifacts/1.0.6-offline-prototype18-wiki-empty/ディバゲ_1.0.6.apk`
+- APK：`artifacts/1.0.6-offline-prototype19-native-cache/ディバゲ_1.0.6.apk`
 - 使用與舊離線版相同的套件 `jp.gungho.dg.offline106` 及測試簽章，更新安裝時不需先清除資料。
-- 大小：189,133,540 bytes。
-- SHA-256：`2805fe356a0b2701322a3101b94932dcb1ab65a2dcb99521523bf6993861bbff`。
-- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype18-wiki-empty/README.md)。
+- 大小：128,942,820 bytes。
+- SHA-256：`ad49d9b12ee7aa2573f67c0320ad9732f0a272586d5742a46ebfc7c8dac80c3d`。
+- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype19-native-cache/README.md)。
 - 2026-10-21 [僅 ARM64 的 Android 16 裝置安裝檢查](../artifacts/android16-tb323fu-prototype17-test-2026-10-21/README.md)：低 SDK 繞過後仍因 `INSTALL_FAILED_NO_MATCHING_ABIS` 無法安裝；裝置僅 ARM64，而 APK 僅 ARM32。未修改 APK，原生 ARM64 移植尚未完成。
 - 全部活動原名、任務數及範圍：[活動清單](../artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。七筆無樓層的 reserve 維持停用，並未加入後期版本活動。
 
@@ -36,14 +36,15 @@
 - prototype 16 在原外觀快照前、選池卡片啟用後及還原時，透過原 `UIButtonScale.OnHover(false)` 清除懸停，停止縮放 Tween 並將兩端設為快取正常尺寸；後續原按壓／懸停功能保留。100 次動畫狀態循環使用原版按鈕程式與引擎狀態替身，原生渲染／觸控時序仍需驗證。
 - prototype 17 新增 `area_icons.py`，優先保留來源清單內的 Wiki PNG，其餘按 `res_map` 與 `res_map_icon` 製作 A 構圖裁切；84 個圖示涵蓋 101 筆有效區域。裁切替代圖不等於找回原版選關美術。
 - prototype 18 從 `fandom-ui-images.json` 載入經核對的 Wiki `Empty-icon.png`，覆蓋 `chara_icon_empty` 並排除面板圖集內舊的同名來源；`lock1` 搜尋結果記錄在本次交付說明。
+- prototype 19 新增 `backup_images.py` 與 `--backup-assets`，逐檔驗證備份，將六個原圖集的 JSON／UIAtlas 座標交叉核對後以原尺寸像素重新排圖。原 805 個框全數保留，另有共用 UI 框；五組角色需求中最後一組仍提供 Empty／Lock 等共用圖。
 - prototype 10 只取消活動區域時段／玩家分組、前置區域與正式難度順序限制；六種進化神殿常駐。教學、主線順序、體力、獎勵及既有通關紀錄維持原規則，不會修改全域活動日期表。
-- 522 張立繪、522 個 128px 圖示、280 個 DGDB 面板／陷阱圖片及 Wiki Empty 圖已配接；保留沒有素材的名稱退回替代圖。
+- 522 張立繪、522 個 128px 角色頭像及全部 84 張選關圖已改用原快取；Panel 原圖優先，189 個未找到備份對應的相容圖仍保留。備份主資料未匯入。
 - prototype 7 把備份中的 `chara_icon_empty.png` 補進五組角色圖集，修正未選好友／空隊伍格因透明空圖而露出白色底層的問題。
 - prototype 8 保留跨圖集搜尋的「找不到」結果，讓 `InGameCard` 繼續搜尋真正包含敵人頭像的圖集；先前在第一組建立替代 Sprite 會使搜尋錯誤地成功。地板按 lower 圖片比例縮到棋盤遠端 z=2.5，避免與 upper 門景重疊。
 - prototype 9 從 Fandom 公開圖片 CDN 取得七個城鎮門圖，對應 `area_icon_0001..0007`，保留原圖 207×131 的比例／像素。它們是 Wiki 圖片，未證明與原 1.0.6 圖集像素完全一致。
-- 封裝 86 組地圖上下貼圖，涵蓋原始 MasterDataArea 使用的全部 83 組及先前依模型包保存的 3 組。按區域的 `res_map` 選圖；下層用於簡化地面，上層以無碰撞平面顯示於棋盤遠端，包含 `map_0006` 與魔法禁書目錄的 `map_5005`。完整門／地板模型和動畫仍缺少。
-- 保留 `panel_alarm → trap_siren`、`panel_banana → trap_banana`、`toaru_box_01 → toaru_box` 對應；新增 `panel_b/r/y_1..6 → panel_1..6`，三組共用黃色星星圖片，沒有猜測原本顏色。這些是相容素材配接，非原始圖集像素完全一致的宣稱。
-- 優先清單剩餘 7 項尚未配接，含 4 個效果圖示候選及 3 個無可靠配對的名稱。77 個缺失選關圖示已在 prototype 17 以門景裁切替代，包含無限迷宮與魔法禁書目錄；這些原版獨立選關圖仍未找回。先前 [檔名對照](../artifacts/dgdb-name-mapping-2026-10-20/README.md) 為 prototype 5 的歷史結果。
+- 封裝 86 組地圖上下貼圖，涵蓋原表全部 83 組與額外 3 組模型包請求。prototype 19 其中 84 組來自原快取全貼圖，`map_6001`／`6002` 缺少而保留 DGDB。按區域 `res_map` 選圖；原門／地板模型和動畫已在備份找到部分資料，但尚未接入。
+- `panel_b/r/y_1..6` 已使用備份各自的原圖。`toaru_box_01 → toaru_box`、`toaru_key → toaru_Key` 等拼字別名優先指向原圖；`panel_alarm`／`panel_banana` 仍用舊相容素材。
+- 優先清單 112 項已配接 109 項，仍缺 `mugen_box.png`、`panel_panic.png`、`panel_weekness.png`。四個 heal 原面板已找到，`happytresure` 配接至備份的 `happytreasure`。先前 [檔名對照](../artifacts/dgdb-name-mapping-2026-10-20/README.md) 為 prototype 5 的歷史結果。
 - 保留 prototype 2 的地板碰撞盒修正；移除中央白色替代門方塊，原 Boss 入口判定不變。
 - prototype 4 以立繪 Alpha 遮罩修復屬性陰影的有色矩形，使用 APK 內的透明 Shader 路徑。
 - prototype 6 為敵人血條、回合數及狀態圖示複製專用 UI 材質，使用原 APK 內的 Overlay Shader（queue 3001），在角色 quad（3000）之後繪製；不更改原 Boss 尺寸、血量與選取碰撞。
