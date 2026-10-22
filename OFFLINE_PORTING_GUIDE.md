@@ -1,6 +1,8 @@
 # Divine Gate 離線化實作與其他版本 APK 移植指南
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 21**。
+文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 22r1**。
+
+prototype 22r1 更新：加入帳號最低 Rank 184／倉庫 2,000 格、180 秒回體、停用自動營運通知，以及標準與四個聯動池的五星總機率調整。倉庫助戰僅保留一般關卡第五位，強化頁使用原好友流程。實作位置及限制見第 9.5 節；既有交付報告中的結果不代表本次重新執行測試，本次整理未編譯或跑完整回歸。
 
 prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投影後，嵌入配接器並於 `Ready` 開頭套用；原 TextAsset、玩家角色／技能／抽卡資料保留。禁書目錄使用原存檔 ID，28 關後期新增任務未匯入，22 筆需要新版角色的歷史亂入規則停用。既有交付報告記錄舊存檔升級與 364 個 active 任務／706 層生成、本機 API 測試通過；本次提交整理未重跑編譯或完整回歸測試。完整來源、重建命令與限制見 [prototype21 交付報告](artifacts/1.0.6-offline-prototype21-backup-stages/README.md)。prototype 20 章節保留原生模型與動畫的實作背景；目前關卡主資料的有限匯入範圍見第 7.7 節。
 
@@ -40,8 +42,9 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | 1.0.6 prototype 19 | 128,942,820 | `ad49d9b12ee7aa2573f67c0320ad9732f0a272586d5742a46ebfc7c8dac80c3d` |
 | 1.0.6 prototype 20 | 175,826,218 | `68a5e639add63b9009a496c4d82612de08af388a67504d3356009c64a27055bc` |
 | 1.0.6 prototype 21 | 176,022,826 | `c17afcb856395fb7728075cb6db2215978eac3e48e3f8425589909948d303163` |
+| 1.0.6 prototype 22r1 | 176,026,922 | `f647017a7613a27d85ea3c8ef684b00fef608c52624ed138ec0bf151a77877cd` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 21 產物目錄](artifacts/1.0.6-offline-prototype21-backup-stages/README.md)，其中 `build-report.json`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r1 產物目錄](artifacts/1.0.6-offline-prototype22r1-quest-support-only/README.md)，其中 `build-report.json`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
 
@@ -62,6 +65,9 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | [offline/Patch.cs](offline/Patch.cs) | Mono.Cecil 對原遊戲 DLL 的版本限定 IL 修改 |
 | [offline/FreeChipShop.cs](offline/FreeChipShop.cs) | 免費代幣商品、確認、發放、防重複、存檔 |
 | [offline/CollabGacha.cs](offline/CollabGacha.cs) | 四池選擇、原卡片重用、返回清理與動畫還原 |
+| [offline/AccountRules.cs](offline/AccountRules.cs) | 帳號最低條件、標準池五星補齊及兩階段抽選 |
+| [offline/WarehouseSupport.cs](offline/WarehouseSupport.cs) | 一般關卡倉庫助戰選單、角色實例快照與所有權驗證 |
+| [offline/PatchRules.cs](offline/PatchRules.cs) | 帳號、回體、通知、抽選與一般關卡助戰的版本限定 IL 掛鉤 |
 | [offline/build.py](offline/build.py)、[offline/manifest.py](offline/manifest.py) | 提取、編譯、二進位 Manifest 修改、封裝與簽章 |
 | [offline/recovered_images.py](offline/recovered_images.py)、[offline/EmbedImages.cs](offline/EmbedImages.cs) | 圖片核對、圖集產生及舊 Mono 可讀的圖片嵌入 |
 | [offline/area_icons.py](offline/area_icons.py) | 保留 Wiki 選關圖，其餘依各區域門景製作 A 構圖裁切與來源對照 |
@@ -145,6 +151,13 @@ flowchart TD
 | `ResidentManager.Start` | 原流程結尾呼叫 `Bootstrap`，必要時 AddComponent 建立 `ServerForgery` |
 | `ResidentManager` 新增 `Update` | 呼叫 `PumpNativeAssets` 推進本機載入；未啟用原生素材時直接返回 |
 | `ServerForgery.Start` | 原流程結尾呼叫 `Ready`，資料表配接及載入本機存檔 |
+| `ServerForgery.UserParamSave`／`UserParamLoad`／`CreateForgeryStructPlayer` | 存檔、載入及回應序列化時套用帳號最低條件；載入有變更時保存 |
+| `ServerForgery.StaminaAutoRecovery`、`UserDataAdmin.Update`、`MainMenuFixPlayerParam.Update` | 回體與畫面倒數改為 180 秒；前兩者含等於邊界 |
+| `MainMenuSeqSwitchPage.Update` | 略過自動營運通知門檻 |
+| `ServerForgery.ForgeryGachaPlay` | 發獎與空白刮卡圖的兩處取票改呼叫 `ScratchTicket` |
+| `MainMenuSeqQuestSelectFriend`、`ServerForgery.ForgeryQuestStart` | 一般關卡助戰來源切換、倉庫候選與後端所有權驗證 |
+| `LocalSaveManager.GetLocalSaveUseFriend`／`SaveFuncUseFriend` | 倉庫助戰不給友情點、不寫好友使用冷卻 |
+| `ServerForgery.ForgeryStoneUsedUnit`／`MainMenuSeqShopUseTipUnit` | 倉庫擴充上限及顯示統一為 2,000 |
 | `PatchManager.Start` | 保留 base Start，改呼叫 `SetupPatch`，設定空清單與已取得狀態 |
 | `PatchManager.GetPatchText` | 改呼叫 `PatchText`，提供本機版本／更新計數等值 |
 | `PatchManager.PatchUpdateRequest` | 停用外部更新請求 |
@@ -195,7 +208,7 @@ flowchart TD
 | 角色 | `MasterDataParamChara`、進化、主動／被動／隊長／限界技能 |
 | 關卡 | `MasterDataArea` → `MasterDataQuest` → `MasterDataQuestFloor` → 敵群／敵人及面板組 |
 | 場景貼圖 | `MasterDataArea.res_map`；不能只看共用模型 bundle 的名稱 |
-| 抽卡 | `MasterDataGacha` → `MasterDataGachaAssign`；保留原權重、等級與加值 |
+| 抽卡 | `MasterDataGacha` → `MasterDataGachaAssign`；原列保留，22r1 另加標準五星列並調整五星總機率，詳見第 9.5 節 |
 | 下載定位 | `MasterDataAssetBundlePath`；記錄原請求名稱、分類及包，不代表包內容已存在 |
 
 1.0.6 建置目前硬性檢查角色表 523 筆、任務表 371 筆。角色表包含 fix_id=0 的整合列，實際接圖角色為 522 筆。這些數量及欄位映射都是版本限定，不能直接套在其他版本。
@@ -341,7 +354,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 `audit_stage_differences.py` 以 `--original-apk`、`--current-apk`、`--backup`、`--output` 比較欄位及有效遭遇，區分固定敵群數量、隨機候選、Boss 連戰與新增行動。若交付版有關卡覆蓋，還須保留同目錄的 `build-report.json` 及 `stage-tables/`，工具會核對 APK 雜湊與配接器內的 JSON。輸出包含 `source-proof.json`、逐關差異、Boss 流程與測試樣本。
 
-`audit_collab_gacha.py` 使用同組 APK／備份參數，另以 `--stage-proof` 指向上述 `source-proof.json`，輸出四個聯動池的角色、加值變體、權重及逐票號結果。原本機抽選的 `<= 0` 邊界使第一列多一個票號、最後一列少一個；報告保留此差異，不修改抽卡程式或權重。備份未找到抽卡表，這些結果不能作為歷史官方伺服器機率。
+`audit_collab_gacha.py` 使用同組 APK／備份參數，另以 `--stage-proof` 指向上述 `source-proof.json`，輸出四個聯動池原 TextAsset 的角色、加值變體、權重及逐票號結果。這是 prototype 21 基準的盤點，未模擬 22r1 的 `ConfigureScratch`／`ScratchTicket`；新規則需查 `VerifyRulesOdds.cs` 與對應交付報告。原本機抽選的 `<= 0` 邊界使第一列多一個票號、最後一列少一個；報告保留此差異，不修改抽卡程式或權重。備份未找到抽卡表，這些結果不能作為歷史官方伺服器機率。
 
 `VerifyStageAudit.cs` 與 `PrepareGachaAuditProbe.cs`／`VerifyCollabOdds.cs` 是獨立盤點用測試入口，未自動接入 `test.py`；後者僅在拋棄式 DLL 副本供給固定票號並替換存檔／領卡 I/O。來源 APK、真實玩家存檔及正式抽選程式不因盤點而改寫。
 
@@ -399,11 +412,31 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 
 原 `GachaType3` 下的 `Element00/01/02` 在選池時暫時排成四格，第四格由原卡複製。選定後只設 `MainMenuParam.m_GachaID` 及原圖鑑取得旗標參照，不在選池階段扣幣。之後沿用原確認、單抽／最多九連抽、刮卡、背包與存檔程式。友情與普通稀有流程保留；四個選項目前共用原聯動卡圖，以名稱區分。
 
-原 1.0.6 沒有 STEINS;GATE 的 type=3 卡池記錄；有該活動關卡或角色圖片，不等於存在可直接開啟的卡池。權重保留 APK 內建資料，不宣稱歷史官方機率已核實。
+原 1.0.6 沒有 STEINS;GATE 的 type=3 卡池記錄；有該活動關卡或角色圖片，不等於存在可直接開啟的卡池。prototype 13～21 保留 APK 內建權重；22r1 的本機機率調整見第 9.5 節，不宣稱歷史官方機率已核實。
 
 ### 9.4 IL 呼叫契約
 
 `MainMenuManager.AddSwitchRequest` 原本回傳 bool，原呼叫後有 `pop`。替代的 `RouteGachaRootRequest` 必須也回傳 bool 並補上 page 參數；早期 void 替代版已被測試拒絕，不能使用。原 `MainMenuSeqGachaConfirm`、`MainMenuSeqGachaMain` 方法指令由測試比對維持不變。
+
+### 9.5 帳號、抽選與一般關卡倉庫助戰（prototype 22r1）
+
+`AccountRules.cs` 在原帳號物件上將較低 Rank 提高至 184，依原 Rank 表同步 EXP、Cost、好友欄與體力；倉庫至少 2,000 格，較高 Rank／容量保留，EXP 另設對應最低值以免結算降級。其餘進度沿用原存檔格式。`PatchRules.cs` 同時修改 API 回體、前景刷新及倒數，180 秒恰到邊界也回復，並停用自動營運通知。
+
+`ConfigureScratch` 在載入玩家存檔前，記錄原本機抽選含 `<= 0` 邊界的五星比例，再以原五星資料列為範本，為標準池加 18 種既有五星的 54 筆加值變體，合計 42 種五星。原資料列保留。`ScratchTicket` 先取稀有度、再按該類資料列權重抽選，回傳從 1 開始的票號，讓五星總機率成為 prototype 21 實際本機比例的兩倍；不能只將五星權重乘二，因分母也會跟著變。既有報告的票號結果如下，忽略 PRNG 取模的極小偏差：
+
+| 池 ID | prototype 21 基準 | 22r1 五星總機率 |
+| --- | --- | --- |
+| 200100 標準池 | 1033/15814 | 2066/15814（約 13.064373%） |
+| 300100 FAIRY TAIL | 999/10000 | 1998/10000（19.98%） |
+| 300200 進擊的巨人 | 62/1244 | 124/1244（約 9.967846%） |
+| 300300 ケリ姫スイーツ | 62/1244 | 124/1244（約 9.967846%） |
+| 300400 魔法禁書目錄 | 60/1000 | 120/1000（12%） |
+
+每抽仍為 5 枚，友情／教學池不套用增幅。等級與加值沿用各資料列；五星類別內的選擇依補齊後權重，並非每個五星角色的個別機率都加倍。這是新增離線規則，不是復原官方歷史機率。
+
+`WarehouseSupport.cs` 在一般關卡助戰頁複製原排序按鈕，切換好友／倉庫清單；排除目前出戰四個角色實例，複製所選角色資料作助戰快照。後端驗證角色仍屬於該帳號、等級及加值等一致、不在所選隊伍且不領友情點；過期或偽造請求拒絕。倉庫角色不消耗、不給友情點、不寫使用冷卻，教學保留原流程。
+
+prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按鈕及後端掛鉤，強化回到原好友流程。此倉庫提交直接採現行 22r1 來源，沒有重建中間 prototype 22 強化功能的提交。交付 APK 及既有檢查詳見 [22r1 說明](artifacts/1.0.6-offline-prototype22r1-quest-support-only/README.md)，Android 按鈕顯示、操作與戰鬥仍待驗證。
 
 ## 10. 仍缺失或尚未驗證的部分
 
@@ -494,7 +527,7 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `VerifyFreeChipShop.cs` | 六包數量、免費／付費分離、999 上限、溢位、取消、一次提交、持久保存 |
 | `VerifyShopPrefabHook.cs`、`verify_shop_prefab.py` | 真正選到完整 prefab，訊息／Yes／No 控制存在；空容器為反例 |
 | `VerifyCollabHooks.cs` | bool 堆疊、原動畫／教學與原確認／刮卡指令保留；快照／還原／正常頁清理掛鉤 |
-| `VerifyCollabGacha.cs` | 四池資料／選擇、原權重、每池單抽＋九連抽，共 40 張卡的資格、扣幣及跨程序保存 |
+| `VerifyCollabGacha.cs` | 四池資料／選擇、原列保留與新增列數、每池單抽＋九連抽、扣幣及跨程序保存 |
 | `VerifyCollabReturn.cs` | 100 次模擬選池／關閉／重新啟用，第四卡、Back Collider 與原三卡隔離 |
 | `VerifyCollabAnimation.cs` | 四卡共 100 次原 `UIButtonScale`／`TweenScale.Begin` 狀態循環，重設後仍能按壓／懸停 |
 | `verify_collab_prefab.py` | 原卡父節點、178×215 Collider、UILabel／UISprite、沒有搶點擊的子 Collider |
@@ -506,6 +539,9 @@ CAB 快取索引時間落在 2014-03-27 至 03-31，上層索引另有 2014 年 
 | `verify_backup_images.py` | 232 檔雜湊不變；612 個貼圖、690 個立繪／地圖 payload 與 834 個原圖／共用框像素核對，18 個原色星數與 84 張選關圖 |
 | `verify_native_bundles.py`、`VerifyNativeHooks.cs`、`NativeAssetTests.cs` | 實際 APK 82 包／CAB 位元組、原始門流程保留、原生陰影保護、載入成功／錯誤／逾時／缺物件降級與清理；WWW/GPU／fallback 工廠由替身提供 |
 | `verify_backup_stages.py`、`VerifyBackupStages.cs` | 交付版 11 張關卡表雜湊／內容與共用參照、prototype 20 隔離存檔升級、364 個 active 任務生成及 API 流程；需備妥前版 APK |
+| `verify_account_rules.py`、`VerifyAccountRules.cs`、`VerifyRulesHooks.cs` | 帳號最低條件及較高進度、180 秒邊界、倉庫助戰、所有權拒絕、強化原始 IL 保留及掛鉤 |
+| `PrepareRulesOdds.cs`、`VerifyRulesOdds.cs` | 拋棄式 DLL 逐票號核對五星總比例、類別內權重、加值及實際扣幣邊界 |
+| `verify_warehouse_prefab.py` | 交付 APK 的一般關卡來源按鈕、Collider、標籤與排列；不代替 Android 觸控驗證 |
 
 1,223 是封裝 payload 數，包含 522 立繪、522 衍生陰影、172 地圖圖及 7 張合成圖集；不是所有來源小圖的數量。七張合成圖集為五組角色、一組面板、一組城鎮圖。
 

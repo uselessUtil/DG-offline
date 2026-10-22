@@ -8,17 +8,17 @@
 
 2.9.0 的安全檢查與獨立移植嘗試見 [版本報告](v290/README.md)：原 APK 缺 42 份主資料，目前僅交付離線診斷版，尚無可玩的 2.9.0 單機版。以下內容仍專指 1.0.6。
 
-目前實作基準為 **prototype 21 備份關卡版**。既有 371 筆任務透過 11 張相容主表套用備份設定；禁書目錄保留舊 ID，既有交付報告記錄 prototype 20 存檔升級檢查通過。13 關多餘 Boss 階段、蛋關卡、寶箱、體力及連戰設定已對齊。保留 prototype20 的 82 個原生資源包與缺失／載入失敗備援。28 關後期新增內容尚未匯入；22 筆引用新版角色的亂入規則停用，維持普通遭遇。**Android 渲染與操作交由使用者驗證**。
+目前實作基準為 **prototype 22r1 關卡倉庫助戰與帳號規則版**。新舊帳號至少 Rank 184／倉庫 2,000 格，保留更高進度；回體間隔為 180 秒。標準池補入 18 種既有五星，標準與四個聯動池的五星總機率改為 prototype 21 實際本機機率的兩倍。一般關卡第五位可從倉庫選助戰；強化頁維持原好友流程。沿用 prototype 21 的 11 張相容關卡表及 prototype 20 的原生素材。28 筆後期任務與 22 筆不相容亂入規則仍未開放。**Android 渲染、操作與實際遊玩仍待驗證**。
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
 ## 最新產物
 
-- APK：`artifacts/1.0.6-offline-prototype21-backup-stages/ディバゲ_1.0.6.apk`
+- APK：`artifacts/1.0.6-offline-prototype22r1-quest-support-only/ディバゲ_1.0.6.apk`
 - 使用與舊離線版相同的套件 `jp.gungho.dg.offline106` 及測試簽章，更新安裝時不需先清除資料。
-- 大小：176,022,826 bytes。
-- SHA-256：`c17afcb856395fb7728075cb6db2215978eac3e48e3f8425589909948d303163`。
-- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype21-backup-stages/README.md)。
+- 大小：176,026,922 bytes。
+- SHA-256：`f647017a7613a27d85ea3c8ef684b00fef608c52624ed138ec0bf151a77877cd`。
+- 詳細變更、測試結果與手動驗證步驟：[交付說明](../artifacts/1.0.6-offline-prototype22r1-quest-support-only/README.md)。
 - 2026-10-21 [僅 ARM64 的 Android 16 裝置安裝檢查](../artifacts/android16-tb323fu-prototype17-test-2026-10-21/README.md)：低 SDK 繞過後仍因 `INSTALL_FAILED_NO_MATCHING_ABIS` 無法安裝；裝置僅 ARM64，而 APK 僅 ARM32。未修改 APK，原生 ARM64 移植尚未完成。
 - 全部活動原名、任務數及範圍：[活動清單](../artifacts/1.0.6-offline-prototype10-events/EVENTS.md)。七筆無樓層的 reserve 維持停用，並未加入後期版本活動。
 
@@ -30,7 +30,9 @@
 
 ## 素材與限制
 
-- prototype 13 的 `CollabGacha.cs` 將聯動入口切成四個原生卡片選項，返回可取消；只常駐四個內建聯動池，原權重／等級／加值與其他池不變。每抽 5 枚，最多九連抽，原確認／刮卡程式未改動。四格共用原聯動圖片，以名稱區分。
+- prototype 22r1 取消 prototype 22 的強化頁倉庫選擇，移除相關橋接、按鈕及驗證掛鉤；一般關卡倉庫助戰保留。既有交付報告記錄強化頁及強化 API 的指令與原版一致。現行來源直接提交 22r1 狀態，未另重建 prototype 22 的強化倉庫版本。
+- prototype 22 新增 `AccountRules.cs`、`WarehouseSupport.cs`、`PatchRules.cs`：新舊帳號至少 Rank184／倉庫2000格，保留更高進度；API／前景／倒數同步180秒回體，停用自動營運通知。標準池補齊稽核列出的18種既有五星（合計42種），標準與四個聯動池依 prototype21 實際機率精確加倍。prototype 22 曾提供強化及一般關卡倉庫選擇，22r1 僅保留一般關卡；助戰角色不消耗，教學仍走原流程。細節見本版交付說明。
+- prototype 13 的 `CollabGacha.cs` 將聯動入口切成四個原生卡片選項，返回可取消；只常駐四個內建聯動池；當時保留原權重／等級／加值。prototype 22r1 的五星機率改由 `AccountRules.cs` 調整。每抽 5 枚，最多九連抽，原確認／刮卡程式未改動。四格共用原聯動圖片，以名稱區分。
 - prototype 14 改為重用原三卡並只複製第四張，沿用原顯示父物件、圖層與深度，明確啟用／重設透明度／註冊 NGUI；返回與重新進入時還原原入口外觀。程式檢查不代表已確認實機顯示正常。
 - prototype 15 在一般首頁刷新後及處理輸入前隱藏第四張卡片並停用選池返回碰撞區域，避免原頁動畫遞迴啟用造成殘留；重複關閉也會清理，原三卡的新餘額顯示保留。新增 100 次模擬啟用狀態循環檢查，原生動畫與觸控仍需實機驗證。
 - prototype 16 在原外觀快照前、選池卡片啟用後及還原時，透過原 `UIButtonScale.OnHover(false)` 清除懸停，停止縮放 Tween 並將兩端設為快取正常尺寸；後續原按壓／懸停功能保留。100 次動畫狀態循環使用原版按鈕程式與引擎狀態替身，原生渲染／觸控時序仍需驗證。
@@ -69,3 +71,5 @@ Android 16 相容性分析見 [相容性報告](../artifacts/android16-compatibi
 每次使用新的產物與中間檔目錄，保留原 APK 及舊版。需要更新安裝時應維持相同簽署憑證，私鑰不放進倉庫。Android 驗證應優先確認角色顯示、教學 Boss 入口、結算、連續 UI 返回及重啟存檔，並記錄受測 APK hash、Android 版本與 ABI。
 
 各 prototype 的提交拆分、重建範圍與查閱方式，請參考 [Prototype 提交索引](PROTOTYPE_HISTORY.md)。
+
+本次提交整理僅核對靜態語法、差異、公開文件及排除項目，未重跑編譯或完整回歸測試；交付說明中的測試結果來自既有報告。
