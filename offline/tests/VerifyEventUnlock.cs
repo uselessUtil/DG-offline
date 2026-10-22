@@ -9,7 +9,10 @@ public static class VerifyEventUnlock
     static void Check(bool test, string message) { if (!test) throw new Exception(message); }
     static T[] Original<T>(string name)
     {
-        return JsonMapper.ToObject<T[]>(File.ReadAllText(Path.Combine(Environment.GetEnvironmentVariable("DG_TEST_TABLES"), name + ".json")));
+        string folder = Environment.GetEnvironmentVariable("DG_TEST_STAGE_TABLES");
+        string file = string.IsNullOrEmpty(folder) ? "" : Path.Combine(folder, name + ".json");
+        if (!File.Exists(file)) file = Path.Combine(Environment.GetEnvironmentVariable("DG_TEST_TABLES"), name + ".json");
+        return JsonMapper.ToObject<T[]>(File.ReadAllText(file));
     }
     static uint serial = 1;
     static ServerForgery server;
@@ -77,7 +80,7 @@ public static class VerifyEventUnlock
             Api(SERVER_API.SERVER_API_QUEST_CLEAR, clear);
             Check(Save.quest_id == 0 && ServerDataUtil.ChkBitFlag(ref Save.flag_quest_clear, quest.fix_id), "Clear did not persist " + quest.fix_id);
         }
-        Console.WriteLine("PASS events: 49 areas, 132 difficulties, 6 evolution temples permanent; 7 reserves remain inactive; story progression and global schedules unchanged.");
-        Console.WriteLine("PASS actual local API: all 132 event quests start, charge original stamina, clear and set progress. Unlock itself leaves save unchanged. Android gameplay remains unverified.");
+        Console.WriteLine("PASS events: 49 areas, 132 difficulties, 6 evolution temples permanent; 7 reserves remain inactive; configured stage data and global schedules verified.");
+        Console.WriteLine("PASS actual local API: all 132 event quests start, charge configured stamina, clear and set progress. Unlock itself leaves save unchanged. Android gameplay remains unverified.");
     }
 }

@@ -79,6 +79,12 @@ def main():
     run('mcs','-out:'+str(test/'LocalApiTests.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
         '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'LocalApiTests.cs')
     env = dict(os.environ, DG_TEST_TABLES=str(work/'tables'),DG_TEST_PREFS=str(test/'player-prefs.txt'))
+    if report.get('backup_stage_import'):
+        env['DG_TEST_STAGE_TABLES'] = str(args.report.parent/'stage-tables')
+        import sys
+        sys.path.insert(0,str(tests))
+        from verify_backup_stages import verify as verify_backup_stages
+        report['backup_stage_tests'] = verify_backup_stages(artifact,args.report.parent,test,env)
     run('mcs','-out:'+str(tools/'VerifyEventPatch.exe'),'-r:'+CECIL,tests/'VerifyEventPatch.cs')
     event_patch = subprocess.check_output(['mono',str(tools/'VerifyEventPatch.exe'),
         str(managed/'Assembly-CSharp.dll'),str(test/'Assembly-CSharp.dll')],text=True)
