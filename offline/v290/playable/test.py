@@ -72,6 +72,8 @@ def main():
   isolated=dict(env,DG_TEST_ACCOUNT_RULES="22",DG_TEST_PREFS=str(work/(name+'.prefs')))
   capture(name,'mono',work/(name+'.exe'),env=isolated,cwd=work)
   capture(name+'-restart','mono',work/(name+'.exe'),'reload',env=isolated,cwd=work)
+ run('mcs','-out:'+str(work/'VerifyPageFlow290.exe'),*['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll']],CODE/'VerifyPageFlow290.cs')
+ capture('confirmation-page-flow','mono',work/'VerifyPageFlow290.exe',env=dict(env,DG_TEST_PREFS=str(work/'page-flow.prefs')),cwd=work)
  odds=work/'odds';odds.mkdir()
  for dll in work.glob('*.dll'):shutil.copy2(dll,odds/dll.name)
  run('mcs','-r:'+CECIL,'-out:'+str(tools/'PrepareRulesOdds.exe'),tests/'PrepareRulesOdds.cs')
