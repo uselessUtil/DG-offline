@@ -18,7 +18,9 @@ public static class EmbedImages
         var init = module.ImportReference(bcl.Types.Single(t => t.FullName == "System.Runtime.CompilerServices.RuntimeHelpers")
             .Methods.Single(m => m.Name == "InitializeArray" && m.Parameters.Count == 2 &&
                 m.Parameters[1].ParameterType.FullName == "System.RuntimeFieldHandle"));
-        var owner = module.Types.Single(t => t.Name == "RecoveredImages");
+        // Optional owner lets old Unity builds use the same RVA transport for
+        // master tables too, without unavailable manifest-resource APIs.
+        var owner = module.Types.Single(t => t.Name == (args.Length > 5 ? args[5] : "RecoveredImages"));
         var method = owner.Methods.Single(m => m.Name == "Payload");
         method.Body = new MethodBody(method);
         var il = method.Body.GetILProcessor();

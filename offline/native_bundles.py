@@ -35,7 +35,7 @@ public static string Find(string kind, string name) { return null; }
 }''')
 
 
-def create(backup, output, tables):
+def create(backup, output, tables, *, expected_characters=522, expected_areas=99, script_hashes=None):
     output.mkdir(parents=True,exist_ok=True)
     folder = output/'native-bundles'
     folder.mkdir()
@@ -75,9 +75,9 @@ def create(backup, output, tables):
             if any(s['className'] not in ['AnimationArray','AnimationEvent'] for s in scripts):
                 raise ValueError('Unexpected executable component in native scene/character package')
             for s in scripts:
-                expected = {'AnimationArray':3721557914,'AnimationEvent':3033599902}[s['className']]
+                expected = (script_hashes or {'AnimationArray':3721557914,'AnimationEvent':3033599902})[s['className']]
                 if s['hash'] != expected:
-                    raise ValueError('Original 1.0.6 component schema differs: '+s['className'])
+                    raise ValueError('Target APK component schema differs: '+s['className'])
             for kind,name,pid in entries:
                 key = ('Texture' if kind=='Texture2D' else kind)+'/'+name
                 if key in routes and routes[key]!=path.name:
@@ -124,15 +124,16 @@ def create(backup, output, tables):
                          **{k:routes.get(('Texture/' if k=='res_map' else 'GameObject/')+a[k].lower())
                             for k in ['mesh_map','mesh_door','res_map','area_effect']}})
     character_count=sum('GameObject/chara_prefab_'+c['res_chara_id_str'] in routes for c in chars)
-    if character_count!=522 or sum(bool(a['mesh_map'] and a['mesh_door'] and a['res_map']) for a in coverage)!=99:
+    area_count = sum(bool(a['mesh_map'] and a['mesh_door'] and a['res_map']) for a in coverage)
+    if character_count!=expected_characters or area_count!=expected_areas:
         raise ValueError('Unexpected native restoration coverage')
     report={'source':str(backup),'container':'UnityRaw v3; embedded CAB bytes unchanged',
             'bundles':records,'routes':routes,'path_ids':names,'area_coverage':coverage,
-            'characters':character_count,'areas':99,'effects':sum(bool(a['area_effect']) for a in coverage),
+            'characters':character_count,'areas':area_count,'effects':sum(bool(a['area_effect']) for a in coverage),
             'native_bytes':sum(r['size'] for r in records),
             'source_hashes_unchanged':True,'cached_master_data_imported':False,
             'fallback_policy':'Missing resource or native load error uses the existing simplified request path.',
             'android_load_and_render_verified':False}
     (output/'native-bundle-manifest.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
-    print('Native bundles:',len(records),'packages;',character_count,'characters; 99 maps;',report['native_bytes'],'bytes',flush=True)
+    print('Native bundles:',len(records),'packages;',character_count,'characters;',area_count,'maps;',report['native_bytes'],'bytes',flush=True)
     return report
