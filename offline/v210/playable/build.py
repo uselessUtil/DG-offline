@@ -29,7 +29,7 @@ def checked_replace(text,old,new):
     return text.replace(old,new)
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=ROOT/'artifacts/2.1.0-offline-playable1')
+    parser.add_argument('--output',type=Path,default=ROOT/'artifacts/2.1.0-offline-playable1-r4-update-loop')
     parser.add_argument('--resume-work',type=Path,help='Resume an unfinished build before its APK exists')
     parser.add_argument('--assets-from',type=Path,help='Reuse immutable verified artwork from a previous build-report.json')
     args=parser.parse_args();assert digest(SOURCE.read_bytes())==SHA
@@ -127,7 +127,7 @@ def main():
     text=(ROOT/'offline/Runtime.cs').read_text()
     start=text.index('    public static void Ready(');end=text.index('    private static void OpenLocalEvents',start)
     text=text[:start]+text[end:]
-    text=checked_replace(text,'1.0.6 offline prototype 22r6','2.1.0 offline gameplay candidate 1')
+    text=checked_replace(text,'1.0.6 offline prototype 22r6','2.1.0 offline gameplay candidate 1 r4 update loop')
     text=text.replace('        patch.m_PatchUpdateRequestText = false;\n','').replace('        patch.m_PatchUpdateRequestBanner = false;\n','')
     text=text.replace('1.0.6','2.1.0').replace('offline106','offline210').replace('prototype 22r6','2.1.0 candidate 1')
     (build/'Runtime.cs').write_text(text)
@@ -138,7 +138,8 @@ def main():
         cached_report=json.loads(args.assets_from.read_text())
         assert cached_report['source_sha256']==SHA
         cached_data=json.loads((args.assets_from.parent/'master-data.json').read_text())
-        core=lambda rows:{k:v for k,v in rows.items() if k not in DONOR_TABLES}
+        # Category counts affect generated floors, not images or prefab routes.
+        core=lambda rows:{k:v for k,v in rows.items() if k not in DONOR_TABLES and k!='MasterDataCategoryPattern'}
         assert core(cached_data['imported'])==core(imported) and cached_data['backup_files']==baseline
         cached=Path(cached_report['work_directory'])/'build'
         for name in ['RecoveredImages.cs','RecoveredImages.bin','image-offsets.tsv','images.json','NativeAssetIndex.cs','native-bundle-manifest.json']:
@@ -213,7 +214,7 @@ def main():
     assert digest(SOURCE.read_bytes())==SHA
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
-    report={'version':'2.1.0 offline gameplay candidate 1','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':595,'quest_rows':399,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
+    report={'version':'2.1.0 offline gameplay candidate 1 r4 update loop','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':595,'quest_rows':399,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))

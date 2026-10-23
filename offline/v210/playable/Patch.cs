@@ -190,7 +190,7 @@ public static partial class PatchPlayable210
         FreeChipShop210();
 
         StartHelper("PatchManager", "SetupPatch");
-        CallHelper("PatchManager", "GetPatchText", "PatchText", 1);
+        CallHelper("PatchManager", "GetPatchText", "PatchText210", 1);
         Empty("PatchManager", "PatchUpdateRequest");
         Boolean("PatchUtil", "CheckAppUpdate", false);
         // Preserve banner rendering, but never enter its link/app-scheme branch.

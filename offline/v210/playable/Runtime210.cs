@@ -45,9 +45,17 @@ public static partial class DivineGateOffline {
    if(pool.url_web==null)pool.url_web="";
   }
  }
+ // 2.1.0 uses the Android-specific counter key; the old shared runtime does not.
+ public static string PatchText210(string key) {
+  if(key=="DATA_UPDATE_COUNTER_ANDROID")return "offline210-1";
+  return PatchText(key);
+ }
  public static void LoadLocalAssets210(TitleMenuSeqLoadMasterAndAssetBundle page,bool ready) {
   if(!ready || Singleton<ServerForgery>.Instance==null || Singleton<ServerForgery>.Instance.m_MasterDataQuest==null)return;
   Singleton<ResidentResourceManager>.Instance.LoadResidentResourceRequest();
+  // Match original ExecSeq_Max: acknowledge the data loaded by this title flow.
+  // This repairs an empty/stale r2/r3 marker without changing SERVER_SAVE.
+  Singleton<LocalSaveManager>.Instance.SaveFuncUpdateCounter(Singleton<PatchManager>.Instance.GetPatchText("DATA_UPDATE_COUNTER_ANDROID"));
   Singleton<LocalSaveManager>.Instance.SaveFuncAssetBundleInit(LocalSaveManager.ASSETBUNDLE_INIT.ASSETBUNDLE_INIT_CACHE);
   Singleton<TitleMenuManager>.Instance.AddSwitchRequest(TITLEMENU_SEQ.SEQ_SWITCH_PAGE,false);
  }
