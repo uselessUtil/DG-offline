@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "compiled_on": "2026-10-23",
+  "timezone": "Asia/Taipei",
+  "scope": "Curated report fingerprints; not an APK inventory or independent re-run of historical tests. Paths relative to repository root.",
+  "sources": [
+    {
+      "id": "S01",
+      "path": "artifacts/apk-dgdb-compatibility-2026-10-23/README.md",
+      "purpose": "全部 APK 與 DGDB schema、資料缺口",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 9672,
+      "sha256": "9dae93789622bfeee4d3624a451fd3c8fb1cdd567c1d658f6c3113ab3c78949c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S02",
+      "path": "artifacts/backup-character-era-2026-10-23/README.md",
+      "purpose": "舊快取角色範圍與年代",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 4879,
+      "sha256": "6cc1feca10b648d6d779bd69953786293cca47751ef4a4c960c51ec00619dc8b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S03",
+      "path": "artifacts/dg0-masterdata-gap-audit-2026-10-23/README.md",
+      "purpose": "DG0 備份無主資料的盤點範圍",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 4879,
+      "sha256": "dee8322cac4aa91effb7b97d5026d707c4c97756bb3db08dfb80c18d5d5e86f9",
+      "availability": "local-only"
+    },
+    {
+      "id": "S04",
+      "path": "artifacts/dgdb-masterdata-audit-2026-10-23/README.md",
+      "purpose": "DGDB 表格、關聯、數值及關卡缺口",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 8471,
+      "sha256": "16e2f17af5b9550abbaf8b98acb225fc5e0ac72132fffe7494c0bbe2917a9997",
+      "availability": "local-only"
+    },
+    {
+      "id": "S05",
+      "path": "artifacts/dgdb-content-era-2026-10-23/README.md",
+      "purpose": "DGDB 角色追加與匯出日期的區別",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 4974,
+      "sha256": "7f0745005c61a1c51b735a0682c37326953b0f1509a4dccdd003bf543af662fd",
+      "availability": "local-only"
+    },
+    {
+      "id": "S06",
+      "path": "artifacts/masterdata-version-compatibility-2026-10-22/README.md",
+      "purpose": "七版原 LitJson 解析矩陣",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 6320,
+      "sha256": "a570a398a0600564bd99a6a261163bc2ff3dac53cae4ad376e595e129c78ace5",
+      "availability": "local-only"
+    },
+    {
+      "id": "S07",
+      "path": "artifacts/masterdata-core-gameplay-check-2026-10-23/README.md",
+      "purpose": "核心技能初始化的有限驗證",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 2870,
+      "sha256": "f506c5d329d7d8b916b8b59350005761477c4fe9e56088bf34f8adb1afdf6018",
+      "availability": "local-only"
+    },
+    {
+      "id": "S08",
+      "path": "artifacts/1.0.8-masterdata-audit-2026-10-21/README.md",
+      "purpose": "1.0.8 原後端及內建缺表",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 5427,
+      "sha256": "03776e70556c07a3c130f3e66ee74253bb06fc74dab7a8466c9872de237ba9c6",
+      "availability": "local-only"
+    },
+    {
+      "id": "S09",
+      "path": "artifacts/cache-backup-audit-2026-10-22/README.md",
+      "purpose": "舊快取統計與圖片覆蓋",
+      "chapter": "ASSETS.md",
+      "size_bytes": 3499,
+      "sha256": "928bb1d96bcad34d2639494f3ab1acd950a95cc7a3ec4413960a9310de16b261",
+      "availability": "local-only"
+    },
+    {
+      "id": "S10",
+      "path": "artifacts/native-model-audit-2026-10-22/README.md",
+      "purpose": "原模型、動畫及陰影問題的實作前調查",
+      "chapter": "ASSETS.md",
+      "size_bytes": 8228,
+      "sha256": "5adf3b277a66ec2ff75e118f65143df2ab7862e7974b4a19c1b444c982fc353e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S11",
+      "path": "artifacts/1.0.6-offline-prototype20-native-models/README.md",
+      "purpose": "原生載入已實作與 Android 限制",
+      "chapter": "ASSETS.md",
+      "size_bytes": 6057,
+      "sha256": "d44ccf4c3d9ad9902c9cfd69d1476627827eb19ba264bbf24e97021b686340c7",
+      "availability": "local-only"
+    },
+    {
+      "id": "S12",
+      "path": "artifacts/server-preservation-2026-10-21/README.md",
+      "purpose": "原站、官方圖鑑、兩個 bundle 與 1.0.5 保存",
+      "chapter": "ASSETS.md",
+      "size_bytes": 6001,
+      "sha256": "df32bdf6c55f4152a732c77ebae568a771f5ad2a3a559a7241d13887bb597959",
+      "availability": "local-only"
+    },
+    {
+      "id": "S13",
+      "path": "artifacts/fire-town-q1-audit-2026-10-22/README.md",
+      "purpose": "火都 Boss 階段、固定敵群人數的更正",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 5204,
+      "sha256": "4d29389b3834ce936c91c56130bd4e0b852297748003933b595d2ca9270f986f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S14",
+      "path": "artifacts/stage-data-audit-2026-10-22/README.md",
+      "purpose": "371 筆任務配對與歷史規則差異",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 9763,
+      "sha256": "a3a6703ad41859a7c4d152f09a3166ac0cd84b1cd8677f6b4443e24d267abce2",
+      "availability": "local-only"
+    },
+    {
+      "id": "S15",
+      "path": "artifacts/1.0.6-offline-prototype21-backup-stages/README.md",
+      "purpose": "11 表投影的採用範圍、測試及存檔限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 5217,
+      "sha256": "175d5bbe658b28c316c185695cfeace57236b21cc6c499f478b39a86efc2daf7",
+      "availability": "local-only"
+    },
+    {
+      "id": "S16",
+      "path": "artifacts/collab-gacha-audit-2026-10-22/README.md",
+      "purpose": "四聯動池的原票號機率",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 5186,
+      "sha256": "04e61d16c163e22203d841111b9d40718f0f337624bd93a186dab8bf8a2b71b5",
+      "availability": "local-only"
+    },
+    {
+      "id": "S17",
+      "path": "artifacts/normal-gacha-audit-2026-10-22/README.md",
+      "purpose": "普通、友情與教學混池的歷史調查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 7455,
+      "sha256": "8eb0dd0234db7adc6edf7d62479108b0622c5d1a6a1a1cd5211ed8e47e33d172",
+      "availability": "local-only"
+    },
+    {
+      "id": "S18",
+      "path": "artifacts/standard-five-star-wiki-audit-2026-10-22/README.md",
+      "purpose": "標準五星缺漏 18 種的名單依據",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10707,
+      "sha256": "9964436349c70f49780774dff6514f7d7f4d0c495791e421c0400c1cb4a25da1",
+      "availability": "local-only"
+    },
+    {
+      "id": "S19",
+      "path": "artifacts/sale-acquisition-sort-audit-2026-10-22/README.md",
+      "purpose": "22r3 獲得順序原因與早期方案",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2373,
+      "sha256": "84ccec9f61c1013a4061fbd414064bebed9a6b9985576bdd337edd21dac36464",
+      "availability": "local-only"
+    },
+    {
+      "id": "S20",
+      "path": "artifacts/1.0.6-offline-prototype22r4-acquisition-supports/README.md",
+      "purpose": "新卡時間、舊值保留的最終實作",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3029,
+      "sha256": "1bf38c5ace24e020d1a92b9378e86a3346a2c2d285360b72f4e15bc05822255b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S21",
+      "path": "artifacts/1.0.6-offline-prototype22r5-triple-five-star/README.md",
+      "purpose": "五星三倍率的精確分數與限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2568,
+      "sha256": "bf38dadd4deafc84ad52b368c7e66d280d7f31489915118e7af92e8de6eb3aee",
+      "availability": "local-only"
+    },
+    {
+      "id": "S22",
+      "path": "artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md",
+      "purpose": "目前 1.0.6 入口、容器回歸與 Android 界線",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2180,
+      "sha256": "a5d368de7af545c75bd23a466f6d306fd371a59f1b6c6cad2fc43dcdba9b95da",
+      "availability": "local-only"
+    },
+    {
+      "id": "S23",
+      "path": "artifacts/android16-compatibility-audit-2026-10-20/README.md",
+      "purpose": "prototype16 SDK、ABI、TEXTREL 靜態調查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2865,
+      "sha256": "75c4725eed2d82c9af8dddf68551664ccc4b17308c81642361262b871f87270a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S24",
+      "path": "artifacts/android16-tb323fu-prototype17-test-2026-10-21/README.md",
+      "purpose": "指定裝置與 APK 的安裝失敗實測",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2736,
+      "sha256": "50e3d82c2851454fbe60d1af6c53e758376094ff339c722d80586cd4a174bae9",
+      "availability": "local-only"
+    },
+    {
+      "id": "S25",
+      "path": "artifacts/1.0.6-arm64-port1/README.md",
+      "purpose": "ARM64 移植進度，尚無 APK",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 4497,
+      "sha256": "925f9cee884f3e59ad778d0acd97233e46922159fa8cc9fe1f8c814b239eced0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S26",
+      "path": "artifacts/1.0.9-gacha-shop-feasibility/README.md",
+      "purpose": "舊卡池穩定分組與商店配接可行性",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2793,
+      "sha256": "ab427853e9ffa636289bd6ee0ce7ee34b259f320fe101e884aa9865d72c47624",
+      "availability": "local-only"
+    },
+    {
+      "id": "S27",
+      "path": "offline/v109/playable/README.md",
+      "purpose": "1.0.9 r4 現行狀態，校正早期可行性報告",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 6788,
+      "sha256": "ce7c6891a6b2c7fc2d28650d6f49bd63057433c92fd7967dbcfdcd33ddd401d8",
+      "availability": "tracked"
+    },
+    {
+      "id": "S28",
+      "path": "offline/v210/playable/README.md",
+      "purpose": "2.1.0 r4 鑰匙與更新循環、非完整回歸",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 9115,
+      "sha256": "f10cd087c8257bb512a608216a9620b116e6a350e08578fbd1e2a9581909baf2",
+      "availability": "tracked"
+    },
+    {
+      "id": "S29",
+      "path": "offline/v290/README.md",
+      "purpose": "2.9.0 診斷版及缺表限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8404,
+      "sha256": "7f6725048ea544c0f9ecbc4c6b9f0cff4ad66cd9d9f0a04be58f07457f45c95e",
+      "availability": "tracked"
+    },
+    {
+      "id": "S30",
+      "path": "artifacts/1.0.6-offline-prototype13-collab-selector/DO_NOT_INSTALL.md",
+      "purpose": "無效 IL 失敗候選",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 456,
+      "sha256": "c195b9bacb95ac84497cea75003e5a07f8969934eabf1ba33d3fc5be70f42d8c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S31",
+      "path": "artifacts/1.0.6-offline-prototype17-area-map-crops/DO_NOT_INSTALL.md",
+      "purpose": "中止候選，保留 Wiki 圖版取代",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 146,
+      "sha256": "bf8996caafce17cabba1e710729f0e0ac1c1ad9bac54acc89e7fa325aaef0fac",
+      "availability": "local-only"
+    }
+  ]
+}

@@ -16,6 +16,10 @@
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
+## 調查資料
+
+已將本機 artifacts 的重要結論整理到 [調查資訊索引](research/README.md)：包含主資料年代與版本相容性、DGDB／DG0 可用範圍、素材保存、玩法修正歷程及 Android 驗證界線。整理文件與來源報告指紋隨 Git 提供，原始報告與大型產物仍需另備。
+
 ## 最新產物
 
 - APK：`artifacts/1.0.6-offline-prototype22r6-warehouse-button/ディバゲ_1.0.6.apk`

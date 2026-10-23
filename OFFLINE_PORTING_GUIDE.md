@@ -716,6 +716,7 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 
 延伸證據：
 
+- [artifacts 調查資訊整理](offline/research/README.md)：主資料／DGDB 年代與跨版相容性、素材缺口、玩法差異及驗證界線；附來源報告 SHA-256，可在沒有本機 artifacts 時先讀結論。
 - [目前使用說明](offline/README.md)、[prototype 20 交付報告](artifacts/1.0.6-offline-prototype20-native-models/README.md)、[備份檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 - [2.1.0 離線移植嘗試與缺失清單](offline/v210/README.md)、[診斷 APK 驗證](artifacts/2.1.0-offline-diagnostic1-verified/verification.txt)。
 - [原 CDN／Wayback 調查](offline/CDN_FINDINGS.md)、[公開網站素材調查](offline/WEB_ASSET_FINDINGS.md)。

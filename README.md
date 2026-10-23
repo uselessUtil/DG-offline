@@ -4,6 +4,8 @@
 
 原 APK、遊戲素材、快取、簽章金鑰與建置產物不隨 Git checkout 提供。重現前須另備版本相符的來源及清單；開發工具在專案 Docker 環境執行，設定見 [Dockerfile](Dockerfile)。
 
+artifacts 中值得保留的資料年代、APK 相容性、素材缺口、玩法差異與驗證結果，已整理於 [調查資訊索引](offline/research/README.md)，並附來源報告指紋。
+
 ## 授權
 
 本專案權利人有權授權的原創工具、補丁實作、測試、設定及文件採用 [MIT License](LICENSE)。
