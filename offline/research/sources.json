@@ -282,6 +282,78 @@
       "size_bytes": 146,
       "sha256": "bf8996caafce17cabba1e710729f0e0ac1c1ad9bac54acc89e7fa325aaef0fac",
       "availability": "local-only"
+    },
+    {
+      "id": "S32",
+      "path": "artifacts/v290-old-content-check-2026-10-23/report.json",
+      "purpose": "2.9.0 配接前解析、核心引用與技能探測",
+      "chapter": "V290_OLD_CONTENT.md",
+      "size_bytes": 5930,
+      "sha256": "1404764b1022d1ca84ed8a407175a4dd9abbfa57ab3c5965061821476c6dc8fb",
+      "availability": "local-only"
+    },
+    {
+      "id": "S33",
+      "path": "artifacts/v400-dll-recovery-2026-10-23/recovery.json",
+      "purpose": "4.0.0 還原 DLL 身分與輸入指紋",
+      "chapter": "V400_OLD_CONTENT.md",
+      "size_bytes": 1075,
+      "sha256": "36048672b2d2d84525325c7a97f0c69e4e24fe4995935b2da23309955ae0b851",
+      "availability": "local-only"
+    },
+    {
+      "id": "S34",
+      "path": "artifacts/v400-dll-recovery-2026-10-23/report.json",
+      "purpose": "4.0.0 解析、技能初始化與後端需求",
+      "chapter": "V400_OLD_CONTENT.md",
+      "size_bytes": 3654,
+      "sha256": "9820d9c0f8bcb483ff80138286979bc4b1f87dd5a93e5eeda8c1e439e4447c6e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S35",
+      "path": "artifacts/2.4.0-offline-playable1/build-report.json",
+      "purpose": "2.4.0 候選身分及驗證旗標",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 8761,
+      "sha256": "bf53299f6c720f980bee1a0d3137d6f527ea6d2d2b53c3d69263b6df89f4ca7e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S36",
+      "path": "artifacts/2.4.0-offline-playable1/test-report.json",
+      "purpose": "2.4.0 既有受管測試範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 14754,
+      "sha256": "69cc0d471fe386c331d60bbcca43babc31b4de06ef6e02f83463be030405888d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S37",
+      "path": "artifacts/2.9.0-offline-playable1-r9-final/build-report.json",
+      "purpose": "2.9.0 r9-final 候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8778,
+      "sha256": "99fad36478371acfb642574517ff7e4ac231e1f5bbec7aac45340540088903ed",
+      "availability": "local-only"
+    },
+    {
+      "id": "S38",
+      "path": "artifacts/2.9.0-offline-playable1-r9-final/test-report.json",
+      "purpose": "2.9.0 r9-final 既有受管檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 28697,
+      "sha256": "16529bbf6feede41c4380de44071f9a497eae34c9661c709a68ac3223c38afa4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S39",
+      "path": "artifacts/2.9.0-offline-playable1-r9-final/android-smoke.json",
+      "purpose": "2.9.0 r9-final 有限 Android 檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1075,
+      "sha256": "28dc24d2e46c246458c354e72e9ed15be4b538ca47ba1af6552aecd4ef88c37a",
+      "availability": "local-only"
     }
   ]
 }
