@@ -54,7 +54,7 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 
 最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r6 產物目錄](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)，其中 `build-report.json`、`warehouse-prefab-evidence.json`、`notice-routing-tests.txt`、`acquisition-support-tests.txt`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
-**2.1.0 已於 2026-10-21 完成獨立移植嘗試，目前交付離線診斷 APK，尚不可遊玩。** 原 APK 保留 `ServerForgery`，但其要求的 37 份 Resources 主資料全部缺失；已從交付 APK 的原本機後端重現創角缺表失敗。版本專用補丁、主資料／素材缺失、建置及驗證見 [2.1.0 報告](offline/v210/README.md)。診斷版通過封裝與 managed 檢查，未進行 Android 安裝與啟動；不能將 1.0.6 的成功推廣為 2.1.0 已可用。
+**2.1.0 已新增獨立的舊內容玩法候選版。** 原 APK 的 37 份主資料仍未內建；新 [候選版入口](offline/v210/playable/README.md) 從舊備份及精確來源的 1.0.6 卡池導入 30 張表，提供 595 角色、399 筆任務列與 90 個原生包，並加入 Area／Event 欄位、舊技能邊界、標題載入及本地商店配接。既有 r2 報告記錄封裝、引用、方法修改範圍、資源與部分創角／登入／教學檢查通過；全關卡、技能、商店及跨程序回歸尚未完成，Android 未驗證。現行測試修正了舊反射簽章查找，但本次沒有重跑，不能宣稱完整通過。缺失表、限制與原 [診斷報告](offline/v210/README.md) 分開記錄，不是官方 2.1.0 全內容復原。
 
 **2.9.0 已另做安全檢查與移植嘗試，目前只有離線診斷原型，無法遊玩。** 該 APK 保留本機 `ServerForgery`，卻沒有其要求的 42 份 Resources 主資料；創角與關卡因此無法從 APK 單獨復原。版本限定補丁、證據範圍、缺失資料／素材及重現方式見 [2.9.0 報告](offline/v290/README.md)。不要將診斷版當成完成的單機版，也不要把 1.0.6 資料直接冒充 2.9.0。
 
@@ -92,6 +92,7 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
 | [offline/v109/playable/](offline/v109/playable/README.md) | 1.0.9 的資料／圖片／商店配接、版本限定 IL、建置與受管測試；與早期診斷入口分離 |
+| [offline/v210/playable/](offline/v210/playable/README.md) | 2.1.0 舊內容候選的 schema、技能邊界、標題／商店與受管測試；僅有部分既有驗證 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
 | `artifacts/` | 各次 APK、來源清單、下載、調查、測試報告；由 Git 忽略 |
 | `external/dgdb/` | 第三方 DGDB checkout，含獨立 Git 歷史；不是本專案 submodule |
@@ -621,7 +622,7 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 4. 若沒有 Managed DLL，確認是否使用 IL2CPP；此 Cecil／Mono 方案不能直接套用。
 5. 建立資源、API、資料表及存檔契約清單，與 1.0.6 逐項比較。
 
-反編譯輸出只供分析，仍不直接重建整個原遊戲。2.1.0 的檔案指紋可作為輸入辨識依據，不代表已完成補丁或可直接套用 1.0.6 的腳本。
+反編譯輸出只供分析，仍不直接重建整個原遊戲。2.1.0 的檔案指紋可作為輸入辨識依據；新候選需使用版本專用 schema／技能配接，不能直接套用 1.0.6 的腳本，其部分既有驗證也不代表完整移植完成。
 
 盤點報告至少包括 Unity／Mono／BCL 版本、ABI、SDK、原生代理與真正引擎位置、資料表及下載包、API／更新 URL、包名、簽章與資源清單。不同版本 CDN 路徑已知會不同，參考原 `CreatePackagePath` 實作，不靠 1.0.6 字串替換猜測。
 
