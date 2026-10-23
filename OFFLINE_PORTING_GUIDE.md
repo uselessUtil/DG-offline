@@ -54,7 +54,7 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 
 最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r6 產物目錄](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)，其中 `build-report.json`、`warehouse-prefab-evidence.json`、`notice-routing-tests.txt`、`acquisition-support-tests.txt`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
-**2.1.0 已新增獨立的舊內容玩法候選版。** 原 APK 的 37 份主資料仍未內建；新 [候選版入口](offline/v210/playable/README.md) 從舊備份及精確來源的 1.0.6 卡池導入 30 張表，提供 595 角色、399 筆任務列與 90 個原生包，並加入 Area／Event 欄位、舊技能邊界、標題載入及本地商店配接。既有 r2 報告記錄封裝、引用、方法修改範圍、資源與部分創角／登入／教學檢查通過；全關卡、技能、商店及跨程序回歸尚未完成，Android 未驗證。現行測試修正了舊反射簽章查找，但本次沒有重跑，不能宣稱完整通過。缺失表、限制與原 [診斷報告](offline/v210/README.md) 分開記錄，不是官方 2.1.0 全內容復原。
+**2.1.0 已新增獨立的舊內容玩法候選版。** 原 APK 的 37 份主資料仍未內建；新 [候選版入口](offline/v210/playable/README.md) 從舊備份及精確來源的 1.0.6 卡池導入 30 張表，提供 595 角色、399 筆任務列與 90 個原生包，並加入 Area／Event 欄位、舊技能邊界、標題載入及本地商店配接。原 r2 報告僅記錄部分受管檢查；目前 r4 另包含隱含鑰匙欄位及 Android 更新標記修復，既有報告記錄 389 任務／760 層與隔離存檔的針對性檢查。這些不代表全面戰鬥／技能／商店回歸已完成，Android 仍未驗證。本次沒有重跑編譯或回歸。缺失表、限制與原 [診斷報告](offline/v210/README.md) 分開記錄，不是官方 2.1.0 全內容復原。
 
 **2.9.0 已另做安全檢查與移植嘗試，目前只有離線診斷原型，無法遊玩。** 該 APK 保留本機 `ServerForgery`，卻沒有其要求的 42 份 Resources 主資料；創角與關卡因此無法從 APK 單獨復原。版本限定補丁、證據範圍、缺失資料／素材及重現方式見 [2.9.0 報告](offline/v290/README.md)。不要將診斷版當成完成的單機版，也不要把 1.0.6 資料直接冒充 2.9.0。
 
@@ -727,3 +727,5 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 歷史文件中的「未寫入 APK」「尚未重建 upper」等敘述對應當時階段；判斷現況應以本文件基準、最新 `Runtime.cs`／生成器及同版 `build-report.json`、`recovered-images.json` 交叉核對。
 
 1.0.9 候選版重用的共用工具保留 1.0.6 預設：`EmbedImages.cs` 可額外指定 RVA 資料擁有者，省略時仍為 `RecoveredImages`；`native_bundles.create` 可顯式指定角色／區域預期數與目標腳本 hash，預設仍檢查 522 角色、99 區域及原 1.0.6 schema。其他版本須自行核對，不得以放寬數量代替相容性檢查。
+
+2.1.0 r3／r4 的細節及獨立重現入口見 [候選版修正說明](offline/v210/playable/README.md#r3r4-修正與既有證據)：`data.py` 明確將舊 24 格分類表補上 `cate5=1`，`Runtime210.cs` 僅於本地資料就緒後保存 Android 更新標記。原關卡生成與更新判定仍保留；`test_keys.py`／`test_update_loop.py` 為獨立針對性測試，未納入完整 `test.py`，既有通過紀錄不能推廣為完整 Android 驗證。
