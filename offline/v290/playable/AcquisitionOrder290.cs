@@ -13,7 +13,7 @@ public static partial class DivineGateOffline
     {
         const uint tieMask = 0x7fffff;
         ulong time = unit.get_time;
-        uint age = uint.MaxValue - (uint)(time > uint.MaxValue ? uint.MaxValue : time);
+        uint recorded = (uint)(time > uint.MaxValue ? uint.MaxValue : time);
         uint tie = master.draw_id & tieMask;
         // Keep the legacy zero-time cards' existing ID ordering. For recorded
         // times, inventory insertion order breaks same-second/multi-draw ties.
@@ -24,7 +24,9 @@ public static partial class DivineGateOffline
                 if (player.unit_list[i] != null && player.unit_list[i].unique_id == unit.unique_id)
                 { tie = tieMask - (uint)i; break; }
         // Leave bits 55+ available to the original party-priority prefix.
-        return ((ulong)age << 23) + tie;
+        // Actual 2.9.0 list comparators sort larger keys first.
+        // A complemented timestamp incorrectly put old/zero-time units first.
+        return ((ulong)recorded << 23) + tie;
     }
 
     public static ulong AcquisitionSortKeyForParty(PacketStructUnit unit, MasterDataParamChara master, bool assigned)

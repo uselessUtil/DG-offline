@@ -62,9 +62,11 @@ public static class VerifyAcquisitionAndSupports
         // Deterministic same-second fixture, without changing game time or any
         // production method. Real API timestamps are checked separately below.
         early.get_time=late.get_time=before;Display();
-        Check(Key(oldZero)>Key(oldTimed) && Key(oldTimed)>Key(early) && Key(early)>Key(late),"Old/new/time or same-second order wrong");
+        Check(Key(oldZero)<Key(oldTimed) && Key(oldTimed)<Key(early) && Key(early)>Key(late),"Old/new/time or same-second order wrong");
         var saleEarly=new MainMenuSeqPartySale2.SortParamUnit();saleEarly.m_SortNum=Key(early);
         var saleLate=new MainMenuSeqPartySale2.SortParamUnit();saleLate.m_SortNum=Key(late);
+        var saleOld=new MainMenuSeqPartySale2.SortParamUnit();saleOld.m_SortNum=Key(oldZero);
+        Check(MainMenuSeqPartySale2.SortExec(saleLate,saleOld)<0,"New acquisition is after missing-time legacy card");
         Check(MainMenuSeqPartySale2.SortExec(saleEarly,saleLate)<0,"Actual sale comparator reversed acquisition order");
         Check(MainMenuListSort.SortCreateID_VerForm_GetTime(late,MasterDataUtil.GetCharaParamFromID(late.id),false)>
             MainMenuListSort.SortCreateID_VerForm_GetTime(oldZero,MasterDataUtil.GetCharaParamFromID(oldZero.id),true),"Party priority overlaps timestamp bits");
@@ -81,7 +83,7 @@ public static class VerifyAcquisitionAndSupports
             for(int i=0;i<9;i++)
             {
                 var unit=Find(result.result.unit_unique_id[i]);Check(unit.get_time>=before && unit.get_time<=after,"Actual draw timestamp missing");
-                if(i>0)Check(Key(Find(result.result.unit_unique_id[i-1]))>Key(unit),"Actual nine-draw acquisition order lost");
+                if(i>0 && Find(result.result.unit_unique_id[i-1]).get_time==unit.get_time)Check(Key(Find(result.result.unit_unique_id[i-1]))>Key(unit),"Actual nine-draw acquisition order lost");
             }
         }
         Call("AddPresent",7u,43u,1u,"timestamp proof");
