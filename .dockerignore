@@ -17,3 +17,5 @@ AGENTS.md
 *.pfx
 .env
 .env.*
+# Additional imported device backup; keep out of image build context.
+jp.gungho.dg(DG0)/

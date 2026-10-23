@@ -24,3 +24,4 @@ __pycache__/
 
 # Imported device cache is a local recovery input, not maintained source.
 /jp.gungho.dg/
+/jp.gungho.dg(DG0)/
