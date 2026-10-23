@@ -2,7 +2,7 @@
 
 本專案有權授權的原創工具、補丁實作、測試及文件採用 [MIT License](LICENSE)。原遊戲、Unity 引擎、第三方資料及素材不在此重新授權範圍；詳見 [第三方權利聲明](THIRD_PARTY_NOTICES.md)。
 
-文件核對日期：2026-10-22。實作基準：**1.0.6 offline prototype 22r6**。
+文件核對日期：2026-10-23。實作基準：**1.0.6 offline prototype 22r6**。
 
 prototype 22r6 更新：倉庫來源按鈕改用原紫色清除按鈕背景，依原排序列的左側留白鏡像對齊右緣，文字置中並停用原文字初始化鍵。功能及既有規則沿用 22r5；細節與結構檢查範圍見第 9.7 節。本次整理僅做靜態檢查，未編譯或執行完整回歸。
 
@@ -60,7 +60,7 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 
 **`sczm/184044_sczm.apk` 已確認為 1.1.0，完成修改前靜態安全檢查與離線診斷原型，仍不可遊玩。** 其本機後端要求的 36 份 Resources 主資料全部缺失；交付 APK 已移除網路、付款、電話與外部儲存權限，並通過靜態／managed 驗證。另以原後端驗證 28 張轉換後的 1.0.6 舊表可通過創角、初始隊伍、登入包與記憶體存檔往返；沒有接入診斷 APK，不能視為 1.1.0 完整內容。詳見 [1.1.0 報告](offline/v110/README.md) 與 [安全證據及限制](offline/v110/SECURITY_REVIEW.md)。
 
-**`sczm/179978_sczm.apk` 已確認為 1.0.9，完成修改前靜態安全檢查與離線診斷 APK，仍不可遊玩。** 原本機後端要求的 34 份主資料全部未內建。另以未修改的原後端驗證 1.0.6 的 28 張舊表可解析、創角、建立初始隊伍及記憶體存檔往返，但登入包會因缺月登入獎勵表失敗；共 6 類所需資料沒有舊表來源。舊資料未嵌入診斷 APK。簽章一致與掃毒未檢出不能保證絕對安全；缺失、驗證與產物見 [1.0.9 報告](offline/v109/README.md) 及 [修改前安全檢查](offline/v109/SECURITY_REVIEW.md)。
+**1.0.9 已另新增離線玩法候選版 1 r4。** 原來源 `sczm/179978_sczm.apk` 的 34 份 Resources 主資料全部缺失，早期診斷版及 1.0.6 舊資料實驗仍見 [歷史報告](offline/v109/README.md)。新入口 [offline/v109/playable/](offline/v109/playable/README.md) 使用備份 28 表、595 個有效角色及 399 筆任務列，再從精確雜湊鎖定的原 1.0.6 APK 補入兩張舊卡池表；封裝 90 份原生包、106 個區域資源組合及 1,377 份 PNG payload，加入本地免費代幣商店。缺少的月登入、登入禮物、下載索引及公告表仍停用或保留空容器，不能視為官方 1.0.9 完整資料復原。既有候選版報告記錄受管程式及封裝檢查，r4 的 Android 實際載入、畫面、觸控與遊玩仍待驗證；本次整理沒有編譯或跑完整回歸。原 1.0.6 主線仍以上述 22r6 為基準。
 
 原版引擎為 Unity 4.1.0f4，使用舊 Mono 與 APK 中裁剪過的 .NET 程式庫。離線套件名稱為 `jp.gungho.dg.offline106`，顯示名稱為 `Divine Gate Offline 1.0.6`。Android `versionName=1.0.6`、`versionCode=8` 沿用原值；prototype 編號記錄在配接器、畫面及報告中，不是 Android versionCode。
 
@@ -91,6 +91,7 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | [offline/audit_collab_gacha.py](offline/audit_collab_gacha.py) | 聯動角色、名目權重及本機抽選票號機率盤點 |
 | [offline/generate_images.py](offline/generate_images.py) | 缺少素材時的數字／色塊替代圖片 |
 | [offline/event_catalog.py](offline/event_catalog.py) | 從原表建立活動／任務清單及關聯檢查 |
+| [offline/v109/playable/](offline/v109/playable/README.md) | 1.0.9 的資料／圖片／商店配接、版本限定 IL、建置與受管測試；與早期診斷入口分離 |
 | [offline/test.py](offline/test.py)、[offline/tests/](offline/tests/) | 從實際交付 APK 取 DLL 執行的程式與資料檢查 |
 | `artifacts/` | 各次 APK、來源清單、下載、調查、測試報告；由 Git 忽略 |
 | `external/dgdb/` | 第三方 DGDB checkout，含獨立 Git 歷史；不是本專案 submodule |
@@ -723,3 +724,5 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 - [Android 16 相容性調查](artifacts/android16-compatibility-audit-2026-10-20/README.md)。
 
 歷史文件中的「未寫入 APK」「尚未重建 upper」等敘述對應當時階段；判斷現況應以本文件基準、最新 `Runtime.cs`／生成器及同版 `build-report.json`、`recovered-images.json` 交叉核對。
+
+1.0.9 候選版重用的共用工具保留 1.0.6 預設：`EmbedImages.cs` 可額外指定 RVA 資料擁有者，省略時仍為 `RecoveredImages`；`native_bundles.create` 可顯式指定角色／區域預期數與目標腳本 hash，預設仍檢查 522 角色、99 區域及原 1.0.6 schema。其他版本須自行核對，不得以放寬數量代替相容性檢查。
