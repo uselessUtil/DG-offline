@@ -1,4 +1,4 @@
-# 2.9.0 舊內容離線候選版 r9
+# 2.9.0 舊內容離線候選版 r10
 
 本版使用原始 2.9.0 程式、引擎及常駐資源，接入舊 `jp.gungho.dg` 快取內容，並移植 1.0.6 prototype 22r6 的帳號、倉庫助戰、獲得排序、免費商店及卡池規則。不是官方 2.9.0 全內容復原，也不會恢復原線上帳號。
 
@@ -6,27 +6,28 @@
 
 ## 候選產物與來源
 
-- 最新產物：`artifacts/2.9.0-offline-playable1-r9-final/ディバゲ_2.9.0.apk`。
+- 最新產物：`artifacts/2.9.0-offline-playable1-r10-final/ディバゲ_2.9.0.apk`。
 - 套件：`jp.gungho.dg.offline290`，獨立於原版與其他版本；更新既有候選版須使用相同簽署憑證。
 - 大小：221,854,287 bytes。
-- SHA-256：`1b4af46e9bf7a3c314839f4fb841dcc80617703622f2ba0add9c3af75fa91c95`。
+- SHA-256：`f01e85dddcc784a121cfb9072f2b38eca04443a509965946e2772206867a19bf`。
 - 原始 2.9.0 APK：35,409,743 bytes；SHA-256 `3c6ce05ca09837b07faaf99aa80716cc2754eb22887ca580d17e8c86559f2cc4`。
 - 卡池 donor：原始 1.0.6 APK；SHA-256 `ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2`。
 - 資料／素材：舊快取的逐檔盤點清單及來源檔，包含 `artifacts/cache-backup-audit-2026-10-22/source-files.json`、`objects.json`。DG0 備份不是本版主資料來源。
 
-身分及結果來自既有 [r9 交付報告](../../../artifacts/2.9.0-offline-playable1-r9-final/PORT_REPORT.md)、build-report.json、test-report.json、android-smoke.json；報告需另備。本次提交整理未重新編譯或跑完整回歸。
+r10 身分及結果見 artifacts/2.9.0-offline-playable1-r10-final 下的 REPORT.txt、build-report.json、test-report.json、layout-regression.json 與 android-smoke.json；報告需另備。r9-final 保留為前版基準。
 
 ## 實作位置與行為
 
 | 位置 | 功能及界線 |
 | --- | --- |
 | `assets.py`、`donor.py`、`data.py` | 核對來源與鎖定的兩張卡池表，保留舊 ID。595 個有效角色、399 列任務；任務含停用／預留列，不全是可玩關卡。舊 Area 音樂欄位移除，音樂包名留空；Event 對應後端 EventBase，再投影客戶端 Event。60 列 CategoryPattern 保留 cate0..4，補 cate5=1，總數由 24 變 25。 |
-| `Runtime290.cs`、`Patch.cs`、`CompileApi.cs` | 等待主資料、時間及存檔管理器就緒才建立本機後端，保留 SERVER_SAVE 與原關卡開始／結算。本機資料就緒才存 Android 更新標記 offline290-1；原更新判斷保留。停止新帳號示範禮物、自動營運摘要及缺資料頁面。 |
+| `Runtime290.cs`、`Patch.cs`、`CompileApi.cs` | 等待主資料、時間及存檔管理器就緒才建立本機後端，保留 SERVER_SAVE 與原關卡開始／結算。本機資料就緒才存 Android 更新標記 offline290-1；原更新判斷保留。停止新帳號示範禮物、自動營運摘要及缺資料頁面；r10 將成就結算過渡頁接往原訂下一頁，避免成功賣出後停留。 |
+| `LegacyFloor290.cs`、`PatchQuest290.cs` | 以原版 1.0.6 的兩組各 100 次交換、事件調整及起點排除，生成一般關卡的星數與事件配置。沿用 2.9.0 敵人／道具／陷阱生成及封包；問號遮罩沿用舊規則，但不是完整 1.0.6 RNG 消耗序列的逐位元重播。已存地圖不重抽，三個固定教學配置不變。 |
 | `Skills290.cs` | 只對已匯入的舊必殺技接初始化、傷害、狀態邊界；普通技能走原 2.9.0。初始化成功不代表所有戰鬥效果等價。 |
 | `native.py`、`nativeconvert.py` | 將 Unity 4.1 原生物件逐項轉成 4.6.5p1 序列化格式，補新欄位並核對投影後內容讀回。保留貼圖、網格、動畫內容與參照；不能只改 hash。90 包覆蓋 595 個角色與 106 個地圖資源組合，1377 PNG 作備援。 |
 | `text-fallback.json`、`text_coverage.py`、`TextKeys.cs` | 保留 1561 筆常駐文字，另撰寫 51 筆日文缺鍵補充，核對程式字面鍵與序列化 UI。補充不是找回的官方文字；動態鍵與未到達流程仍需驗證。 |
 | `AccountRules290.cs`、`PatchRules290.cs` | 新舊帳號至少 Rank 184／倉庫 2000，保留更高進度；同步 Rank 經驗、成本與體力欄位，僅首次不足 Rank 的遷移提高目前體力。180 秒回體並處理等於時間邊界。 |
-| `AcquisitionOrder290.cs` | 新角色記錄獲得秒數，同秒按插入順序；舊角色不補寫時間，保留其他排序規則。 |
+| `AcquisitionOrder290.cs` | 新角色記錄獲得秒數，同秒按插入順序；r10 修正時間鍵方向以符合原生列表降冪比較器，新角色排在舊角色前。舊角色不補寫時間，保留隊伍優先規則。 |
 | `WarehouseSupport290.cs` | 一般關卡第五位可用自己倉庫中目前五星以上角色，排除當前隊伍實例；同角色另一張可用。進關再次驗證所有權及資格，不消耗角色／不給助人 FP。教學與強化頁使用原流程。按鈕重用原紫色 buttonn_small 背景與 184×38 碰撞框。 |
 | `Gacha290.cs`、`PatchGacha290.cs` | 教學、友情、標準及四個聯動共七池。沿用原四分頁並切換一般／聯動模式，四聯動各佔一頁。確認、連抽、刮卡使用原流程。 |
 | `Commerce290.cs`、`FreeChipShop290.cs`、`PatchCommerce290.cs` | 免費領取 1／6／12／25／52／85 枚；總額 999，超額整包拒絕，只增加免費餘額，一次確認只發一次，存檔失敗回復餘額。抽卡扣款前拒絕滿倉、0 次或超過 9 次。 |
@@ -60,6 +61,12 @@
 
 Android 既有冒煙檢查為 Android 12／API 32、具 ARM 轉譯的測試環境：最終 r9 的首頁、標準池／四聯動分頁、免費商店確認取消，以及門動畫與原生角色載入有紀錄。倉庫按鈕畫面取自初始 r9 候選，最終包核對同來源及 prefab，未宣稱最終包倉庫觸控已再測。沒有在玩家存檔領幣、抽卡或開始關卡；完整實戰、連抽動畫、音訊及長時間遊玩待驗證。
 
+## r10 既有驗證紀錄
+
+既有報告記錄從最終簽署 APK 重抽 DLL，20 組主回歸通過，另通過鑰匙及更新循環回歸。40320 組星數／事件配置逐一符合原版 1.0.6 抽出的 697 條 IL；389 個一般任務重複 10 輪共 7600 層，鑰匙涵蓋起點以外 24 格。以 r9 實際 APK 產生進行中存檔，換 r10 跨程序載入與重建地圖後，SERVER_SAVE 及關卡封包逐位元組相同。新增排序檢查使用原生列表比較器，補足 r9 測試未核對顯示方向的缺口。
+
+MuMu Android 12 隔離診斷套件重現賣出成功仍停留；修正後原生「是／否」均可返回列表，好友申請「是／否」均可回首頁。診斷套件遊戲 DLL 與最終 APK 完全相同，配接器另加測試入口與輸入紀錄。取消賣出及好友無反應的特定玩家情境尚未重現，不能宣稱已全部排除。上述交易均在獨立測試帳號進行。
+
 ## 建置與檢查入口
 
 工具在依 [Dockerfile](../../../Dockerfile) 建立的容器內執行，工作目錄為倉庫根目錄，先啟用含 UnityPy 的 Python 環境：
@@ -69,6 +76,7 @@ python offline/v290/playable/build.py --output artifacts/NEW-290-CANDIDATE
 python offline/v290/playable/test.py artifacts/NEW-290-CANDIDATE/build-report.json
 python offline/v290/playable/test_keys.py artifacts/NEW-290-CANDIDATE/build-report.json
 python offline/v290/playable/test_update_loop.py artifacts/NEW-290-CANDIDATE/build-report.json
+python offline/v290/playable/test_layout.py artifacts/NEW-290-CANDIDATE/build-report.json
 ```
 
 輸出須全新，不覆寫舊 APK。需要來源快取、盤點清單及兩份雜湊相符的 APK；僅 Git checkout 不足以建置。腳本仍有固定工作根目錄、Mono／Cecil、暫存及簽署設定，執行前須依自己的容器配置核對，不是通用安裝命令。
@@ -81,6 +89,9 @@ python offline/v290/playable/test_update_loop.py artifacts/NEW-290-CANDIDATE/bui
 - 舊內容 r4：教學池／核心資料與圖片備援，十筆補充文字；當時一般抽卡與商店停用。尚未真正完成 Unity 4.6 原生格式轉換。
 - r5～r7：素材驗證中間候選。
 - r8：逐物件轉換 Unity 4.6 格式，補充文字擴至 51 筆，取消血條強制置頂、示範贈禮及自動摘要。
-- r9／r9-ui1／r9-final：移植 22r6 規則及本版 UI；最新交付以 r9-final 的雜湊為準。
+- r9／r9-ui1／r9-final：移植 22r6 規則及本版 UI；保留 r9-final 作為前版基準。
+- r10：原版 1.0.6 關卡配置適配、取得時間排序方向修正、停用成就過渡頁的正常接續。
 
 Git 提交依目前維護來源拆分功能，未重建每個中間 APK 的精確來源快照。
+
+本次提交整理只核對靜態語法、差異、文件及來源指紋，未重新編譯或執行完整回歸。test_layout.py 另依賴原始 1.0.6 APK、候選版中間表，以及另備的 r9-final APK／build-report.json，供跨版本存檔比較；不會讀取玩家裝置存檔。
