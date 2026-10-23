@@ -211,6 +211,9 @@ public static partial class PatchPlayable290
         var routePage=Method("MainMenuManager","AddSwitchRequest");
         var routeFirst=routePage.Body.Instructions.First();var routeIL=routePage.Body.GetILProcessor();
         routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Ldarg_1));
+        routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Call,Helper("ResolvePage290")));
+        routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Starg,routePage.Parameters[0]));
+        routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Ldarg_1));
         routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Call,Helper("AllowPage290")));
         routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Brtrue,routeFirst));
         routeIL.InsertBefore(routeFirst,Instruction.Create(OpCodes.Ldc_I4_0));
@@ -231,6 +234,7 @@ public static partial class PatchPlayable290
         OfflineQualityOfLife();
         WarehouseSupports();
         GachaTabs290();
+        LegacyQuestLayout290();
         RemoveDiagnosticAchievements290();
 
         // Disable the obsolete analytics bridge, including later event calls.

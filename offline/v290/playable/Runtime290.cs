@@ -106,6 +106,16 @@ public static partial class DivineGateOffline {
   Singleton<TitleMenuManager>.Instance.AddSwitchRequest(TITLEMENU_SEQ.SEQ_SWITCH_PAGE,false);
  }
 
+ public static MAINMENU_SEQ ResolvePage290(MAINMENU_SEQ page) {
+  if(page!=MAINMENU_SEQ.SEQ_ACHIEVEMENT_CLEAR)return page;
+  // Unsupported achievement presentation is a transit page, not a dead end.
+  // Clear only its in-memory pending UI notifications; no player/save writes.
+  ResidentParam.m_AchievementClear=null;ResidentParam.m_AchievementNew=null;
+  var next=MainMenuParam.m_AchievementClear_NextPage;
+  if(next==MAINMENU_SEQ.SEQ_ACHIEVEMENT_CLEAR || !AllowPage290(next) || next==0)
+   return MAINMENU_SEQ.SEQ_SWITCH_PAGE;
+  return next;
+ }
  public static bool AllowPage290(MAINMENU_SEQ page) {
   string name=page.ToString();
   if(name=="SEQ_SWITCH_WEBVIEW_PAGE" || name.Contains("ACHIEVEMENT") || name.Contains("LOGIN_SCRATCH") || name.Contains("INFORMATION"))return false;
