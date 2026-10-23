@@ -20,4 +20,16 @@ def convert(source,inventory):
                 r['packname_bgm']='';r['packname_se']=''
         result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
         changes.append({'table':name,'rows':len(rows),'removed':sorted(extra),'source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
+    # 1.0.9 generated one KEY unconditionally. 2.1.0 reads its count from cate5.
+    # cate4 is still HEAL in both versions and must remain untouched.
+    name='MasterDataCategoryPattern';raw=result[name];rows=json.loads(raw,strict=False)
+    if 'cate4' not in schemas[name] or 'cate5' not in schemas[name]:raise ValueError('Unexpected 2.1.0 category schema')
+    if any('cate5' in r for r in rows):raise ValueError('Input is not the locked legacy category schema')
+    for r in rows:
+        total=sum(r['cate'+str(i)] for i in range(5))
+        if total!=24:raise ValueError('Legacy category does not reserve exactly one key tile: '+str(r['fix_id']))
+        r['cate5']=1
+        assert sum(r['cate'+str(i)] for i in range(6))==25
+    result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
+    changes.append({'table':name,'rows':len(rows),'mapping':{'cate0..cate4':'unchanged','cate5':'1; original 1.0.9 CreateQuestBuild unconditionally sets type-5 count to 1'},'source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
     return result,changes
