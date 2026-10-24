@@ -14,10 +14,37 @@ def convert(source,inventory):
         allowed={'bgm_normal','bgm_boss'} if name=='MasterDataArea' else set()
         if extra-allowed:raise ValueError('Unexpected source columns '+name+str(extra))
         if name=='MasterDataArea':
-            for r in rows:
+            # 4.0.0 lists categories before areas. Legacy data has no category
+            # table/foreign key; leaving zero silently produces an empty menu.
+            assert {'area_cate_id','questlist_sort'} <= schemas[typ]
+            assert 'MasterDataAreaCategory' not in result
+            categories=[
+                (1,1,1,'ストーリー'), (2,2,2,'イベント'),
+                (3,3,4,'カジノ'), (6,6,6,'進化クエスト'),
+                (9,9,3,'コラボ')]
+            # Explicit IDs from the locked 1.0.6 source, not ranges inferred
+            # from later master data. Tutorial areas stay out of menu listings.
+            casino={200100,200200,200300,200400,200500,200600,200700}
+            collabo={210000,210010,210020,210030,210031,210040}
+            for order,r in enumerate(rows):
                 for k in extra:del r[k]
                 # No downloaded audio bundle exists; empty requests use APK-resident audio.
                 r['packname_bgm']='';r['packname_se']=''
+                assert r['type'] in {0,1,2,3,4}
+                category={0:0,1:1,2:2,3:6,4:0}[r['type']]
+                if r['fix_id'] in casino:category=3
+                if r['fix_id'] in collabo:category=9
+                r['area_cate_id']=category
+                r['questlist_sort']=order
+            category_rows=[dict(fix_id=i,area_cate_type=t,quest_tab_type=tab,
+                area_cate_name=label,questlist_sort=order,area_cate_detail='')
+                for order,(i,t,tab,label) in enumerate(categories)]
+            assert set(category_rows[0])==schemas['MasterDataAreaCategory']
+            category_raw=json.dumps(category_rows,ensure_ascii=True,separators=(',',':')).encode()
+            result['MasterDataAreaCategory']=category_raw
+            changes.append({'table':'MasterDataAreaCategory','rows':len(category_rows),
+                'mapping':'Authored 4.0.0 menu categories for original 1.0.6 areas: story, event, casino/training, evolution, collaboration. Tutorial/sentinel have category 0. Area/quest IDs, pre_area and event_id are unchanged; area order follows source.',
+                'categories':category_rows,'output_sha256':hashlib.sha256(category_raw).hexdigest()})
         result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
         changes.append({'table':name,'rows':len(rows),'removed':sorted(extra),'source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
     # 1.0.9 generated one KEY unconditionally. 4.0.0 reads its count from cate5.
