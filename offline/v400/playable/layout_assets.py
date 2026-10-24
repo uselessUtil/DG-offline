@@ -10,6 +10,7 @@ from UnityPy.classes import PPtr
 
 QUEST = '6f0361b31f70ce3408eec0ee838f16b0'
 TUTORIAL = 'e07c40e1067df29488743679b30b40d8'
+SCRATCH = 'bcee92cb32a135b4e8be583352cb13ba'
 
 
 def hierarchy(obj):
@@ -44,8 +45,26 @@ def create(data_dir, build):
     env = UnityPy.load(str(data_dir))
     files = {obj.assets_file.name: obj.assets_file for obj in env.objects}
     snapshots = {name: {k: o.get_raw_data() for k, o in files[name].objects.items()}
-                 for name in (QUEST, TUTORIAL)}
+                 for name in (QUEST, TUTORIAL, SCRATCH)}
     changes = []
+
+    # This native placeholder is not a missing text key. It is shown when an
+    # empty scratch list never reaches its normal event-point initialization.
+    assert hierarchy(files[SCRATCH].objects[25]) == 'PageGachaList/PageRootTop/PageRoot/EventPt'
+    event = files[SCRATCH].objects[11]
+    tree = event.read_typetree()
+    assert tree['m_Name'] == 'EventPt' and tree['m_IsActive'] is True
+    tree['m_IsActive'] = False
+    event.save_typetree(tree)
+    changes.append({'asset': SCRATCH, 'path_id': 11, 'field': 'GameObject.m_IsActive', 'before': True, 'after': False})
+    for path_id in (41, 52):
+        obj = files[SCRATCH].objects[path_id]
+        raw = obj.get_raw_data()
+        assert struct.unpack_from('<i', raw, 28)[0] == 0
+        length = struct.unpack_from('<i', raw, 96)[0]
+        assert raw[100:100+length] == b'?'*length and length > 0
+        obj.set_raw_data(raw[:96] + struct.pack('<i', 0) + raw[(100+length+3)&~3:])
+        changes.append({'asset': SCRATCH, 'path_id': path_id, 'field': 'UILabel.mText', 'before': '?'*length, 'after': ''})
 
     def transform(name, path_id, suffix, position, scale, expected_position, expected_scale):
         obj = files[name].objects[path_id]
@@ -111,7 +130,7 @@ def create(data_dir, build):
 
     replacements = {}
     checks = []
-    for name in (QUEST, TUTORIAL):
+    for name in (QUEST, TUTORIAL, SCRATCH):
         raw = files[name].save()
         after = {o.path_id: o.get_raw_data() for o in UnityPy.load(raw).objects}
         before = snapshots[name]
