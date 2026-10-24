@@ -4,6 +4,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using ServerDataDefine;
 public static partial class DivineGateOffline {
+ // A calendar page requires both actual dates and calendar content. Returning
+ // null only filters this read; the received packet/player history is intact.
+ public static PacketStructLoginMonthly UsableMonthly400(PacketStructLoginMonthly monthly) {
+  return monthly!=null && monthly.login_list!=null && monthly.login_list.Length>0 &&
+   monthly.monthly_list!=null && monthly.monthly_list.Length>0 && monthly.monthly_list[0]!=null ? monthly : null;
+ }
+ // Footer New! timestamps also run after results, once tutorials finish. They
+ // must not require the unavailable monthly-login feature. The fallback is a
+ // temporary date for badge checks; no login/player record is created or saved.
+ public static uint[] FooterBadgeDates400(PacketStructLoginMonthly monthly) {
+  if(monthly!=null && monthly.login_list!=null && monthly.login_list.Length>0)return monthly.login_list;
+  DateTime now=Singleton<TimeManager>.Instance!=null ? Singleton<TimeManager>.Instance.m_TimeNow : DateTime.Now;
+  return new[]{(uint)(now.Year*1000000+now.Month*10000+now.Day*100)};
+ }
+ // 1.0.6 has no Link system table. The memorial support generator nevertheless
+ // creates random Link partners; keep its primary support, without those new
+ // mechanics. This only handles generated packets, never the player's save.
+ public static bool HasLinkRules400() {
+  var rules=MasterDataUtil.GetMasterDataLinkSystem();
+  return rules!=null && rules.Length>0;
+ }
+ public static PacketStructFriend NormalizeSupport400(PacketStructFriend friend) {
+  if(friend==null || HasLinkRules400())return friend;
+  friend.unit_link=new PacketStructUnit();
+  if(friend.unit!=null) {
+   friend.unit.link_info=0;friend.unit.link_point=0;friend.unit.link_unique_id=0;
+   var character=MasterDataUtil.GetCharaParamFromID(friend.unit.id);
+   if(character!=null)friend.user_name=character.name;
+  }
+  return friend;
+ }
  // The memorial backend's lookup always returns row zero. With the original
  // 1.0.6 sentinel row this produces an empty enemy pool and a null dereference.
  public static MasterDataEnemyGroup EnemyGroup400(uint id) {
@@ -76,6 +107,7 @@ public static partial class DivineGateOffline {
 
  public static bool AllowPage400(MAINMENU_SEQ page) {
   string name=page.ToString();
+  if(name=="SEQ_LOGIN_MONTHLY")return Singleton<UserDataAdmin>.Instance!=null && UsableMonthly400(Singleton<UserDataAdmin>.Instance.m_StructLoginMonthly)!=null;
   if(name=="SEQ_SWITCH_WEBVIEW_PAGE" || name.Contains("ACHIEVEMENT") || name.Contains("LOGIN_SCRATCH") || name.Contains("INFORMATION") || name.Contains("LINK") || name.Contains("LIMIT_OVER") || name.Contains("SHOP_BUY_TIP"))return false;
   return true;
  }

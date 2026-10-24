@@ -207,6 +207,22 @@ public static partial class PatchPlayable400
         login.Body.GetILProcessor().InsertAfter(pop,Instruction.Create(OpCodes.Ldc_I4_0));
         var monthly = Reset(Method("ServerForgery","CreateLoginMonthlyList"));
         monthly.Emit(OpCodes.Ldnull); monthly.Emit(OpCodes.Ret);
+        // Keep the entire footer badge algorithm; replace only its unchecked
+        // monthly-login array read with a null/empty-safe, badge-only accessor.
+        var badges=Method("MainMenuPartsFooterChildMenuList","UpdateNewLabel");
+        var loginDates=badges.Body.Instructions.Single(i=>i.OpCode==OpCodes.Ldfld && i.Operand is FieldReference &&
+            ((FieldReference)i.Operand).DeclaringType.Name=="PacketStructLoginMonthly" && ((FieldReference)i.Operand).Name=="login_list");
+        loginDates.OpCode=OpCodes.Call;loginDates.Operand=Helper("FooterBadgeDates400");
+        // The startup router checks non-null arrays but not their lengths.
+        // Its first packet read is the short-circuit null guard; unavailable
+        // calendars must fail that guard before any indexing/routing occurs.
+        foreach(var consumer in new[]{Method("MainMenuSeqSwitchPage","Update"),Method("LocalNotificationUtil","RegisterNotification")}) {
+            var reads=consumer.Body.Instructions.Where(i=>i.OpCode==OpCodes.Ldfld && i.Operand is FieldReference &&
+                ((FieldReference)i.Operand).DeclaringType.Name=="UserDataAdmin" && ((FieldReference)i.Operand).Name=="m_StructLoginMonthly").ToArray();
+            int expected=consumer.DeclaringType.Name=="MainMenuSeqSwitchPage" ? 4 : 1;
+            if(reads.Length!=expected)throw new Exception("Monthly packet read contract changed: "+consumer.FullName);
+            consumer.Body.GetILProcessor().InsertAfter(reads[0],Instruction.Create(OpCodes.Call,Helper("UsableMonthly400")));
+        }
         var save = server.Fields.Single(f=>f.Name=="m_ForgeryPlayerSave");
         var getter = new MethodDefinition("DG400Player",MethodAttributes.Public|MethodAttributes.HideBySig,save.FieldType);
         server.Methods.Add(getter);
@@ -259,6 +275,29 @@ public static partial class PatchPlayable400
         }
         CallHelper("MainMenuPartsGachaItem","ExecDetail","ScratchDetail400",0);
 
+        // Generated supports are not saved player units. Project away random
+        // memorial Link partners when the donor has no Link system rules.
+        foreach(string name in new[]{"CreateMobUser","CreateMobUserPremium","CreateMobUserPremiumBuild"}) {
+            var make=Method("ServerForgery",name);
+            if(make.ReturnType.Name!="PacketStructFriend")throw new Exception("Support return contract changed");
+            var il=make.Body.GetILProcessor();
+            foreach(var end in make.Body.Instructions.Where(i=>i.OpCode==OpCodes.Ret).ToArray()) {
+                end.OpCode=OpCodes.Call;end.Operand=Helper("NormalizeSupport400");
+                il.InsertAfter(end,Instruction.Create(OpCodes.Ret));
+            }
+        }
+        // The original functions only check null, then index a six/62-row
+        // layout. Empty donor rules mean no additive bonus, not a Link system.
+        var linkType=module.Types.Single(t=>t.Name=="CharaLinkUtil");
+        foreach(string name in new[]{"GetLinkUnitBonusElement","GetLinkUnitBonusRace"}) {
+            var bonus=linkType.Methods.Single(m=>m.Name==name && m.Parameters[0].ParameterType.Name=="MasterDataParamChara");
+            var firstBonus=bonus.Body.Instructions.First();var il=bonus.Body.GetILProcessor();
+            il.InsertBefore(firstBonus,Instruction.Create(OpCodes.Call,Helper("HasLinkRules400")));
+            il.InsertBefore(firstBonus,Instruction.Create(OpCodes.Brtrue,firstBonus));
+            il.InsertBefore(firstBonus,name=="GetLinkUnitBonusElement" ? Instruction.Create(OpCodes.Ldc_I4_0) : Instruction.Create(OpCodes.Ldc_R4,0f));
+            il.InsertBefore(firstBonus,Instruction.Create(OpCodes.Ret));
+        }
+
 
 
 
@@ -301,14 +340,15 @@ public static partial class PatchPlayable400
             }
         }
         Empty("LinkerOpenURL","Update");
-        // Skip only the obsolete online policy gate in the offline title router.
+        // Both title and in-menu resume checks read the obsolete online policy gate.
         // Do not write agree_ok_policy or alter the user's saved consent state.
-        var router=Method("TitleMenuSeqSwitchPage","Update");
-        var policyRead=router.Body.Instructions.Single(i=>i.Operand is MethodReference && ((MethodReference)i.Operand).DeclaringType.Name=="LocalSaveManager" && ((MethodReference)i.Operand).Name=="LoadFuncInformationPolicyOK");
-        var policyTarget=(MethodReference)policyRead.Operand;
-        if(!policyTarget.HasThis || policyTarget.Parameters.Count!=0 || policyTarget.ReturnType.FullName!="System.Int32")throw new Exception("Policy gate contract changed");
-        policyRead.OpCode=OpCodes.Pop;policyRead.Operand=null;
-        router.Body.GetILProcessor().InsertAfter(policyRead,Instruction.Create(OpCodes.Ldc_I4_2));
+        foreach(var policyGate in new[]{Method("TitleMenuSeqSwitchPage","Update"),Method("MainMenuSeq","PageSwitchUpdate")}) {
+            var policyRead=policyGate.Body.Instructions.Single(i=>i.Operand is MethodReference && ((MethodReference)i.Operand).DeclaringType.Name=="LocalSaveManager" && ((MethodReference)i.Operand).Name=="LoadFuncInformationPolicyOK");
+            var policyTarget=(MethodReference)policyRead.Operand;
+            if(!policyTarget.HasThis || policyTarget.Parameters.Count!=0 || policyTarget.ReturnType.FullName!="System.Int32")throw new Exception("Policy gate contract changed");
+            policyRead.OpCode=OpCodes.Pop;policyRead.Operand=null;
+            policyGate.Body.GetILProcessor().InsertAfter(policyRead,Instruction.Create(OpCodes.Ldc_I4_2));
+        }
         PageUpdate("TitleMenuSeqInformationFox", "SkipAgreement");
         BaseLayoutOnly("TitleMenuSeqInformationFox");
 
