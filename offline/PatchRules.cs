@@ -59,6 +59,11 @@ public static partial class Patch106
     }
     static void OfflineQualityOfLife()
     {
+        var rename = adapter.Types.Single(t => t.Name == "DivineGateOffline").Methods.Single(m => m.Name == "RenameSaveFile");
+        var libc = new ModuleReference("libc"); adapter.ModuleReferences.Add(libc);
+        rename.IsPInvokeImpl = true; rename.ImplAttributes = MethodImplAttributes.PreserveSig;
+        rename.PInvokeInfo = new PInvokeInfo(PInvokeAttributes.CallConvCdecl | PInvokeAttributes.CharSetAnsi |
+            PInvokeAttributes.SupportsLastError,"rename",libc); rename.Body = null;
         var add = Method("ServerForgery","AddUnit");
         var allocations = add.Body.Instructions.Where(i => i.OpCode == OpCodes.Newobj &&
             ((MethodReference)i.Operand).DeclaringType.FullName == "ServerDataDefine.PacketStructUnit").ToArray();
@@ -113,6 +118,7 @@ public static partial class Patch106
         if (shopCaps.Length != 2) throw new Exception("Unexpected warehouse shop UI caps");
         foreach (var cap in shopCaps) cap.Operand = 2000;
         Prefix("ServerForgery","UserParamSave","BeforeAccountSave");
+        Prefix("ServerForgery","UserParamLoad","BeforeSaveAccountLoad");
         BeforeEveryReturn("ServerForgery","UserParamLoad","AfterAccountLoad");
         Prefix("ServerForgery","CreateForgeryStructPlayer","BeforeAccountSave");
         var gacha = Method("ServerForgery","ForgeryGachaPlay");
@@ -128,6 +134,8 @@ public static partial class Patch106
     }
     static void WarehouseSupports()
     {
+        ReadyPageInput("MainMenuSeqOthers","UpdateSaveTransferUI");
+        CallHelper("MainMenuSeqOthers","WindowUpdateTransfer","SaveTransferInput",0);
         BindBridge("RebuildQuestSupports","MainMenuSeqQuestSelectFriend",(il,type) => {
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldc_I4_1); il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Call,Method(type.Name,"PageSwitchSetting")); il.Emit(OpCodes.Ret);

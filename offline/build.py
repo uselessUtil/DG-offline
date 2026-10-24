@@ -15,6 +15,7 @@ from recovered_images import create as create_recovered_images, disabled as disa
 from event_catalog import create as create_event_catalog
 from native_bundles import create as create_native_bundles, disabled as disable_native_bundles
 from backup_stages import create as create_backup_stages, disabled as disable_backup_stages
+from save_transfer_android import create as create_save_transfer
 
 SOURCE_HASH = 'ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
 CECIL = '/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
@@ -111,7 +112,7 @@ def main():
         disable_native_bundles(build)
     refs = ['-r:'+str(managed/name) for name in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     run('mcs','-nostdlib','-target:library','-out:'+str(build/'DivineGateOffline.dll'),*refs,
-        ROOT/'offline/Runtime.cs',ROOT/'offline/AccountRules.cs',ROOT/'offline/Notifications.cs',ROOT/'offline/AcquisitionOrder.cs',ROOT/'offline/WarehouseSupport.cs',ROOT/'offline/BackupStages.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',build/'BackupStageData.cs')
+        ROOT/'offline/Runtime.cs',ROOT/'offline/AccountRules.cs',ROOT/'offline/Notifications.cs',ROOT/'offline/AcquisitionOrder.cs',ROOT/'offline/WarehouseSupport.cs',ROOT/'offline/BackupStages.cs',ROOT/'offline/NativeAssets.cs',ROOT/'offline/FreeChipShop.cs',ROOT/'offline/CollabGacha.cs',ROOT/'offline/SaveBackup.cs',ROOT/'offline/SaveTransferUI.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',build/'BackupStageData.cs')
     if recovered:
         run('mcs','-out:'+str(build/'EmbedImages.exe'),'-r:'+CECIL,ROOT/'offline/EmbedImages.cs')
         run('mono',build/'EmbedImages.exe',build/'DivineGateOffline.dll',managed/'mscorlib.dll',
@@ -138,8 +139,10 @@ def main():
     for path_id, raw in saved_objects.items():
         if path_id != manager.path_id and after[path_id] != raw:
             raise ValueError('Unrelated Unity object changed')
-    new_manifest, removed = patch_manifest(manifest)
-    replacements = {'AndroidManifest.xml':new_manifest, 'assets/bin/Data/mainData':main_data,
+    new_manifest, removed = patch_manifest(manifest,save_transfer=True)
+    with zipfile.ZipFile(source) as archive:
+        save_dex,save_android=create_save_transfer(archive.read('classes.dex'),build)
+    replacements = {'AndroidManifest.xml':new_manifest, 'classes.dex':save_dex,'assets/bin/Data/mainData':main_data,
                     MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),
                     MANAGED+'DivineGateOffline.dll':(build/'DivineGateOffline.dll').read_bytes()}
     if args.native_direct:
@@ -174,7 +177,7 @@ def main():
         for name in archived.namelist():
             if not name.upper().startswith('META-INF/') and archived.read(name) != modified.read(name):
                 changed.append(name)
-        expected = {'AndroidManifest.xml','assets/bin/Data/mainData',MANAGED+'Assembly-CSharp.dll'}
+        expected = {'AndroidManifest.xml','classes.dex','assets/bin/Data/mainData',MANAGED+'Assembly-CSharp.dll'}
         if args.native_direct:
             expected.update('lib/armeabi-v7a/'+name for name in ['libmono.so','libunity.so'])
             for name in ['libmono.so','libunity.so']:
@@ -193,7 +196,10 @@ def main():
     assert digest(source.read_bytes()) == SOURCE_HASH
     report = {'status':'Android gameplay testing pending','source':str(source),'source_sha256':SOURCE_HASH,
               'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,
-              'version':('1.0.6 offline prototype 22r6 right-aligned native warehouse button'),
+              'version':('1.0.6 offline prototype 22r7 save export/import'),
+              'save_transfer':dict(save_android,format='dg-offline-save',schema=1,byte_limit=4194304,entry='Others > Save Backup',
+                  checksum='SHA-256 of UTF-8 payload; corruption detection',import_confirmation=True,
+                  backup_before_import=True,crash_journal_recovery=True,battle_saves=False,android_picker_verified=False),
               'acquisition_order':{'new_units':'server epoch seconds at AddUnit allocation','legacy_times':'unchanged','same_second_tie':'inventory insertion order','other_sorts':'unchanged'},
               'account_rules':{'rank_floor':184,'warehouse_floor':2000,'warehouse_shop_cap':2000,'stamina_seconds':180,'automatic_notices':False},
               'automatic_news':{'general':False,'scratch':False,'helper_bonus_popup':False,'empty_present_popup':False,'login_rewards':'unchanged','presents':'nonempty actual gifts retained','friend_point_awards':'unchanged'},
