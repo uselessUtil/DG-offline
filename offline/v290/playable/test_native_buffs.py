@@ -19,7 +19,10 @@ def main():
  run('mcs','-r:'+CECIL,'-out:'+str(tools/'TestEngine.exe'),ROOT/'offline/tests/TestEngine.cs')
  run('mono',tools/'TestEngine.exe',original/'UnityEngine.dll',w/'EngineSupport.dll',w/'UnityEngine.dll')
  run('mcs','-out:'+str(w/'NativeBuffTests290.exe'),*['-r:'+str(w/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll']],CODE/'NativeBuffTests290.cs')
- try:out=run('mono',w/'NativeBuffTests290.exe',*(['baseline'] if a.baseline else []),env=dict(os.environ,DG_TEST_PREFS=str(w/'prefs')),cwd=w)
+ env=dict(os.environ,DG_TEST_PREFS=str(w/'prefs'),DG_BUFF_STATE_FILE=str(w/'state.json'))
+ try:
+  out=run('mono',w/'NativeBuffTests290.exe',*(['baseline'] if a.baseline else []),env=env,cwd=w)
+  if not a.baseline:out+=run('mono',w/'NativeBuffTests290.exe','reload',env=env,cwd=w)
  except subprocess.CalledProcessError as ex:print(ex.output);raise
  label='native-buffs-baseline' if a.baseline else 'native-buffs-regression'
  (a.report.parent/(label+'.txt')).write_text(out)

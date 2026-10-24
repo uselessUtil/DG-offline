@@ -1,5 +1,7 @@
 using System;
 using System.Reflection;
+using System.IO;
+using LitJson;
 using System.Collections.Generic;
 using ServerDataDefine;
 
@@ -48,6 +50,16 @@ class NativeBuffTests290 {
  }
  public static void Main(string[] args) {
   Init();bool baseline=args.Length>0 && args[0]=="baseline";
+  string snapshot=Environment.GetEnvironmentVariable("DG_BUFF_STATE_FILE");
+  if(args.Length>0 && args[0]=="reload") {
+   var restored=JsonMapper.ToObject<StatusAilment>(File.ReadAllText(snapshot));
+   Check(states.ReqAddAilment(game.m_PlayerPartyCharaAilment,restored),"Restored native state rejected");
+   Near(Rate(4,4),1.5f,"Native state changed across process");
+   states.UpdateTurnOnce(EAILMENT_UPDATE_TIMING.eBATTLE,game.m_PlayerPartyCharaAilment);
+   Near(Rate(4,4),1f,"Restored native state expiry");
+   Console.WriteLine("PASS native buff serialized state survives a separate process with master reference, original multiplier and remaining turn.");
+   return;
+  }
   var master=MasterDataUtil.GetCharaParamFromID(342);
   Check(master.name=="光才カルネアデス" && master.skill_limitbreak==102000,"Reported character changed");
   var owner=new CharaOnce{m_CharaMasterDataParam=master,m_CharaPow=2280,m_CharaHP=3450};
@@ -123,6 +135,10 @@ class NativeBuffTests290 {
   Near(Rate(2,4),1.5f,"Light buff leaked to fire");
   // Switching/dropping a state uses the original native cleanup.
   states.ClearAllChara();Near(Rate(4,4),1f,"Clear did not restore damage");
+  if(snapshot!=null) {
+   Reset();Apply(Activity(102000));
+   File.WriteAllText(snapshot,JsonMapper.ToJson(states.GetAilmentChara(game.m_PlayerPartyCharaAilment).cAilment[9]));
+  }
   Console.WriteLine("PASS all "+count+" buffs, "+referenced+" character references, "+matrix+" element/kind scope cases, "+durations+" lifetimes and "+random+" original RNG rolls; native application, no duplicate stacking, composition, expiry and cleanup.");
  }
 }
