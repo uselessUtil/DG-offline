@@ -1,12 +1,12 @@
-# 2.9.0 舊內容離線候選版 r11
+# 2.9.0 舊內容離線工程：r13 整合中
 
 本版使用原始 2.9.0 程式、引擎及常駐資源，接入舊 `jp.gungho.dg` 快取內容，並移植 1.0.6 prototype 22r6 的帳號、倉庫助戰、獲得排序、免費商店及卡池規則。不是官方 2.9.0 全內容復原，也不會恢復原線上帳號。
 
 原創工具沿用專案 [MIT 授權](../../../LICENSE)；原遊戲及素材範圍見 [第三方權利聲明](../../../THIRD_PARTY_NOTICES.md)。APK、快取、報告與簽署材料不隨 Git 提供。
 
-## 候選產物與來源
+## 前次完整受管報告的候選紀錄（r11）
 
-- 最新產物：`artifacts/2.9.0-offline-playable1-r11/ディバゲ_2.9.0.apk`。
+- r11 報告列出的產物：`artifacts/2.9.0-offline-playable1-r11/ディバゲ_2.9.0.apk`。
 - 套件：`jp.gungho.dg.offline290`，獨立於原版與其他版本；更新既有候選版須使用相同簽署憑證。
 - 大小：221,854,287 bytes。
 - SHA-256：`4315d6ae2ce3092022e8d3bc23cf1cac21dac55695bd9688f3185597fa0a76ab`。
@@ -15,6 +15,32 @@
 - 資料／素材：舊快取的逐檔盤點清單及來源檔，包含 `artifacts/cache-backup-audit-2026-10-22/source-files.json`、`objects.json`。DG0 備份不是本版主資料來源。
 
 r11 身分與驗證見 artifacts/2.9.0-offline-playable1-r11 下的 REPORT.txt、build-report.json、test-report.json 及 android-install.json。r10 的關卡配置與 UI 驗證仍保留在 r10-final；舊 APK 不覆寫。
+
+## r12／r13 新增實作與待驗證範圍
+
+目前維護來源加入教學跳過與原生攻擊增益技能配接，建置標記為 r13；上述 r11 只作前次完整受管測試的歷史基準。既有 r13 有單項技能報告，**最終整合目錄仍沒有 APK 或 build-report.json，完整回歸與 Android 未驗證**。
+
+| 位置 | 新增行為 |
+| --- | --- |
+| `TutorialSkip290.cs`、`PatchTutorial290.cs`、`Patch.cs` | 為原客戶端已有、但本機 dispatcher 未處理的 TUTORIAL_SKIP 補回應。驗證初始隊伍及空帳號，以副本處理資料，再重用原選隊 API 及單次保存。跳過第一關時只結算該關原有的 5 枚首次獎勵，讓後續教學抽卡有幣；重複請求不重新配隊或發獎，失敗還原記憶體狀態。此整合未有完整受管／Android 通過紀錄。 |
+| `native_skills.py`、`data.py` | 將 39 個攻擊增益技（全體3、屬性26、種族10）補入原生執行欄位與狀態列；保留原技能五個 value 及原 12 筆狀態欄位，不匯入後期平衡數值。 |
+| `Skills290.cs` | 上述增益技改走原生狀態套用、倍率、回合更新；其他舊技能仍使用原局部配接。依原生隨機回合結果選擇對應狀態，保留最小／最大不同時上界不含的 Rand 契約。 |
+| `NativeBuffTests290.cs`、`test_native_buffs.py`、`SkillTests.cs` | 已有測試入口涵蓋倍率、屬性／種族範圍、持續回合、組合與清理；增益檢查加入主 test.py，並可獨立重現舊錯誤。這是驗證工具，不代表目前來源已重跑通過。 |
+| `build.py` | 納入教學掛鉤與 r13 版本標記；重用圖像時另核對前次技能／狀態所有已存在欄位仍相同，不直接略過整張表的差異。 |
+
+既有 r12 baseline 報告重現光屬性增益錯誤：攻擊2280、屬性加成後4560，增益後卻降成45，敵防禦2000後只剩1。r13 單項報告記錄原生增益使4560→6840、防禦後2560→4840，並涵蓋39技／49個角色引用、2632個範圍案例、47種持續時間及1024次原隨機抽樣。它保留正常防禦造成低傷的規則，並非一律提高傷害。
+
+須區分兩份資料：該 r13 簽署 APK 報告對應原12筆狀態外新增55筆；目前 r13-final 中間資料改為新增47筆，排除隨機上界不會取到的回合列。後者的資料雜湊不同，不能將舊單項通過結果當成最終整合 APK 已驗證。
+
+r13 單項報告的 APK 身分為221,858,383 bytes，SHA-256 `6a8ab877e2011996ab72593a34afc885ca6f01a005e97737b600a43ea1de2cb8`；該報告及 r12 報告指向的 APK 目前未留在對應目錄。若要重跑須另備雜湊相符檔案，或另建新候選並重新記錄結果。報告位置為 `artifacts/2.9.0-offline-playable1-r13/`；未完成整合資料在 `artifacts/2.9.0-offline-playable1-r13-final/`，兩者均不隨 Git 提供。
+
+獨立增益檢查入口（需要 APK、build-report.json 及其建置中間檔）：
+
+```sh
+python offline/v290/playable/test_native_buffs.py artifacts/NEW-290-CANDIDATE/build-report.json
+```
+
+`--baseline` 僅供相符的舊錯誤候選重現；測試替身只存在暫存副本。本次整理不編譯或執行這些檢查。
 
 ## 實作位置與行為
 
@@ -98,6 +124,7 @@ python offline/v290/playable/test_layout.py artifacts/NEW-290-CANDIDATE/build-re
 - r9／r9-ui1／r9-final：移植 22r6 規則及本版 UI；保留 r9-final 作為前版基準。
 - r10：原版 1.0.6 關卡配置適配、取得時間排序方向修正、停用成就過渡頁的正常接續。
 - r11：倉庫助戰最愛角色優先，保留同組原排序並追蹤最愛變更。
+- r12／r13：教學跳過 API、原生增益技能與相關驗證入口；最終整合建置／完整回歸尚未完成。
 
 Git 提交依目前維護來源拆分功能，未重建每個中間 APK 的精確來源快照。
 
