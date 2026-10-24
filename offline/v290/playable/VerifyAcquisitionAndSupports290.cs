@@ -42,6 +42,7 @@ public static class VerifyAcquisitionAndSupports
         if(args.Length>0)
         {
             Check(JsonMapper.ToJson(Save.unit_list)==File.ReadAllText(expected),"Acquisition timestamps/IDs/order changed across process reload");
+            Check(JsonMapper.ToJson(Singleton<LocalSaveManager>.Instance.LoadFuncAddFavoriteUnit())==File.ReadAllText(expected+".favorites"),"Favorite unit IDs changed across process");
             Console.WriteLine("PASS separate-process reload: legacy zero/nonzero times and every new card timestamp, ID, level and insertion order preserved.");return;
         }
         var create=new SendCreateUser();create.uuid="acquisition-supports22r4";create.terminal=new PacketStructTerminal();
@@ -110,12 +111,61 @@ public static class VerifyAcquisitionAndSupports
         foreach(var unit in Save.unit_list)if(DivineGateOffline.WarehouseQuestEligible(unit))expectedCount++;
         Check(list.m_BufferSize==expectedCount && expectedCount>=2,"Filtered list size wrong");
         for(int i=0;i<list.m_BufferSize;i++)Check(list[i].m_FriendCharaMaster.rare>=4 && list[i].m_FriendStruct.unit.unique_id!=assigned.unique_id,"Disallowed candidate displayed");
+        var local=Singleton<LocalSaveManager>.Instance;
+        var notFavorite=Add(fiveID);Display();
+        local.SaveFuncAddFavoriteUnit(sameCharacter.unique_id,true,false);
+        local.SaveFuncAddFavoriteUnit(six.unique_id,true,false);
+        local.SaveFuncAddFavoriteUnit(four.unique_id,true,false);
+        local.SaveFuncAddFavoriteUnit(assigned.unique_id,true,false);
+        Check(DivineGateOffline.WarehouseFavoritesChanged290(view),"Added favorites did not invalidate view");
+        string favoriteSaveBefore=LocalSaveUtil.GetValueString("SERVER_SAVE","");
+        list=DivineGateOffline.QuestSupportList(original,page);
+        Check(!DivineGateOffline.WarehouseFavoritesChanged290(view),"Refreshed favorite snapshot remains dirty");
+        int favorites=0;
+        for(int i=0;i<list.m_BufferSize;i++) {
+            var row=list[i];
+            bool expectedFavorite=row.m_FriendStruct.unit.unique_id==sameCharacter.unique_id || row.m_FriendStruct.unit.unique_id==six.unique_id;
+            Check(row.m_Favorite==expectedFavorite,"Favorite mapping is not per owned unit instance");
+            if(row.m_Favorite)favorites++;
+            Check(row.m_FriendStruct.unit.unique_id!=four.unique_id && row.m_FriendStruct.unit.unique_id!=assigned.unique_id,"Favorites bypassed eligibility");
+        }
+        Check(favorites==2,"Expected favorite candidates missing");
+        // Use original mode key builders and the actual patched comparator.
+        string[] modes={"Default","Favorite","Element","Kind","Pow","HP","Login","Rank","Level","Rare","Filter"};
+        foreach(string mode in modes){
+            var key=typeof(MainMenuListSort).GetMethod("SortFriendCreateID_"+mode);
+            for(int i=0;i<list.m_BufferSize;i++){
+                var row=list[i];
+                row.m_SortNum=(ulong)key.Invoke(null,mode=="Favorite"?
+                    new object[]{row.m_FriendStruct,row.m_FriendCharaMaster,row.m_Favorite}:
+                    new object[]{row.m_FriendStruct,row.m_FriendCharaMaster});
+            }
+            list.Sort(MainMenuSeqQuestSelectFriend.SortExec);
+            for(int i=1;i<list.m_BufferSize;i++){
+                var a=list[i-1];var b=list[i];
+                Check(a.m_Favorite || !b.m_Favorite,"Favorite is behind normal candidate: "+mode);
+                if(a.m_Favorite==b.m_Favorite)Check(a.m_SortNum>=b.m_SortNum,"Within-group original order changed: "+mode);
+            }
+        }
+        var normalA=new MainMenuSeqQuestSelectFriend.SortParamFriend{m_FriendStruct=new PacketStructFriend{user_id=123},m_Favorite=true,m_SortNum=1};
+        var normalB=new MainMenuSeqQuestSelectFriend.SortParamFriend{m_FriendStruct=new PacketStructFriend{user_id=456},m_Favorite=false,m_SortNum=100};
+        Check(MainMenuSeqQuestSelectFriend.SortExec(normalA,normalB)>0,"Normal friends gained forced favorite priority");
+        local.SaveFuncAddFavoriteUnit(sameCharacter.unique_id,false,true);
+        Check(DivineGateOffline.WarehouseFavoritesChanged290(view),"Removed favorite did not invalidate view");
+        list=DivineGateOffline.QuestSupportList(original,page);
+        for(int i=0;i<list.m_BufferSize;i++)if(list[i].m_FriendStruct.unit.unique_id==sameCharacter.unique_id)Check(!list[i].m_Favorite,"Removed favorite remains marked");
+        local.SaveFuncAddFavoriteUnit(sameCharacter.unique_id,true,false);
+        Check(DivineGateOffline.WarehouseFavoritesChanged290(view),"In-place favorite addition did not invalidate view");
+        list=DivineGateOffline.QuestSupportList(original,page);
+        Check(favoriteSaveBefore==LocalSaveUtil.GetValueString("SERVER_SAVE",""),"Favorite display changed player save");
+        Console.WriteLine("PASS warehouse favorite-first: 11 original sort keys + actual comparator; per-instance favorites; same-group order; add/remove refresh; favorite ineligible cards excluded; normal friends and SERVER_SAVE unchanged.");
         view.warehouse=false;Check(ReferenceEquals(original,DivineGateOffline.QuestSupportList(original,page)),"Normal friend list filtered");
         Save.unit_party_assign[0].unit0_unique_id=0;Display();Check(DivineGateOffline.WarehouseQuestEligible(assigned),"Removed party unit remains hidden");
         // Evolving changes the current master entry, not the original rarity.
         four.id=fiveID;Display();Check(DivineGateOffline.WarehouseQuestEligible(four),"Evolved five-star current form not eligible");
         Check(JsonMapper.ToJson(Find(oldZero.unique_id))==oldZeroJson && JsonMapper.ToJson(Find(oldTimed.unique_id))==oldTimedJson,"Subsequent awards changed legacy cards");
         server.UserParamSave();File.WriteAllText(expected,JsonMapper.ToJson(Save.unit_list));
+        File.WriteAllText(expected+".favorites",JsonMapper.ToJson(local.LoadFuncAddFavoriteUnit()));
         Console.WriteLine("PASS warehouse candidates: four-star hidden, five/six-star shown, assigned instance hidden but another copy allowed, current evolved rarity used, normal friends unchanged. Android rendering/touch pending.");
     }
 }
