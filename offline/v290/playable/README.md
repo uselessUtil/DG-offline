@@ -1,4 +1,4 @@
-# 2.9.0 舊內容離線候選版 r10
+# 2.9.0 舊內容離線候選版 r11
 
 本版使用原始 2.9.0 程式、引擎及常駐資源，接入舊 `jp.gungho.dg` 快取內容，並移植 1.0.6 prototype 22r6 的帳號、倉庫助戰、獲得排序、免費商店及卡池規則。不是官方 2.9.0 全內容復原，也不會恢復原線上帳號。
 
@@ -6,15 +6,15 @@
 
 ## 候選產物與來源
 
-- 最新產物：`artifacts/2.9.0-offline-playable1-r10-final/ディバゲ_2.9.0.apk`。
+- 最新產物：`artifacts/2.9.0-offline-playable1-r11/ディバゲ_2.9.0.apk`。
 - 套件：`jp.gungho.dg.offline290`，獨立於原版與其他版本；更新既有候選版須使用相同簽署憑證。
 - 大小：221,854,287 bytes。
-- SHA-256：`f01e85dddcc784a121cfb9072f2b38eca04443a509965946e2772206867a19bf`。
+- SHA-256：`4315d6ae2ce3092022e8d3bc23cf1cac21dac55695bd9688f3185597fa0a76ab`。
 - 原始 2.9.0 APK：35,409,743 bytes；SHA-256 `3c6ce05ca09837b07faaf99aa80716cc2754eb22887ca580d17e8c86559f2cc4`。
 - 卡池 donor：原始 1.0.6 APK；SHA-256 `ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2`。
 - 資料／素材：舊快取的逐檔盤點清單及來源檔，包含 `artifacts/cache-backup-audit-2026-10-22/source-files.json`、`objects.json`。DG0 備份不是本版主資料來源。
 
-r10 身分及結果見 artifacts/2.9.0-offline-playable1-r10-final 下的 REPORT.txt、build-report.json、test-report.json、layout-regression.json 與 android-smoke.json；報告需另備。r9-final 保留為前版基準。
+r11 身分與驗證見 artifacts/2.9.0-offline-playable1-r11 下的 REPORT.txt、build-report.json、test-report.json 及 android-install.json。r10 的關卡配置與 UI 驗證仍保留在 r10-final；舊 APK 不覆寫。
 
 ## 實作位置與行為
 
@@ -28,7 +28,7 @@ r10 身分及結果見 artifacts/2.9.0-offline-playable1-r10-final 下的 REPORT
 | `text-fallback.json`、`text_coverage.py`、`TextKeys.cs` | 保留 1561 筆常駐文字，另撰寫 51 筆日文缺鍵補充，核對程式字面鍵與序列化 UI。補充不是找回的官方文字；動態鍵與未到達流程仍需驗證。 |
 | `AccountRules290.cs`、`PatchRules290.cs` | 新舊帳號至少 Rank 184／倉庫 2000，保留更高進度；同步 Rank 經驗、成本與體力欄位，僅首次不足 Rank 的遷移提高目前體力。180 秒回體並處理等於時間邊界。 |
 | `AcquisitionOrder290.cs` | 新角色記錄獲得秒數，同秒按插入順序；r10 修正時間鍵方向以符合原生列表降冪比較器，新角色排在舊角色前。舊角色不補寫時間，保留隊伍優先規則。 |
-| `WarehouseSupport290.cs` | 一般關卡第五位可用自己倉庫中目前五星以上角色，排除當前隊伍實例；同角色另一張可用。進關再次驗證所有權及資格，不消耗角色／不給助人 FP。教學與強化頁使用原流程。按鈕重用原紫色 buttonn_small 背景與 184×38 碰撞框。 |
+| `WarehouseSupport290.cs` | 一般關卡第五位可用自己倉庫中目前五星以上角色，排除當前隊伍實例；同角色另一張可用。進關再次驗證所有權及資格，不消耗角色／不給助人 FP。教學與強化頁使用原流程。按鈕重用原紫色 buttonn_small 背景與 184×38 碰撞框。r11 在所有排序模式先列出最愛角色，同組沿用原排序；最愛以角色實例 ID 判斷，加入／取消後刷新。 |
 | `Gacha290.cs`、`PatchGacha290.cs` | 教學、友情、標準及四個聯動共七池。沿用原四分頁並切換一般／聯動模式，四聯動各佔一頁。確認、連抽、刮卡使用原流程。 |
 | `Commerce290.cs`、`FreeChipShop290.cs`、`PatchCommerce290.cs` | 免費領取 1／6／12／25／52／85 枚；總額 999，超額整包拒絕，只增加免費餘額，一次確認只發一次，存檔失敗回復餘額。抽卡扣款前拒絕滿倉、0 次或超過 9 次。 |
 | `build.py` | 組合共用 1.0.6 Runtime／NativeAssets 的有限轉換及本版配接器，RVA 封裝資料與圖片，掛接明確方法並產生獨立 APK；不替換原 Unity 引擎。 |
@@ -67,6 +67,12 @@ Android 既有冒煙檢查為 Android 12／API 32、具 ARM 轉譯的測試環�
 
 MuMu Android 12 隔離診斷套件重現賣出成功仍停留；修正後原生「是／否」均可返回列表，好友申請「是／否」均可回首頁。診斷套件遊戲 DLL 與最終 APK 完全相同，配接器另加測試入口與輸入紀錄。取消賣出及好友無反應的特定玩家情境尚未重現，不能宣稱已全部排除。上述交易均在獨立測試帳號進行。
 
+## r11 倉庫最愛優先
+
+倉庫候選讀取原生角色最愛清單，於 MainMenuSeqQuestSelectFriend.SortExec 比較倉庫列時先比較最愛，再執行原排序。普通好友、角色星級／隊伍排除規則不變。最愛清單增減後刷新，未寫入新存檔格式。
+
+從簽署 APK 重抽組件的 20 組主回歸通過；新增 11 種原生排序鍵＋實際比較器驗證，包括同角色不同實例、最愛但不符資格、組內排序、加入／取消刷新與跨程序最愛保存。本次模擬器前景為 offline400，因此只覆蓋安裝 offline290，沒有切換前景、開關卡或操作玩家最愛。r11 的 Android 列表視覺與觸控仍待使用者確認。
+
 ## 建置與檢查入口
 
 工具在依 [Dockerfile](../../../Dockerfile) 建立的容器內執行，工作目錄為倉庫根目錄，先啟用含 UnityPy 的 Python 環境：
@@ -91,6 +97,7 @@ python offline/v290/playable/test_layout.py artifacts/NEW-290-CANDIDATE/build-re
 - r8：逐物件轉換 Unity 4.6 格式，補充文字擴至 51 筆，取消血條強制置頂、示範贈禮及自動摘要。
 - r9／r9-ui1／r9-final：移植 22r6 規則及本版 UI；保留 r9-final 作為前版基準。
 - r10：原版 1.0.6 關卡配置適配、取得時間排序方向修正、停用成就過渡頁的正常接續。
+- r11：倉庫助戰最愛角色優先，保留同組原排序並追蹤最愛變更。
 
 Git 提交依目前維護來源拆分功能，未重建每個中間 APK 的精確來源快照。
 
