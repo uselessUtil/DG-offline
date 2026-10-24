@@ -66,6 +66,8 @@ def main():
  capture('save-restart','mono',work/'PlayableTests.exe','reload',env=env,cwd=work)
  run('mcs','-out:'+str(work/'SkillTests.exe'),'-r:'+str(work/'Assembly-CSharp.dll'),'-r:'+str(work/'Assembly-CSharp-firstpass.dll'),'-r:'+str(work/'UnityEngine.dll'),'-r:'+str(work/'DivineGateOffline.dll'),CODE/'SkillTests.cs')
  capture('skills','mono',work/'SkillTests.exe',env=env,cwd=work)
+ run('mcs','-out:'+str(work/'NativeBuffTests290.exe'),*['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll']],CODE/'NativeBuffTests290.cs')
+ capture('native-attack-buffs','mono',work/'NativeBuffTests290.exe',env=dict(env,DG_TEST_PREFS=str(work/'native-buffs.prefs')),cwd=work)
  # Independent test saves: production hooks, actual local APIs, process reload.
  for name in ['CommerceTests290','VerifyAccountRules290','VerifyAcquisitionAndSupports290','VerifyFreeChipShop290']:
   run('mcs','-out:'+str(work/(name+'.exe')), *['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll','EngineSupport.dll']], CODE/(name+'.cs'))

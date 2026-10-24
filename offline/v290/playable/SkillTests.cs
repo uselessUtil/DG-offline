@@ -7,7 +7,7 @@ class SkillTests290 {
   var game=new InGameManager();Singleton<InGameManager>.Instance=game;game.m_PlayerPartyChara=new CharaOnce[5];game.m_PlayerParty=new CharaParty();
   var owner=new CharaOnce();owner.m_CharaMasterDataParam=new MasterDataParamChara{base_hp_max=10000,element=1,kind=1};owner.m_CharaPow=100;owner.m_CharaHP=5000;
   var enemy=new BattleEnemy();enemy.m_EnemyHP=10000;
-  int count=0,damageCount=0,statusCount=0;
+  int count=0,damageCount=0,statusCount=0,nativeCount=0;
   foreach(var row in server.m_MasterDataSkillLimitBreak){
    if(row.fix_id==0)continue;var a=new BattleSkillActivity();var list=new[]{a};
    InGameUtil.ActivityLimitBreakSkill(list,0,-1,row.fix_id);
@@ -32,12 +32,18 @@ class SkillTests290 {
     damageCount++;
    }
    int category=StatusAilmentUtil.ConvertCategoryToAilment(a.m_Category,a.m_Param);
-   if(category!=0){var status=DivineGateOffline.LegacyStatus290(a,100,5000);Check(status.nType==category,"Status category lost");statusCount++;}
+   if(category!=0){
+    StatusAilment status;
+    if(row.status_ailment1!=0 && (row.skill_cate==17 || row.skill_cate==18 || row.skill_cate==43)){
+     status=new StatusAilment();status.SetupData(a.m_statusAilment[0],100,5000);nativeCount++;
+    }else status=DivineGateOffline.LegacyStatus290(a,100,5000);
+    Check(status.nType==category,"Status category lost");statusCount++;
+   }
    count++;
   }
   var ordinary=new BattleSkillActivity();ordinary.m_skill_power=150;ordinary.m_skill_chk_atk_combo=1;
   Check(InGameUtil.GetDamageValue(null,null,owner,null,enemy,false,-1,0,ordinary)==150,"Original normal-skill path changed");
-  Check(count==459,"Incomplete skill coverage");
-  Console.WriteLine("PASS "+count+" original skill initialization and parameter preservation; "+damageCount+" damage formulas/gates; "+statusCount+" old status categories; recovery targets, absorb, sacrifice and original ordinary-skill path.");return 0;
+  Check(count==459 && nativeCount==39,"Incomplete skill coverage");
+  Console.WriteLine("PASS "+count+" original skill initialization and parameter preservation; "+damageCount+" damage formulas/gates; "+statusCount+" status categories (39 native buffs); recovery targets, absorb, sacrifice and original ordinary-skill path.");return 0;
  }
 }
