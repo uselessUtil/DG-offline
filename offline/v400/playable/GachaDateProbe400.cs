@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using ServerDataDefine;
+using UnityEngine;
 class GachaDateProbe400 {
  static T Uninitialized<T>() { return (T)FormatterServices.GetUninitializedObject(typeof(T)); }
  static void Require(bool value,string message) { if(!value)throw new Exception(message); }
@@ -63,7 +64,26 @@ class GachaDateProbe400 {
   Require(MasterDataUtil.ConvertGachaMasterToTabNum(tutorial,0)==1,"Tutorial tab changed");
   Require(!MasterDataUtil.CheckActiveGachaMaster(tutorial),"Tutorial pool leaked into normal menu");
   Require(server.m_MasterDataGachaAssign.Any(p=>p.gacha_id==10 && p.active==2 && p.assign_rate>0),"Tutorial pool empty");
+  // Resolve through the actual patched GachaResourceMaster entry points. A
+  // disposable texture replaces only native allocation in this routing test.
+  var resource=Uninitialized<GachaResourceMaster>();
+  var offline=Assembly.Load("DivineGateOffline").GetType("DivineGateOffline");
+  var texture=Uninitialized<Texture2D>();
+  offline.GetField("scratchTexture400",BindingFlags.Static|BindingFlags.NonPublic).SetValue(null,texture);
+  foreach(var pool in server.m_MasterDataGacha) {
+   Require(pool.url_img=="offline400/gacha/"+pool.fix_id,"Native list would skip/misroute a card");
+   foreach(bool forced in new[]{false,true}) {
+    string key=resource.ResourceLoadRequest(pool.url_img,forced);
+    Require(key==pool.url_img,"Resource request returned an empty key");
+    Require(System.Object.ReferenceEquals(resource.GetResourceTexture(key),texture),"Local texture unavailable");
+   }
+  }
+  foreach(string bad in new[]{"","https://example.invalid/banner.png","offline400/gacha/999999","offline400/gacha/010"}) {
+   Require(resource.ResourceLoadRequest(bad,true)==String.Empty,"Unexpected nonlocal resource accepted");
+   Require(resource.GetResourceTexture(bad)==null,"Unexpected nonlocal texture");
+  }
   Console.WriteLine("PASS: missing-date exception reproduced; all 7 embedded pool dates valid; original priority/list/count lookups passed at 2026 and 2030; event gates and tutorial ID 10 retained.");
+  Console.WriteLine("PASS: all 7 native card image keys are nonempty; actual resource request/texture entry points resolve locally, including forced/repeated requests; invalid and web keys rejected.");
   Console.WriteLine("LIMIT: disposable Mono engine-I/O probe, not Android clicks, scratching, or tutorial completion.");
  }
 }

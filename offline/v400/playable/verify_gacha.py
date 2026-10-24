@@ -32,6 +32,8 @@ def main():
         print(log)
     result.check_returncode()
     if not args.expect_legacy_failure:
+        run('mcs','-r:'+cecil,'-out:'+str(probe/'UiContract.exe'),code/'GachaUiContract400.cs')
+        log+=subprocess.check_output(['mono',str(probe/'UiContract.exe'),str(managed/'Assembly-CSharp.dll'),str(work/'build/Assembly-CSharp.dll')],text=True)
         # Source-field comparison protects prices, event IDs and every weight.
         source={}
         for obj in UnityPy.load(str(work/'donor/assets/bin/Data')).objects:
