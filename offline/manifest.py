@@ -75,7 +75,7 @@ def attributes(chunk, strings):
 
 
 def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.0.6',
-          extra_permissions=(), extra_components=()):
+          extra_permissions=(), extra_components=(), save_transfer=False):
     items = list(chunks(data))
     pool = next(c for k,c in items if k == 1)
     strings = strings_from(pool)
@@ -84,10 +84,28 @@ def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.
     strings[strings.index('jp.gungho.dg')] = package
     label_index = len(strings)
     strings.append(label)
+    if save_transfer:
+        for text in ['jp.gungho.dg.offline106.SaveTransferActivity','exported']:
+            if text not in strings:strings.append(text)
     result = []
     skip_depth = 0
     removed = []
     remove_permissions = {'android.permission.INTERNET', 'com.android.vending.BILLING', 'android.permission.ACCESS_NETWORK_STATE'} | set(extra_permissions)
+    if save_transfer:
+        # Map the new exported attribute even if absent from the archived XML.
+        resource=next(c for k,c in items if k==0x180)
+        ids=list(struct.unpack('<'+'I'*((len(resource)-8)//4),resource[8:]))
+        while len(ids)<=strings.index('exported'):ids.append(0)
+        ids[strings.index('exported')]=0x01010010
+        resource[:]=struct.pack('<HHI',0x180,8,8+4*len(ids))+struct.pack('<'+'I'*len(ids),*ids)
+    def transfer_activity():
+        ns=strings.index('http://schemas.android.com/apk/res/android');tag=strings.index('activity')
+        attrs=[]
+        for key,kind,value in [('name',3,strings.index('jp.gungho.dg.offline106.SaveTransferActivity')),('exported',0x12,0)]:
+            attrs.append(struct.pack('<IIIHBBI',ns,strings.index(key),value if kind==3 else NONE,8,0,kind,value))
+        start=struct.pack('<HHIII',0x102,16,36+40,0,NONE)+struct.pack('<IIHHHHHH',NONE,tag,20,20,2,0,0,0)+b''.join(attrs)
+        end=struct.pack('<HHIIIII',0x103,16,24,0,NONE,NONE,tag)
+        return start+end
     for kind, chunk in items:
         if kind == 1:
             result.append(string_pool(chunk, strings))
@@ -117,6 +135,8 @@ def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.
         elif kind == 0x103 and skip_depth:
             skip_depth -= 1
             continue
+        if save_transfer and kind==0x103 and strings[U32.unpack_from(chunk,20)[0]]=='application':
+            result.append(transfer_activity())
         if not skip_depth:
             result.append(chunk)
     if skip_depth:

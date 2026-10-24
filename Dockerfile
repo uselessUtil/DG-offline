@@ -13,6 +13,7 @@ RUN apt-get update \
         libarchive-tools \
         mono-devel \
         mono-utils \
+        openjdk-21-jdk-headless \
         python3 \
         python3-venv \
         apksigner \
@@ -33,6 +34,12 @@ RUN curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh \
     && python3 -m venv /opt/unity-tools \
     && /opt/unity-tools/bin/pip install --no-cache-dir UnityPy==1.24.2 \
     && rm /tmp/dotnet-install.sh /tmp/ilspycmd.nupkg
+
+# Compile only the document-picker bridge; these jars are never packaged.
+RUN mkdir -p /opt/dg-save-tools \
+    && curl -fsSL https://dl.google.com/android/maven2/com/android/tools/r8/8.3.37/r8-8.3.37.jar -o /opt/dg-save-tools/r8.jar \
+    && curl -fsSL https://repo.maven.apache.org/maven2/com/google/android/android/4.1.1.4/android-4.1.1.4.jar -o /opt/dg-save-tools/android.jar \
+    && curl -fsSL https://repo.maven.apache.org/maven2/org/json/json/20080701/json-20080701.jar -o /opt/dg-save-tools/json.jar
 
 WORKDIR /workspace
 
