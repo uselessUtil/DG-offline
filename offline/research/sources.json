@@ -660,6 +660,96 @@
       "size_bytes": 4432,
       "sha256": "9939f3bb101621b7913d799a021dff9519f48cefeac38c1b8a7542ac2b13a9c5",
       "availability": "local-only"
+    },
+    {
+      "id": "S74",
+      "path": "artifacts/1.0.6-offline-prototype22r7-save-backup/build-report.json",
+      "purpose": "22r7 最終存檔備份候選身分及既有檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 93045,
+      "sha256": "db93034b44f3769c27b03b564d191559a2e489f89a43361fc2e2cba16575849b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S75",
+      "path": "artifacts/1.0.6-offline-prototype22r7-save-backup/save-transfer-tests.txt",
+      "purpose": "存檔往返、壞檔拒絕、中斷回復與Java協定既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1352,
+      "sha256": "3c9618fc94db9205196a83d755d3fcaaac8c8ab2d0a47d1f52935bd074aa088e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S76",
+      "path": "artifacts/1.0.6-offline-prototype22r7-save-backup/backup-stage-tests.txt",
+      "purpose": "明列歷史夾具來源的關卡升級對照",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 916,
+      "sha256": "70e8d067d9ad1d8a9a4bfbcba619a5241c485e4a84c6f7d3d918849112981fa9",
+      "availability": "local-only"
+    },
+    {
+      "id": "S77",
+      "path": "artifacts/1.0.6-offline-prototype22r7-save-backup/notice-routing-tests.txt",
+      "purpose": "明列歷史夾具來源的通知負對照",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1212,
+      "sha256": "a5ab173d25433d20d52c32d2a35d6a2aba8c205e269eb6649cd23d5cf9f1087d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S78",
+      "path": "artifacts/4.0.0-offline106-r15/build-report.json",
+      "purpose": "4.0.0 r15 候選身分及檢查入口",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3177,
+      "sha256": "c481fd8aa3c255b5c164a8142e26f2da8c25e072156a946e993a873417d9aff8",
+      "availability": "local-only"
+    },
+    {
+      "id": "S79",
+      "path": "artifacts/4.0.0-offline106-r15/support-setup-checks.txt",
+      "purpose": "缺Link規則的原生支援初始化既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 389,
+      "sha256": "52dcfc9c49b7d694b5e5eb9a4bcd42014a3af8ff5f4625e4b8146fca4736a0bc",
+      "availability": "local-only"
+    },
+    {
+      "id": "S80",
+      "path": "artifacts/4.0.0-offline106-r15/footer-badge-checks.txt",
+      "purpose": "空月登入日期與頁尾New!既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 492,
+      "sha256": "b26165706bfe4ed91dd27fe5b3892bd99a01bc9bb40c6211d852210bfa7d46a8",
+      "availability": "local-only"
+    },
+    {
+      "id": "S81",
+      "path": "artifacts/4.0.0-offline106-r15/startup-router-checks.txt",
+      "purpose": "空月登入啟動路由及有效內容保留既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 597,
+      "sha256": "d52b40c3a9735b9c93ec9f75e312a351f6f4fad8cbb540a799459b4bcead4dd4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S82",
+      "path": "artifacts/4.0.0-offline106-r15/policy-gate-checks.txt",
+      "purpose": "兩處政策閘門及偏好／版本分支既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 575,
+      "sha256": "175e65e1c0ebe559a53fc71f02dd8dfaef4c1738dabe35ef16ea2d9594bbd987",
+      "availability": "local-only"
+    },
+    {
+      "id": "S83",
+      "path": "artifacts/4.0.0-offline106-r15/packaged-policy-checks.json",
+      "purpose": "r15 封裝與探針組件一致性及修改範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 498,
+      "sha256": "31bf7a729e82f6cd81c594233a3ff4d602fe6ac9c541f6a8847db59ce088f689",
+      "availability": "local-only"
     }
   ]
 }
