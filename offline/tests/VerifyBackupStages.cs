@@ -52,7 +52,7 @@ public static class VerifyBackupStages
         var start=new SendQuestStart();start.quest_id=420;start.helper_unit=new PacketStructUnit();start.helper_unit.id=139;start.helper_unit.level=1;
         Api<RecvQuestStart>(SERVER_API.SERVER_API_QUEST_START,start);
         server.UserParamSave();File.WriteAllText(Snapshot,JsonMapper.ToJson(Save));
-        Console.WriteLine("PASS prototype20 seed: named account, party/units, coins/chips, completed quests and in-progress Index quest 420 saved.");
+        Console.WriteLine("PASS legacy-stage seed: named account, party/units, coins/chips, clear flags and pending Index quest420 saved. See runner for fixture provenance.");
     }
     static void Evolve()
     {
@@ -90,7 +90,7 @@ public static class VerifyBackupStages
         Check(Save!=null && JsonMapper.ToJson(Save)==JsonMapper.ToJson(expectedSave),"Upgrade changed non-authorized existing save fields");
         Check(Save.quest_id==420 && ServerDataUtil.ChkBitFlag(ref Save.flag_quest_clear,420),"Index save ID lost");
         Check(MasterDataUtil.GetQuestParamFromID(436)==null && MasterDataUtil.GetQuestParamFromID(420)!=null,"Duplicate or migrated quest ID");
-        Console.WriteLine("PASS prototype20-to-candidate upgrade: only explicitly requested account defaults change; all other fields, pending quest and Index clear flags preserved.");
+        Console.WriteLine("PASS legacy-to-candidate upgrade: only requested account defaults change; other fields, pending quest and Index flags preserved. See fixture provenance above.");
         Compare<MasterDataArea>("MasterDataArea","m_MasterDataArea");
         Compare<MasterDataQuest>("MasterDataQuest","m_MasterDataQuest");
         Compare<MasterDataQuestFloor>("MasterDataQuestFloor","m_MasterDataQuestFloor");

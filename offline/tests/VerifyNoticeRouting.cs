@@ -101,7 +101,7 @@ public static class VerifyNoticeRouting
         Check(Step(placeholders)==(old?MAINMENU_SEQ.SEQ_LOGIN_PRESENT:MAINMENU_SEQ.SEQ_QUEST_SELECT_AREA),"Placeholder-list route mismatch");
         if(old)
         {
-            Console.WriteLine("PASS screenshot regression on delivered22r2: actual login awards2 helpers/20FP and actual receipt handler re-arms Present Info100 times; multiple placeholder presents also open an empty notice. FP still credited.");return;
+            Console.WriteLine("PASS legacy helper-notice regression: actual login awards2 helpers/20FP and receipt re-arms Present Info100 times; placeholders also open an empty notice. FP credited. See runner for baseline provenance.");return;
         }
         var gifts=Fresh();ReceiveHelperReward();var gift=new PacketStructPresent();gift.present_type=3;gift.present_value0=1;
         Singleton<UserDataAdmin>.Instance.m_StructPresentList=new[]{gift};uint fp=Save.have_friend_pt;
