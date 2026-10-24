@@ -11,6 +11,8 @@ public sealed class WarehouseSupportView : MonoBehaviour
     public bool warehouse;
     public GameObject button;
     public int party = -1;
+    public TemplateList<long> favorites;
+    public int favoriteCount;
 }
 
 public static partial class DivineGateOffline
@@ -118,17 +120,38 @@ public static partial class DivineGateOffline
         return !PartyContains(player.unit_party_assign[player.unit_party_current],unit.unique_id);
     }
 
+    public static int CompareWarehouseFavorites290(
+        MainMenuSeqQuestSelectFriend.SortParamFriend a, MainMenuSeqQuestSelectFriend.SortParamFriend b)
+    {
+        // Normal friends retain their original comparator in every sort mode.
+        if (!IsWarehouseSupport(a.m_FriendStruct.user_id) || !IsWarehouseSupport(b.m_FriendStruct.user_id) ||
+            a.m_Favorite == b.m_Favorite) return 0;
+        return a.m_Favorite ? -1 : 1;
+    }
+
+    public static bool WarehouseFavoritesChanged290(WarehouseSupportView view)
+    {
+        var favorites = Singleton<LocalSaveManager>.Instance.LoadFuncAddFavoriteUnit();
+        // The native add mutates the list; remove/clip replaces it.
+        return !ReferenceEquals(view.favorites, favorites) ||
+            view.favoriteCount != (favorites == null ? 0 : favorites.m_BufferSize);
+    }
+
     public static TemplateList<MainMenuSeqQuestSelectFriend.SortParamFriend> QuestSupportList(
         TemplateList<MainMenuSeqQuestSelectFriend.SortParamFriend> original, MainMenuSeqQuestSelectFriend page)
     {
         WarehouseSupportView view = SupportView(page);
         if (!view.warehouse || SupportTutorialActive()) return original;
         TemplateList<MainMenuSeqQuestSelectFriend.SortParamFriend> list = new TemplateList<MainMenuSeqQuestSelectFriend.SortParamFriend>();
+        var favorites = Singleton<LocalSaveManager>.Instance.LoadFuncAddFavoriteUnit();
+        view.favorites = favorites;
+        view.favoriteCount = favorites == null ? 0 : favorites.m_BufferSize;
         foreach (PacketStructUnit unit in Singleton<UserDataAdmin>.Instance.m_StructPlayer.unit_list)
         {
             if (!WarehouseQuestEligible(unit)) continue;
             MainMenuSeqQuestSelectFriend.SortParamFriend row = new MainMenuSeqQuestSelectFriend.SortParamFriend();
             row.m_FriendStruct = WarehouseFriend(unit);
+            row.m_Favorite = favorites != null && favorites.ChkInside(TemplateListSort.ChkInsideLong, unit.unique_id);
             row.m_FriendCharaMaster = MasterDataUtil.GetCharaParamFromID(unit.id);
             list.Add(row);
         }
@@ -142,7 +165,7 @@ public static partial class DivineGateOffline
         int party = Singleton<UserDataAdmin>.Instance.m_StructPlayer.unit_party_current;
         bool switched = SourceButtonPressed(view);
         if (switched) { view.warehouse = !view.warehouse; SoundUtil.PlaySE(SEID.SE_MENU_OK); }
-        if (switched || (view.warehouse && view.party != party))
+        if (switched || (view.warehouse && (view.party != party || WarehouseFavoritesChanged290(view))))
         {
             view.party = party; RebuildQuestSupports(page);
             MainMenuFixLayerLinker.UnderMsgRequest(view.warehouse ?

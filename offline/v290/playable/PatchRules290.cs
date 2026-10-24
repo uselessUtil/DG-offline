@@ -119,6 +119,20 @@ public static partial class PatchPlayable290
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldc_I4_1); il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Call,Method(type.Name,"PageSwitchSetting")); il.Emit(OpCodes.Ret);
         });
+        // Prefix only the warehouse rows; retain the original selected sort
+        // within each favorite group, including all normal-friend comparisons.
+        var compare = Method("MainMenuSeqQuestSelectFriend","SortExec");
+        var compareIL = compare.Body.GetILProcessor(); var firstCompare = compare.Body.Instructions.First();
+        var priority = new VariableDefinition(module.TypeSystem.Int32);
+        compare.Body.Variables.Add(priority); compare.Body.InitLocals = true;
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Ldarg_0));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Ldarg_1));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Call,Helper("CompareWarehouseFavorites290")));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Stloc,priority));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Ldloc,priority));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Brfalse,firstCompare));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Ldloc,priority));
+        compareIL.InsertBefore(firstCompare,Instruction.Create(OpCodes.Ret));
         TransformReturn("MainMenuSeqQuestSelectFriend","FriendListThinning","QuestSupportList");
         ReadyPageInput("MainMenuSeqQuestSelectFriend","UpdateQuestSupportSource");
         GuardWarehouseRequest("ForgeryQuestStart","ValidateWarehouseQuest");
