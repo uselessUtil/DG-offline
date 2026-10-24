@@ -10,6 +10,7 @@ class VerifyChanges {
  var methods=now.Types.SelectMany(t=>Types(t)).SelectMany(t=>t.Methods).ToDictionary(m=>m.FullName);int same=0;var changed=new List<string>();
  var allowed=new HashSet<string>{"LocalSaveManager.LoadFuncServerAddressIP","ResidentManager.Start","ServerForgery.Start","ServerForgery.UserParamCreate","ServerForgery.UserParamRenew","ServerForgery.UserParamLoad","ServerForgery.CreateLoginMonthlyList","MainMenuSeqQuestSelectMission.PageSwitchSetting","PatchManager.Start","PatchManager.GetPatchText","PatchManager.PatchUpdateRequest","PatchUtil.CheckAppUpdate","TitleMenuSeqInformationFox.Update","TitleMenuSeqInformationFox.LayoutSwitchSetting","TitleMenuSeqLoadAssetBundle.Update","TitleMenuSeqLoadAssetBundle.LayoutSwitchSetting","AssetBundleManager.Request","AssetBundleManager.ClearAssetBundle","AssetBundleManager.SetupAssetBundlePackageParam","AssetAutoSetCharaMesh.Update","StoreManager.Start","StoreManager.Update","StoreManager.OnDestroy","AndroidDeviceInfo.Awake","AndroidDeviceInfo.UpdateExStoragePath","AndroidDeviceInfo.IsExStorageActive","MainMenuManager.AddSwitchRequest","TitleMenuSeqSwitchPage.Update","TitleMenuFixLayerBanner.Update","TitleMenuSeqWaitInput.Update","LinkerOpenURL.Update","UIAtlas.GetSprite","InGameManager.GetTouchCell"};
  allowed.Add("ServerForgery.CreateLoginParam");
+ allowed.Add("ServerForgery.CreateRecvForgery");
  allowed.Add("ServerForgery.CreateQuestBuild");
  allowed.Add("MainMenuSeqQuestSelectFriend.SortExec");
  allowed.Add("launch.Start");
