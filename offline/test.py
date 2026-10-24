@@ -79,6 +79,11 @@ def main():
     run('mcs','-out:'+str(test/'LocalApiTests.exe'),'-r:'+str(test/'Assembly-CSharp.dll'),
         '-r:'+str(test/'Assembly-CSharp-firstpass.dll'),'-r:'+str(test/'UnityEngine.dll'),tests/'LocalApiTests.cs')
     env = dict(os.environ, DG_TEST_TABLES=str(work/'tables'),DG_TEST_PREFS=str(test/'player-prefs.txt'))
+    if report.get('save_transfer'):
+        import sys
+        sys.path.insert(0,str(tests))
+        from verify_save_backup import verify as verify_save_backup
+        report['save_transfer_tests']=verify_save_backup(test,tools,env,args.report.parent)
     if report.get('account_rules'):
         env['DG_TEST_ACCOUNT_RULES'] = '22'
         import sys

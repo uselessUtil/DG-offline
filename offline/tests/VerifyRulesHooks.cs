@@ -32,6 +32,9 @@ public static class VerifyRulesHooks
         Check(calls(method("MainMenuSeqQuestSelectFriend","Update"),"UpdateQuestSupportSource")==1,"Quest input hook missing");
         Check(calls(method("ServerForgery","ForgeryQuestStart"),"ValidateWarehouseQuest")==1,"Quest ownership guard missing");
         Check(calls(method("ServerForgery","AddUnit"),"InitializeAcquisitionTime")==1,"New unit timestamp missing");
+        Check(calls(method("ServerForgery","UserParamLoad"),"BeforeSaveAccountLoad")==1,"Save recovery is not before account loading");
+        Check(calls(method("MainMenuSeqOthers","Update"),"UpdateSaveTransferUI")==1,"Save manager page hook missing");
+        Check(calls(method("MainMenuSeqOthers","WindowUpdateTransfer"),"SaveTransferInput")==1,"Old online transfer handler remains");
         Check(calls(method("MainMenuListSort","SortCreateID_GetTime"),"AcquisitionSortKey")==1,"Second-precision acquisition sorting missing");
         Check(calls(method("MainMenuListSort","SortCreateID_VerForm_GetTime"),"AcquisitionSortKeyForParty")==1,"Party acquisition sorting missing");
         var original=ModuleDefinition.ReadModule(args[1]);
