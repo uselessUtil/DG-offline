@@ -84,17 +84,21 @@ def main():
     from data import convert
     source_tables,conversions=convert(source_tables,inventory)
     # New 4.0.0 downloadable text keys have no counterpart in the old backup.
-    # Keep the APK's resident TextDatabase; supplement only documented missing keys.
+    # Keep resident TextDatabase; supplement missing keys and documented stale
+    # format contracts (PARTY_NUM_RATE has two slots but 4.0.0 passes one value).
     text_fallback=json.loads((CODE/'text-fallback.json').read_text())
     repairs=json.loads((CODE/'text-repairs.json').read_text())
     assert not (text_fallback.keys() & repairs.keys()),'Duplicate supplemental text key'
     text_fallback.update(repairs)
+    complete=json.loads((CODE/'text-complete.json').read_text())
+    assert not (text_fallback.keys() & complete.keys()),'Duplicate completed text key'
+    text_fallback.update(complete)
     assert 'MasterDataTextDefinition' not in source_tables
     text_rows=[{'fix_id':i+1,'text_key':key,'text':value} for i,(key,value) in enumerate(text_fallback.items())]
     text_raw=json.dumps(text_rows,ensure_ascii=True,separators=(',',':')).encode()
     source_tables['MasterDataTextDefinition']=text_raw
     conversions.append({'table':'MasterDataTextDefinition','rows':len(text_rows),
-        'mapping':'Authored Japanese fallback for missing code and serialized-scene text keys; not recovered original text.',
+        'mapping':'Authored fallback for missing code/scene text keys and PARTY_NUM_RATE format correction; not recovered original text.',
         'keys':list(text_fallback),'output_sha256':digest(text_raw)})
     (output/'data-conversions.json').write_text(json.dumps(conversions,ensure_ascii=False,indent=2)+'\n')
     payloads=[]
@@ -193,6 +197,11 @@ def main():
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Patch.exe'),CODE/'Patch.cs')
     run('mono',build/'Patch.exe',managed/'Assembly-CSharp.dll',adapter,build/'Assembly-CSharp.dll',output/'adapter-hooks.txt')
     run(sys.executable,CODE/'verify_repairs.py',work,'--output',output/'repair-checks.json')
+    run(sys.executable,CODE/'verify_quest_build.py',work,'--output',output/'quest-build-checks.txt')
+    text_report=build/'text-build-report.json'
+    text_report.write_text(json.dumps({'work_directory':str(work),'version':'4.0.0 offline106 r8'}))
+    with (build/'text-audit.log').open('w') as audit_log:
+        run(sys.executable,CODE/'audit_text.py','--report',text_report,'--output',output/'text-audit.json','--require-complete',stdout=audit_log)
     main=UnityPy.load(str(original/'assets/bin/Data/globalgamemanagers'))
     manager=next(o for o in main.objects if o.type.name=='MonoManager')
     before={o.path_id:o.get_raw_data() for o in manager.assets_file.objects.values()}
@@ -236,7 +245,7 @@ def main():
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
     report={'version':'4.0.0 offline / original 1.0.6 content / candidate r4','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':522,'quest_rows':371,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
-    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r6', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'])
+    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r8', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'])
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
