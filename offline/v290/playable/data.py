@@ -41,4 +41,6 @@ def convert(source,inventory):
             for r in rows:r.update(tab_num=0,tab_name='',url_img='',url_web='',change_title='')
         result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
         changes.append({'table':name,'rows':len(rows),'mapping':'seven original pools; local native tabs; no URLs','source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
+    from native_skills import convert as native_buffs
+    changes.extend(native_buffs(result,schemas))
     return result,changes

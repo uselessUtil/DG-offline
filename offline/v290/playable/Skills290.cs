@@ -3,14 +3,32 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 public static partial class DivineGateOffline {
+ static readonly Dictionary<uint,MasterDataSkillLimitBreak> nativeBuffs290=new Dictionary<uint,MasterDataSkillLimitBreak>();
  static readonly Dictionary<uint,bool> legacySkills290=new Dictionary<uint,bool>();
  public static void RegisterLegacySkills290(ServerForgery server) {
-  legacySkills290.Clear();foreach(var s in server.m_MasterDataSkillLimitBreak)if(s.fix_id!=0)legacySkills290[s.fix_id]=true;
+  legacySkills290.Clear();nativeBuffs290.Clear();
+  foreach(var s in server.m_MasterDataSkillLimitBreak)if(s.fix_id!=0) {
+   if((s.skill_cate==17 || s.skill_cate==18 || s.skill_cate==43) &&
+      s.status_ailment1==(int)(s.fix_id*100)+s.value0)nativeBuffs290.Add(s.fix_id,s);
+   else legacySkills290[s.fix_id]=true;
+  }
  }
  static bool IsLegacy290(BattleSkillActivity a){return a!=null && a.m_SkillType==ESKILLTYPE.eLIMITBREAK && legacySkills290.ContainsKey(a.m_SkillParamSkillID);}
  public static void LegacyActivity290(BattleSkillActivity[] activities) {
   if(activities==null || activities.Length==0)return;
-  var a=activities[0];if(!IsLegacy290(a))return;
+  var a=activities[0];
+  MasterDataSkillLimitBreak native;
+  if(a!=null && a.m_SkillType==ESKILLTYPE.eLIMITBREAK &&
+     nativeBuffs290.TryGetValue(a.m_SkillParamSkillID,out native)) {
+   // Original 2.9 rolls the old value0..1 duration. Select the matching
+   // native status row; damage and status application use the original code.
+   if(a.m_Life<native.value0 || a.m_Life>=(native.value0==native.value1?native.value1+1:native.value1))
+    throw new InvalidOperationException("Native buff duration outside old range");
+   a.m_statusAilment[0]=checked((int)(native.fix_id*100)+a.m_Life);
+   InGameUtil.CreateTargetPlayer(ref a);
+   return;
+  }
+  if(!IsLegacy290(a))return;
   int c=a.m_Category;var p=a.m_Param;
   a.m_skill_damage_enable=(a.m_Type==1 || a.m_Type==2)?2:1;
   a.m_skill_chk_atk_affinity=2;a.m_skill_chk_def_defence=2;a.m_skill_chk_def_ailment=2;
