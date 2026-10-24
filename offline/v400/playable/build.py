@@ -188,7 +188,7 @@ def main():
     refs=['-r:'+str(managed/n) for n in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     refs=[r.replace(str(managed/'Assembly-CSharp.dll'),str(api/'Assembly-CSharp.dll')) for r in refs]
     adapter=build/'DivineGateOffline.dll'
-    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',CODE/'Runtime400.cs',CODE/'Skills400.cs',CODE/'Png400.cs',CODE/'Maps400.cs',build/'MapData400.cs',build/'NativeAssets.cs',build/'DG400Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
+    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',CODE/'Runtime400.cs',CODE/'Scratch400.cs',CODE/'Skills400.cs',CODE/'Png400.cs',CODE/'Maps400.cs',build/'MapData400.cs',build/'NativeAssets.cs',build/'DG400Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Embed.exe'),ROOT/'offline/EmbedImages.cs')
     run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
     shutil.move(build/'WithImages.dll',adapter)
@@ -200,7 +200,7 @@ def main():
     run(sys.executable,CODE/'verify_quest_build.py',work,'--output',output/'quest-build-checks.txt')
     run(sys.executable,CODE/'verify_gacha.py',work,'--output',output/'gacha-menu-checks.txt')
     text_report=build/'text-build-report.json'
-    text_report.write_text(json.dumps({'work_directory':str(work),'version':'4.0.0 offline106 r10'}))
+    text_report.write_text(json.dumps({'work_directory':str(work),'version':'4.0.0 offline106 r11'}))
     with (build/'text-audit.log').open('w') as audit_log:
         run(sys.executable,CODE/'audit_text.py','--report',text_report,'--output',output/'text-audit.json','--require-complete',stdout=audit_log)
     main=UnityPy.load(str(original/'assets/bin/Data/globalgamemanagers'))
@@ -249,7 +249,7 @@ def main():
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
     report={'version':'4.0.0 offline / original 1.0.6 content / candidate r4','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':522,'quest_rows':371,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
-    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r10', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'], layout_repairs='layout-repairs.json', gacha_menu_checks='gacha-menu-checks.txt')
+    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r11', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'], layout_repairs='layout-repairs.json', gacha_menu_checks='gacha-menu-checks.txt')
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))

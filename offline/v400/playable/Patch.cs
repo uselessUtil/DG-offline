@@ -244,6 +244,21 @@ public static partial class PatchPlayable400
         var groupIL=Reset(groupLookup);
         groupIL.Emit(OpCodes.Ldarg_0);groupIL.Emit(OpCodes.Call,Helper("EnemyGroup400"));groupIL.Emit(OpCodes.Ret);
 
+        // Keep the native list, hit testing, texture-completion flag and draw
+        // confirmation. Resolve its nonempty image keys synchronously locally.
+        Empty("GachaResourceMaster","Update");
+        CallHelper("GachaResourceMaster","ResourceLoadRequest","ScratchRequest400",1,2);
+        CallHelper("GachaResourceMaster","GetResourceTexture","ScratchTexture400",1);
+        var scratchSetup=Method("MainMenuPartsGachaItem","SetUpGachaData",2);
+        var scratchIL=scratchSetup.Body.GetILProcessor();
+        foreach(var end in scratchSetup.Body.Instructions.Where(i=>i.OpCode==OpCodes.Ret).ToArray()) {
+            end.OpCode=OpCodes.Ldarg_0;
+            var dataArg=Instruction.Create(OpCodes.Ldarg_1);scratchIL.InsertAfter(end,dataArg);
+            var setupCall=Instruction.Create(OpCodes.Call,Helper("SetupScratchCard400"));scratchIL.InsertAfter(dataArg,setupCall);
+            scratchIL.InsertAfter(setupCall,Instruction.Create(OpCodes.Ret));
+        }
+        CallHelper("MainMenuPartsGachaItem","ExecDetail","ScratchDetail400",0);
+
 
 
 

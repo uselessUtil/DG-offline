@@ -73,9 +73,11 @@ def convert(source,inventory):
             for r in rows:
                 assert not (dates.keys() & r.keys()),'Locked legacy date schema changed'
                 r.update(dates)
-                r.update(tab_num=r['type'],tab_name=r['name'],url_img='',url_web='',change_title='')
+                # This field is also the native list's item-creation guard.
+                # Use an opaque local resource key, never an empty/web URL.
+                r.update(tab_num=r['type'],tab_name=r['name'],url_img='offline400/gacha/'+str(r['fix_id']),url_web='',change_title='')
         result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
-        changes.append({'table':name,'rows':len(rows),'mapping':'seven original pools; local native tabs; no URLs; absent Gacha date fields use SYSTEM_START_DATE (1970010100), end 0 (no end); original event gates retained','source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
+        changes.append({'table':name,'rows':len(rows),'mapping':'seven original pools; local native tabs and opaque offline400/gacha/ID image keys, no web URLs; absent Gacha date fields use SYSTEM_START_DATE (1970010100), end 0 (no end); original event gates retained','source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
     for name in ['MasterDataAssetBundlePath','MasterDataInformation']:
         if name in result:
             changes.append({'table':name,'mapping':'Disabled obsolete online download/notice data; artwork resolved by local adapter','source_sha256':hashlib.sha256(result[name]).hexdigest()})
