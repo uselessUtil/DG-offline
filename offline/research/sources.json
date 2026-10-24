@@ -489,6 +489,78 @@
       "size_bytes": 247,
       "sha256": "fb4b134d73d59649b4e1c31d2662d929ebf6c004050ea28e661e9d5536017604",
       "availability": "local-only"
+    },
+    {
+      "id": "S55",
+      "path": "artifacts/2.9.0-offline-playable1-r12/native-buffs-baseline.json",
+      "purpose": "r12 增益倍率錯誤的既有重現",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 522,
+      "sha256": "81af27429de2ad1bdb04382fa07035fc9b046927375823ac34d9f6fd3b09afb4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S56",
+      "path": "artifacts/2.9.0-offline-playable1-r13/build-report.json",
+      "purpose": "r13 單項技能候選身分，非最終整合產物",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8259,
+      "sha256": "e7bf22457d5ec1c8bdfd351a8abc520aa3feb920c169986c3bf663122bf8c48b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S57",
+      "path": "artifacts/2.9.0-offline-playable1-r13/native-buffs-regression.json",
+      "purpose": "原生增益單項測試的範圍與限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 736,
+      "sha256": "7a7c3c64b659406709dfe9f6cabd4266fa71022bed19b2f9cf3a94e576801d6c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S58",
+      "path": "artifacts/2.9.0-offline-playable1-r13-final/data-conversions.json",
+      "purpose": "未完成整合的技能／狀態資料轉換，非 APK 身分",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 57014,
+      "sha256": "17fb34f588182270e2d2dd0191ccf70eb8547dfecd9121d2192892b6c083bd87",
+      "availability": "local-only"
+    },
+    {
+      "id": "S59",
+      "path": "artifacts/4.0.0-offline106-r10/build-report.json",
+      "purpose": "4.0.0 r10 候選身分與既有檢查旗標",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2909,
+      "sha256": "f5d84d28dc68f073a3bd1bd1ad342a6e7a46d28ca697f1cae1b8cb8176cae0b4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S60",
+      "path": "artifacts/4.0.0-offline106-r10/layout-repairs.json",
+      "purpose": "指定提示／標籤物件與動畫幾何範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3675,
+      "sha256": "ff45325a000ce6cd434e38e91ca6091db922d1df379459e843cd431a19f3d40e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S61",
+      "path": "artifacts/4.0.0-offline106-r10/gacha-menu-checks.txt",
+      "purpose": "七池日期與原選單查詢的既有 Mono 檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 355,
+      "sha256": "dc09b3fe8e873f60d0c76976fd86ebc024f49bfdfbfa1ec98311dd7f4646b0c0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S62",
+      "path": "artifacts/4.0.0-offline106-r10/packaged-gacha-checks.json",
+      "purpose": "交付組件、序列化資源與探針／報告的一致性",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 183,
+      "sha256": "2b4faff289e9b4238c40df733a143f23be413c1a5c82d6f5181b99a29177826b",
+      "availability": "local-only"
     }
   ]
 }
