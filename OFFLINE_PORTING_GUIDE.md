@@ -2,7 +2,9 @@
 
 本專案有權授權的原創工具、補丁實作、測試及文件採用 [MIT License](LICENSE)。原遊戲、Unity 引擎、第三方資料及素材不在此重新授權範圍；詳見 [第三方權利聲明](THIRD_PARTY_NOTICES.md)。
 
-文件核對日期：2026-10-23。實作基準：**1.0.6 offline prototype 22r6**。
+文件核對日期：2026-10-24。實作基準：**1.0.6 offline prototype 22r7**。
+
+prototype 22r7 新增 Others 的存檔匯出／匯入、覆蓋前備份與中斷回復，Android 選檔流程待驗證。完整格式及共用來源契約見 [存檔備份說明](offline/SAVE_BACKUP.md) 與第9.8節；本次整理未編譯或重跑完整回歸。
 
 prototype 22r6 更新：倉庫來源按鈕改用原紫色清除按鈕背景，依原排序列的左側留白鏡像對齊右緣，文字置中並停用原文字初始化鍵。功能及既有規則沿用 22r5；細節與結構檢查範圍見第 9.7 節。本次整理僅做靜態檢查，未編譯或執行完整回歸。
 
@@ -51,16 +53,17 @@ prototype 21 更新：既有 371 筆關卡的備份設定經原 1.0.6 schema 投
 | 1.0.6 prototype 22r1 | 176,026,922 | `f647017a7613a27d85ea3c8ef684b00fef608c52624ed138ec0bf151a77877cd` |
 | 1.0.6 prototype 22r5 | 176,031,018 | `3b69fa16fb6ee3610c83362bdbc0c8f8d2cce7ae78dc302d6f1669fe78e5522b` |
 | 1.0.6 prototype 22r6 | 176,031,018 | `700428a2fcdc0ad76e810453f1f2bb5ef5e726aad8157add981c51c3358a2202` |
+| 1.0.6 prototype 22r7 | 176,039,210 | `6f8374a4d7c1f51d109d2aac55e05cc562d651b4dcfabfe24ff7e74a03e463e0` |
 
-最新 1.0.6 APK、建置參數、修改項目與測試結果位於 [prototype 22r6 產物目錄](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)，其中 `build-report.json`、`warehouse-prefab-evidence.json`、`notice-routing-tests.txt`、`acquisition-support-tests.txt`、`account-rules-tests.txt`、`backup-stage-import.json`、`backup-stage-tests.txt`、`native-bundle-manifest.json`、`SHA256SUMS`、`signature.txt`、`manifest-summary.txt` 是交付依據。備份來源與日期線索見 [原快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
+最新 1.0.6 候選紀錄位於 [prototype22r7 產物目錄](artifacts/1.0.6-offline-prototype22r7-save-backup/README.md)，身分與既有結果見 build-report.json、save-transfer-tests.txt、SHA256SUMS 及簽章／Manifest 輸出。22r6 按鈕版保留為歷史基準；原快取來源仍見 [快取檢查](artifacts/cache-backup-audit-2026-10-22/README.md)。
 
 **2.1.0 已新增獨立的舊內容玩法候選版。** 原 APK 的 37 份主資料仍未內建；新 [候選版入口](offline/v210/playable/README.md) 從舊備份及精確來源的 1.0.6 卡池導入 30 張表，提供 595 角色、399 筆任務列與 90 個原生包，並加入 Area／Event 欄位、舊技能邊界、標題載入及本地商店配接。原 r2 報告僅記錄部分受管檢查；目前 r4 另包含隱含鑰匙欄位及 Android 更新標記修復，既有報告記錄 389 任務／760 層與隔離存檔的針對性檢查。這些不代表全面戰鬥／技能／商店回歸已完成，Android 仍未驗證。本次沒有重跑編譯或回歸。缺失表、限制與原 [診斷報告](offline/v210/README.md) 分開記錄，不是官方 2.1.0 全內容復原。
 
-**其他版本已各自建立候選版，仍以舊內容為範圍。** [2.4.0 配接器](offline/v240/playable/README.md) 記錄原分頁／Boost／商店初始化等版本差異，Android 未驗證；[2.9.0 維護工程](offline/v290/playable/README.md) 另轉換 Unity 4.6 素材，移植 22r6 規則，既有受管測試與有限 Android 選單／原生載入檢查有紀錄，完整實戰仍待驗證。[原 2.9.0 診斷報告](offline/v290/README.md) 保存缺 42 份原主資料的歷史盤點；候選版使用明確轉換的舊快取及 donor，不是官方新版全內容復原。r13-final 已有47筆原生增益狀態與21組受管檢查紀錄；現行 r14 的進化確認頁生命週期修正已有22組受管檢查紀錄，仍不代表 Android 與玩家特定狀態已驗證。[4.0.0 r11 候選版](offline/v400/playable/README.md) 已接入原始 1.0.6 的 522 角色與 371 列任務，並重建 Unity 5 地圖網格／動畫；其原表來源與 [先前 595 角色快取研究](offline/research/V400_OLD_CONTENT.md) 不同。r11 沿用區域分類、文字格式、敵群與日期檢查，另有本機圖片路由、卡片建立／互動 IL 與指定序列化物件核對，Android 與完整流程仍待驗證。
+**其他版本已各自建立候選版，仍以舊內容為範圍。** [2.4.0 配接器](offline/v240/playable/README.md) 記錄原分頁／Boost／商店初始化等版本差異，Android 未驗證；[2.9.0 維護工程](offline/v290/playable/README.md) 另轉換 Unity 4.6 素材，移植 22r6 規則，既有受管測試與有限 Android 選單／原生載入檢查有紀錄，完整實戰仍待驗證。[原 2.9.0 診斷報告](offline/v290/README.md) 保存缺 42 份原主資料的歷史盤點；候選版使用明確轉換的舊快取及 donor，不是官方新版全內容復原。r13-final 已有47筆原生增益狀態與21組受管檢查紀錄；現行 r14 的進化確認頁生命週期修正已有22組受管檢查紀錄，仍不代表 Android 與玩家特定狀態已驗證。[4.0.0 r15 候選版](offline/v400/playable/README.md) 已接入原始 1.0.6 的 522 角色與 371 列任務，並重建 Unity 5 地圖網格／動畫；其原表來源與 [先前 595 角色快取研究](offline/research/V400_OLD_CONTENT.md) 不同。r15 沿用素材與卡池修正，另有無Link支援初始化、空月登入的New!／路由與政策閘門檢查，Android 與完整流程仍待驗證。
 
 **`sczm/184044_sczm.apk` 已確認為 1.1.0，完成修改前靜態安全檢查與離線診斷原型，仍不可遊玩。** 其本機後端要求的 36 份 Resources 主資料全部缺失；交付 APK 已移除網路、付款、電話與外部儲存權限，並通過靜態／managed 驗證。另以原後端驗證 28 張轉換後的 1.0.6 舊表可通過創角、初始隊伍、登入包與記憶體存檔往返；沒有接入診斷 APK，不能視為 1.1.0 完整內容。詳見 [1.1.0 報告](offline/v110/README.md) 與 [安全證據及限制](offline/v110/SECURITY_REVIEW.md)。
 
-**1.0.9 已另新增離線玩法候選版 1 r4。** 原來源 `sczm/179978_sczm.apk` 的 34 份 Resources 主資料全部缺失，早期診斷版及 1.0.6 舊資料實驗仍見 [歷史報告](offline/v109/README.md)。新入口 [offline/v109/playable/](offline/v109/playable/README.md) 使用備份 28 表、595 個有效角色及 399 筆任務列，再從精確雜湊鎖定的原 1.0.6 APK 補入兩張舊卡池表；封裝 90 份原生包、106 個區域資源組合及 1,377 份 PNG payload，加入本地免費代幣商店。缺少的月登入、登入禮物、下載索引及公告表仍停用或保留空容器，不能視為官方 1.0.9 完整資料復原。既有候選版報告記錄受管程式及封裝檢查，r4 的 Android 實際載入、畫面、觸控與遊玩仍待驗證；本次整理沒有編譯或跑完整回歸。原 1.0.6 主線仍以上述 22r6 為基準。
+**1.0.9 已另新增離線玩法候選版 1 r4。** 原來源 `sczm/179978_sczm.apk` 的 34 份 Resources 主資料全部缺失，早期診斷版及 1.0.6 舊資料實驗仍見 [歷史報告](offline/v109/README.md)。新入口 [offline/v109/playable/](offline/v109/playable/README.md) 使用備份 28 表、595 個有效角色及 399 筆任務列，再從精確雜湊鎖定的原 1.0.6 APK 補入兩張舊卡池表；封裝 90 份原生包、106 個區域資源組合及 1,377 份 PNG payload，加入本地免費代幣商店。缺少的月登入、登入禮物、下載索引及公告表仍停用或保留空容器，不能視為官方 1.0.9 完整資料復原。既有候選版報告記錄受管程式及封裝檢查，r4 的 Android 實際載入、畫面、觸控與遊玩仍待驗證；本次整理沒有編譯或跑完整回歸。原 1.0.6 主線現以22r7為基準。其他舊版本建置仍要求22r6共用字串，來源契約須另配對，見存檔備份說明。
 
 原版引擎為 Unity 4.1.0f4，使用舊 Mono 與 APK 中裁剪過的 .NET 程式庫。離線套件名稱為 `jp.gungho.dg.offline106`，顯示名稱為 `Divine Gate Offline 1.0.6`。Android `versionName=1.0.6`、`versionCode=8` 沿用原值；prototype 編號記錄在配接器、畫面及報告中，不是 Android versionCode。
 
@@ -151,7 +154,7 @@ flowchart TD
 | `lib/armeabi-v7a/libunity.so` | 同上，使用 APK 自帶的真正引擎 |
 | `META-INF/` 及 APK 簽章區 | 原簽章失效後重新簽章；不是沿用官方簽章 |
 
-`UnityEngine.dll` 及真正引擎的位元內容不改；原遊戲的 `classes.dex` 沒有重寫。只在測試目錄使用的 `EngineSupport.dll`、測試程式與修改後測試引擎 **不會放進 APK**。
+`UnityEngine.dll` 及真正引擎的位元內容不改；22r7 為新增文件選擇 Activity 重新組合 `classes.dex`，原有 smali 逐檔核對不變；未增加第三方SDK或重建Android資源。只在測試目錄使用的 `EngineSupport.dll`、測試程式與修改後測試引擎 **不會放進 APK**。
 
 ### 4.2 `Patch.cs` 修改原 DLL 的對照表
 
@@ -481,6 +484,12 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 `verify_warehouse_prefab.py` 由交付 APK 解讀原 prefab、外部引用、UISprite 序列化名稱及 atlas，核對背景／碰撞框尺寸、子物件不攔截點擊、靠右後與排序按鈕不重疊；輸出 `warehouse-prefab-evidence.json`。這是結構檢查，不能證明 Android 實際顯示或觸控已通過。
 
 來源切換、五星以上篩選、新舊角色獲得時間及三倍五星規則沿用 22r5。既有結果與來源說明見 [22r6 交付報告](artifacts/1.0.6-offline-prototype22r6-warehouse-button/README.md)；本次提交整理未重跑編譯或完整回歸。Android 更新後應完全重啟，確認版本及按鈕背景、右緣和好友／倉庫切換。
+
+### 9.8 存檔匯出／匯入（prototype22r7）
+
+新增 `SaveBackup.cs`、`SaveTransferUI.cs` 與 Android Activity：以新JSON格式匯出 SERVER_SAVE／明列偏好，匯入確認後先保存回復備份及日誌，再替換帳號，成功退出重開；載入前可回復中斷寫入。原網路資料移轉入口改為 Save Backup，Manifest 新Activity不對外開放且不增權限。
+
+格式、4MiB限制、驗證、檔案回復、DEX整合及 Android 待測範圍見 [存檔備份說明](offline/SAVE_BACKUP.md)。現行其他版本的22r6字串契約不能直接搭配22r7，4.0.0的修訂標記配接也不等於已支援本備份功能。
 
 ## 10. 仍缺失或尚未驗證的部分
 
