@@ -198,8 +198,9 @@ def main():
     run('mono',build/'Patch.exe',managed/'Assembly-CSharp.dll',adapter,build/'Assembly-CSharp.dll',output/'adapter-hooks.txt')
     run(sys.executable,CODE/'verify_repairs.py',work,'--output',output/'repair-checks.json')
     run(sys.executable,CODE/'verify_quest_build.py',work,'--output',output/'quest-build-checks.txt')
+    run(sys.executable,CODE/'verify_gacha.py',work,'--output',output/'gacha-menu-checks.txt')
     text_report=build/'text-build-report.json'
-    text_report.write_text(json.dumps({'work_directory':str(work),'version':'4.0.0 offline106 r8'}))
+    text_report.write_text(json.dumps({'work_directory':str(work),'version':'4.0.0 offline106 r10'}))
     with (build/'text-audit.log').open('w') as audit_log:
         run(sys.executable,CODE/'audit_text.py','--report',text_report,'--output',output/'text-audit.json','--require-complete',stdout=audit_log)
     main=UnityPy.load(str(original/'assets/bin/Data/globalgamemanagers'))
@@ -213,6 +214,9 @@ def main():
         extra_permissions=['android.permission.WRITE_EXTERNAL_STORAGE','android.permission.READ_EXTERNAL_STORAGE','android.permission.READ_PHONE_STATE'],
         extra_components=['it.partytrack.sdk.ReferrerReceiver','com.CFM.ELAN.ELANAlarmCreator','com.CFM.ELAN.TimedAlarm','com.google.games.bridge.NativeBridgeActivity'])
     replacements={'AndroidManifest.xml':new_manifest,'assets/bin/Data/globalgamemanagers':main_raw,MANAGED+'Assembly-CSharp-firstpass.dll':(managed/'Assembly-CSharp-firstpass.dll').read_bytes(),MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),MANAGED+'DivineGateOffline.dll':adapter.read_bytes()}
+    from layout_assets import create as repair_layout
+    replacements.update(repair_layout(original/'assets/bin/Data',build))
+    shutil.copyfile(build/'layout-repairs.json',output/'layout-repairs.json')
     for row in native['bundles']:replacements['assets/dg-native/'+row['file']]=(build/'native-bundles'/row['file']).read_bytes()
     from loader import create as create_loader
     replacements.update(create_loader(SOURCE,build,CODE))
@@ -245,7 +249,7 @@ def main():
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
     report={'version':'4.0.0 offline / original 1.0.6 content / candidate r4','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':522,'quest_rows':371,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
-    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r8', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'])
+    report.update(version='4.0.0 offline / original 1.0.6 content / candidate r10', status='Build and artifact checks complete; gameplay testing delegated to user', restored_map_resources=maps['resources'], map_geometry_aliases=maps['missing_geometry_aliases'], layout_repairs='layout-repairs.json', gacha_menu_checks='gacha-menu-checks.txt')
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
