@@ -4,6 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using ServerDataDefine;
 public static partial class DivineGateOffline {
+ // The memorial backend's lookup always returns row zero. With the original
+ // 1.0.6 sentinel row this produces an empty enemy pool and a null dereference.
+ public static MasterDataEnemyGroup EnemyGroup400(uint id) {
+  if(id==0 || !Singleton<ServerForgery>.HasInstance)return null;
+  var server=Singleton<ServerForgery>.Instance;
+  if(server==null || server.m_MasterDataParamEnemyGroup==null)return null;
+  foreach(var group in server.m_MasterDataParamEnemyGroup)
+   if(group!=null && group.fix_id==id)return group;
+  return null;
+ }
  static ResidentManager pendingResident400;
  public static void QueueBoot400(ResidentManager resident) { pendingResident400=resident;Tick400(); }
  public static void Tick400() {

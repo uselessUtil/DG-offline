@@ -238,6 +238,11 @@ public static partial class PatchPlayable400
         // 4.0.0 has a different quest selector; retain its normal progression.
         TutorialPreview400();
         LegacySkillHooks400();
+        var groupLookup=Method("ServerForgery","ServerFogery_GetEnemyGroupFromID",1);
+        if(!groupLookup.IsStatic || groupLookup.ReturnType.Name!="MasterDataEnemyGroup")
+            throw new Exception("Unexpected enemy-group lookup contract");
+        var groupIL=Reset(groupLookup);
+        groupIL.Emit(OpCodes.Ldarg_0);groupIL.Emit(OpCodes.Call,Helper("EnemyGroup400"));groupIL.Emit(OpCodes.Ret);
 
 
 
