@@ -417,6 +417,78 @@
       "size_bytes": 54838,
       "sha256": "41166270cd381b66c39cc0e0665d89299498f2d75660e0786fde953fa9f16469",
       "availability": "local-only"
+    },
+    {
+      "id": "S47",
+      "path": "artifacts/2.9.0-offline-playable1-r11/build-report.json",
+      "purpose": "2.9.0 r11 候選身分與驗證旗標",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8402,
+      "sha256": "7546975ebc0799b41434cc5f6f7fcf424795f13530f1570a73518181b3d97f72",
+      "availability": "local-only"
+    },
+    {
+      "id": "S48",
+      "path": "artifacts/2.9.0-offline-playable1-r11/test-report.json",
+      "purpose": "倉庫最愛排序與既有受管回歸範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 29233,
+      "sha256": "0b558dbcc28047413fe46c62caa5bad3324fbd5425fa2ca257ebe05fd15862d0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S49",
+      "path": "artifacts/2.9.0-offline-playable1-r11/android-install.json",
+      "purpose": "r11 更新安裝，列表視覺／觸控未驗證",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 548,
+      "sha256": "5c2d82c962849a7f6be98cee577843affaec5eb53d94b0d75fc918baa35f00ef",
+      "availability": "local-only"
+    },
+    {
+      "id": "S50",
+      "path": "artifacts/4.0.0-offline106-r8/build-report.json",
+      "purpose": "4.0.0 r8 候選身分與缺表範圍",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 2704,
+      "sha256": "6afe9a62bdc5070564f7ebb34bc2575a68847aaca290672bf9a399aac8382bbf",
+      "availability": "local-only"
+    },
+    {
+      "id": "S51",
+      "path": "artifacts/4.0.0-offline106-r8/repair-checks.json",
+      "purpose": "r8 地圖、隊伍格式與區域分類既有核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1100,
+      "sha256": "eab4478a4e2e64b62877f7590c53894bd47431f1a5d99a1bd1133a679f18ab94",
+      "availability": "local-only"
+    },
+    {
+      "id": "S52",
+      "path": "artifacts/4.0.0-offline106-r8/text-audit.json",
+      "purpose": "r8 真正序列化文字欄位及缺鍵盤點",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 4194,
+      "sha256": "d3edc3385b3a7fc107cb95b602ff3c33c99c0c5d0fd9ea1e225fc70115826a5b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S53",
+      "path": "artifacts/4.0.0-offline106-r8/quest-build-checks.txt",
+      "purpose": "r8 敵群 ID 與 364 關建立的既有測試",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 240,
+      "sha256": "1712071dbed5d7d677bbe49cd0792498f61140f73214800e8e046709720c64a2",
+      "availability": "local-only"
+    },
+    {
+      "id": "S54",
+      "path": "artifacts/4.0.0-offline106-r8/text-format-checks.json",
+      "purpose": "r8 直接文字格式呼叫的靜態參數核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 247,
+      "sha256": "fb4b134d73d59649b4e1c31d2662d929ebf6c004050ea28e661e9d5536017604",
+      "availability": "local-only"
     }
   ]
 }
