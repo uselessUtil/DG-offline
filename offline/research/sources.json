@@ -750,6 +750,33 @@
       "size_bytes": 498,
       "sha256": "31bf7a729e82f6cd81c594233a3ff4d602fe6ac9c541f6a8847db59ce088f689",
       "availability": "local-only"
+    },
+    {
+      "id": "S84",
+      "path": "artifacts/4.0.0-offline106-r16/build-report.json",
+      "purpose": "4.0.0 r16 候選身分與DEX檢查入口",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3234,
+      "sha256": "b0350b89ae48cb3fa8a98310914b73da04286541ff84a7142cebe631931ef68a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S85",
+      "path": "artifacts/4.0.0-offline106-r16/advertising-id-checks.json",
+      "purpose": "組裝DEX的廣告ID初始化與JNI讀取契約核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 370,
+      "sha256": "79b2a806df6ff403292cad70dae5379f418022fe48724272a987a98a533ad65f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S86",
+      "path": "artifacts/4.0.0-offline106-r16/packaged-phone-fix-checks.json",
+      "purpose": "r16封裝與r15其他遊戲資料保留範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 436,
+      "sha256": "c18fc67823cb75e74b449d4be1c3fdbaab181cd050f6e079c83476d0c4dfd333",
+      "availability": "local-only"
     }
   ]
 }
