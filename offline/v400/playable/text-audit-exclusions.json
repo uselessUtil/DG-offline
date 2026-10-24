@@ -1,0 +1,10 @@
+{
+  "D2": "Numeric ToString format near a GetText call; not a localization key.",
+  "F1": "Numeric ToString format near a GetText call; not a localization key.",
+  "RT_A": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key.",
+  "RT_P": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key.",
+  "RT_S": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key.",
+  "UT_U": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key.",
+  "MM_U": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key.",
+  "BTN_S": "Serialized token matched by the broad uppercase-prefix heuristic; not a LabelSetter key."
+}
