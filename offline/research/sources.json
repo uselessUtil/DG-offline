@@ -561,6 +561,105 @@
       "size_bytes": 183,
       "sha256": "2b4faff289e9b4238c40df733a143f23be413c1a5c82d6f5181b99a29177826b",
       "availability": "local-only"
+    },
+    {
+      "id": "S63",
+      "path": "artifacts/2.9.0-offline-playable1-r13-final/build-report.json",
+      "purpose": "完成的47筆狀態整合候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8456,
+      "sha256": "40131dc805513399e6e5a8146690028d0027ec060ca77134cde7782b4d331e84",
+      "availability": "local-only"
+    },
+    {
+      "id": "S64",
+      "path": "artifacts/2.9.0-offline-playable1-r13-final/test-report.json",
+      "purpose": "r13-final 的21組受管檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 29655,
+      "sha256": "241efdb052dc946116fee12873ecd8dfaa9f1bf9d29492286a0c8dabd06d3fe4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S65",
+      "path": "artifacts/2.9.0-offline-playable1-r13-final/native-buffs-regression.json",
+      "purpose": "原生增益與狀態跨程序重載既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 862,
+      "sha256": "105a9aa3f2d85136bf65480a72dee69190cabddb9ef061313190574b2ff20d79",
+      "availability": "local-only"
+    },
+    {
+      "id": "S66",
+      "path": "artifacts/2.9.0-offline-playable1-r13-final/skill-preservation.json",
+      "purpose": "舊技能欄位、12狀態與其他表保留範圍",
+      "chapter": "MASTERDATA.md",
+      "size_bytes": 1408,
+      "sha256": "13d58fb88c03569de54aef43a4913b3ed2f023fe96d1651377c484e41cf1631f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S67",
+      "path": "artifacts/2.9.0-offline-playable1-r14/build-report.json",
+      "purpose": "r14 進化頁修正候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8456,
+      "sha256": "5fad476ff8e93f6f9850608600ed09b551c5d72ba7236a1828380a2076157ddb",
+      "availability": "local-only"
+    },
+    {
+      "id": "S68",
+      "path": "artifacts/2.9.0-offline-playable1-r14/test-report.json",
+      "purpose": "r14 的22組受管檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 30142,
+      "sha256": "8d5c3d6944ba5ed0f0f8599c68f6f6245c82480ed773b5b6499f4064fa512a78",
+      "availability": "local-only"
+    },
+    {
+      "id": "S69",
+      "path": "artifacts/2.9.0-offline-playable1-r14/evolution-page-flow.txt",
+      "purpose": "殘留對話受控重現與原出發流程的既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 416,
+      "sha256": "2afd96afe4de4af1e83a0dd7d7b0021d3b9eac92a7ec36ff4b6e99c89e5847f6",
+      "availability": "local-only"
+    },
+    {
+      "id": "S70",
+      "path": "artifacts/4.0.0-offline106-r11/build-report.json",
+      "purpose": "4.0.0 r11 候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2965,
+      "sha256": "d49b328822fbbb7d7695bd11c54a0a2c04756cabae42824589c5991a429d5b16",
+      "availability": "local-only"
+    },
+    {
+      "id": "S71",
+      "path": "artifacts/4.0.0-offline106-r11/empty-list-diagnosis.json",
+      "purpose": "空清單原因與交付資源核對範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 505,
+      "sha256": "59d6ed45cea136b401d80c5573b6a4649fbd8e7c3f3a0db285e59b8abd784d30",
+      "availability": "local-only"
+    },
+    {
+      "id": "S72",
+      "path": "artifacts/4.0.0-offline106-r11/gacha-menu-checks.txt",
+      "purpose": "本機圖片路由及原生互動 IL 的既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 728,
+      "sha256": "1e5eb9006655dd73322c4550c92ca50a021469e0ed1543a4445302ee01b3acd3",
+      "availability": "local-only"
+    },
+    {
+      "id": "S73",
+      "path": "artifacts/4.0.0-offline106-r11/layout-repairs.json",
+      "purpose": "三個資源9物件的版面／佔位字串核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 4432,
+      "sha256": "9939f3bb101621b7913d799a021dff9519f48cefeac38c1b8a7542ac2b13a9c5",
+      "availability": "local-only"
     }
   ]
 }
