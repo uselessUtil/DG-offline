@@ -65,9 +65,17 @@ def convert(source,inventory):
         raw=result[name];rows=json.loads(raw,strict=False)
         rows=[r for r in rows if r[key] in {10,100100,200100,300100,300200,300300,300400}]
         if name=='MasterDataGacha':
-            for r in rows:r.update(tab_num=r['type'],tab_name=r['name'],url_img='',url_web='',change_title='')
+            # Legacy pools have no date fields. Unity's default uint zero is
+            # not a valid start date for 4.0.0 TimeManager.CheckWithinTime.
+            # Its own SYSTEM_START_DATE is 1970010100; end zero means no end.
+            dates={'timing_public':1970010100,'timing_start':1970010100,'timing_end':0}
+            assert dates.keys() <= schemas[name]
+            for r in rows:
+                assert not (dates.keys() & r.keys()),'Locked legacy date schema changed'
+                r.update(dates)
+                r.update(tab_num=r['type'],tab_name=r['name'],url_img='',url_web='',change_title='')
         result[name]=json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
-        changes.append({'table':name,'rows':len(rows),'mapping':'seven original pools; local native tabs; no URLs','source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
+        changes.append({'table':name,'rows':len(rows),'mapping':'seven original pools; local native tabs; no URLs; absent Gacha date fields use SYSTEM_START_DATE (1970010100), end 0 (no end); original event gates retained','source_sha256':hashlib.sha256(raw).hexdigest(),'output_sha256':hashlib.sha256(result[name]).hexdigest()})
     for name in ['MasterDataAssetBundlePath','MasterDataInformation']:
         if name in result:
             changes.append({'table':name,'mapping':'Disabled obsolete online download/notice data; artwork resolved by local adapter','source_sha256':hashlib.sha256(result[name]).hexdigest()})
