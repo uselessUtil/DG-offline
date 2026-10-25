@@ -66,7 +66,7 @@ def native_guard_fields(skill):
     assert all(v == 0 for v in prior.values()) or prior == fields, ('Conflicting native guard', skill['fix_id'])
     return fields
 
-def project(source, inventory):
+def project(source, inventory, restored=False):
     global LAST_AUDIT
     db=read_sql();di={n:index(rs) for n,rs in db.items()}
     schemas={}
@@ -74,17 +74,25 @@ def project(source, inventory):
         p=line.split('\t')
         if p[0]=='column':schemas.setdefault(p[1],{})[p[2]]=p[3]
     base={n:json.loads(raw,strict=False) for n,raw in source.items()}
+    restoration=None;quest_map=dict(QUEST_MAP)
+    if restored:
+        import sys
+        sys.path.insert(0,str(ROOT/'offline/v291/restored'))
+        from content import expand
+        base,restoration=expand(base,schemas,db,quest_map)
+        quest_map=restoration['quest_mapping']
     # Serialized target table names differ from old cache asset names.
     aliases={'MasterDataParamEnemy':'MasterDataEnemyChara','MasterDataStatusAilmentParam':'MasterDataStatusAilment'}
     old={n:index(base.get(aliases.get(n,n),[])) for n in schemas}
     chars={i:r for i,r in old['MasterDataParamChara'].items() if i}
     quests={i:r for i,r in old['MasterDataQuest'].items() if i and r['active']==2}
-    assert len(chars)==595 and len(quests)==392
-    reverse={QUEST_MAP.get(i,i):i for i in quests}
-    audit={'data_version':'dgdb-1','dgdb_sha256':SQL_SHA,'dgdb_commit':'1a15adf733bb02467d51303a110f361535a7b4bc',
-           'characters':sorted(chars),'quests':sorted(quests),'quest_mapping':QUEST_MAP,
+    assert len(chars)==(restoration['expected_characters'] if restored else 595) and len(quests)==(restoration['expected_quests'] if restored else 392)
+    reverse={quest_map.get(i,i):i for i in quests}
+    audit={'data_version':'dgdb-2-restored' if restored else 'dgdb-1','dgdb_sha256':SQL_SHA,'dgdb_commit':'1a15adf733bb02467d51303a110f361535a7b4bc',
+           'characters':sorted(chars),'quests':sorted(quests),'quest_mapping':quest_map,
            'fallbacks':[],'excluded_evolutions':[],'tables':{},'skill_changes':{}}
-    result=dict(source)
+    result={n:encode(rs) for n,rs in base.items()} if restored else dict(source)
+    if restored:audit['restoration']=restoration
     runtime={'timing_public','value_list','value_turn_min','value_turn_max','param_list'}
     def emit(native, rows):
         result[aliases.get(native,native)]=encode(rows)
@@ -118,13 +126,13 @@ def project(source, inventory):
     qr=[]
     for r in base['MasterDataQuest']:
         if not r or r['fix_id'] not in quests:qr.append(r);continue
-        d=require('quest',QUEST_MAP.get(r['fix_id'],r['fix_id']))
+        d=require('quest',quest_map.get(r['fix_id'],r['fix_id']))
         assert d['clear_unit']==0 or d['clear_unit'] in chars
         qr.append(row('MasterDataQuest',d,r,{'fix_id':r['fix_id'],'area_id':r['area_id'],'active':2}))
     emit('MasterDataQuest',qr)
     # Old area topology and asset routes are essential to the fixed old quest list.
     area_map={}
-    for i,q in quests.items():area_map[q['area_id']]=require('quest',QUEST_MAP.get(i,i))['area_id']
+    for i,q in quests.items():area_map[q['area_id']]=require('quest',quest_map.get(i,i))['area_id']
     areas=[]
     for r in base['MasterDataArea']:
         if not r:areas.append(r);continue
@@ -146,7 +154,7 @@ def project(source, inventory):
         for f in of:kinds[f['under']].append(f)
         counts=collections.Counter()
         for d in db['quest_floor']:
-            if d['quest_id']!=QUEST_MAP.get(qi,qi):continue
+            if d['quest_id']!=quest_map.get(qi,qi):continue
             n=counts[d['under']];counts[d['under']]+=1
             prior=kinds[d['under']][n] if n<len(kinds[d['under']]) else None
             assert prior is not None or qi==1,('No old generation pattern',qi,d['under'],n)
@@ -156,7 +164,7 @@ def project(source, inventory):
             used_ids.add(fid)
             fs.append(row('MasterDataQuestFloor',d,prior,{'fix_id':fid,'quest_id':qi,'active':2,
                'pattern_expect':prior['pattern_expect'],'pattern_category':prior['pattern_category']}))
-    assert len(fs)==763
+    assert len(fs)==(restoration['expected_floor_rows'] if restored else 763)
     emit('MasterDataQuestFloor',fs)
     audit['fallbacks'].append({'table':'MasterDataQuestFloor','fields':['pattern_expect','pattern_category'],'reason':'DGDB has no CategoryPattern/ExpectPattern; paired old floor generation and random 24+1 key logic retained'})
     # Only evolution routes fully contained in the fixed content set.
@@ -167,7 +175,7 @@ def project(source, inventory):
         if d['quest_id'] and d['quest_id'] not in reverse:invalid['quest_id']=d['quest_id']
         if invalid:audit['excluded_evolutions'].append({'row':d,'outside':invalid});continue
         ev.append(row('MasterDataParamCharaEvol',d,overrides={'active':2,'quest_id':reverse.get(d['quest_id'],0)}))
-    assert len(ev)==262 and len(audit['excluded_evolutions'])==92
+    if not restored:assert len(ev)==262 and len(audit['excluded_evolutions'])==92
     emit('MasterDataParamCharaEvol',ev)
     # Keep the old schedule and eligible encounter set, but use DGDB groups/stats.
     invasion=base['MasterDataGuerrillaBoss']
@@ -276,7 +284,7 @@ def project(source, inventory):
                 'add_fix_id':d['add_fix_id'],
                 'users':[{'id':c['fix_id'],'draw_id':c['draw_id'],'name':c['name']}
                          for c in units if c and c.get('skill_leader')==i]})
-    assert len(guard_conversions)==23 and sum(len(r['users']) for r in guard_conversions)==76
+    if not restored:assert len(guard_conversions)==23 and sum(len(r['users']) for r in guard_conversions)==76
     audit['native_guard_conversions']=guard_conversions
     audit['fallbacks'].append({'table':'MasterDataSkillLeader',
         'fields':['skill_decline_dmg_active','skill_decline_dmg_element','skill_decline_dmg_rate'],
@@ -327,5 +335,6 @@ def project(source, inventory):
         fields=set(db[table][0])
         audit['tables'][native]['dgdb_columns']=sorted(set(schemas[native])&fields-runtime)
         audit['tables'][native]['missing_dgdb_columns']=sorted(set(schemas[native])-fields-runtime)
+    if restored:audit['fallbacks'].extend(restoration['fallbacks'])
     LAST_AUDIT=audit
     return result, audit

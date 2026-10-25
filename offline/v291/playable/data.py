@@ -1,7 +1,7 @@
 """Version-specific backup projection. Preserve all gameplay rows and IDs."""
 import json,hashlib
 
-def convert(source,inventory):
+def convert(source,inventory,restored=False):
     schemas={}
     for p in (line.split('\t') for line in inventory.splitlines()):
         if p[0]=='column':schemas.setdefault(p[1],set()).add(p[2])
@@ -44,7 +44,7 @@ def convert(source,inventory):
     from native_skills import convert as native_buffs
     changes.extend(native_buffs(result,schemas))
     from dgdb import project
-    result,audit=project(result,inventory)
+    result,audit=project(result,inventory,restored=restored)
     changes=[c for c in changes if c["table"] not in {"MasterDataSkillLimitBreak","MasterDataStatusAilment"}]
     changes.append(dict(table="DGDB",mapping="fixed old content with DGDB native gameplay",audit=audit))
     return result,changes
