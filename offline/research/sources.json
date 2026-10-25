@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "compiled_on": "2026-10-24",
+  "compiled_on": "2026-10-25",
   "timezone": "Asia/Taipei",
   "scope": "Curated report fingerprints; not an APK inventory or independent re-run of historical tests. Paths relative to repository root.",
   "sources": [
@@ -776,6 +776,87 @@
       "chapter": "GAMEPLAY.md",
       "size_bytes": 436,
       "sha256": "c18fc67823cb75e74b449d4be1c3fdbaab181cd050f6e079c83476d0c4dfd333",
+      "availability": "local-only"
+    },
+    {
+      "id": "S87",
+      "path": "artifacts/2.9.0-offline-playable1-r15-final/build-report.json",
+      "purpose": "r15-final存檔備份候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10006,
+      "sha256": "1b27503e1edf2cee568c60d980f8dad2b8c90ae2ce45380b47435dd33bcbb207",
+      "availability": "local-only"
+    },
+    {
+      "id": "S88",
+      "path": "artifacts/2.9.0-offline-playable1-r15-final/save-transfer-tests.txt",
+      "purpose": "r15同版本往返、回復與橋接既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1897,
+      "sha256": "f2f0949c0ef5be098f0d96d9fc0ef4d799f95988ad35b9d6fc83941028b4cb33",
+      "availability": "local-only"
+    },
+    {
+      "id": "S89",
+      "path": "artifacts/2.9.0-offline-playable1-r15-final/save-port-compatibility.json",
+      "purpose": "共用來源與原主資料保留核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 146,
+      "sha256": "9916edb0c8c2691267045c674bafca3ce9f3c4cfd95f0c121b3bb7cedcbff305",
+      "availability": "local-only"
+    },
+    {
+      "id": "S90",
+      "path": "artifacts/2.9.0-offline-playable1-r16-legacy-save/build-report.json",
+      "purpose": "r16固定1.0.6備份轉入候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10395,
+      "sha256": "bde8c0aa643026e249d5204449c34e1c5a51c5fbdfad036d43000bf233498945",
+      "availability": "local-only"
+    },
+    {
+      "id": "S91",
+      "path": "artifacts/2.9.0-offline-playable1-r16-legacy-save/legacy106-import-tests.txt",
+      "purpose": "固定來源單向轉換及逐欄保存既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1408,
+      "sha256": "f62ce38c4ab4ee8f7b05ab36fdbb2cf98e02cf98698608796c95a9fed0db141c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S92",
+      "path": "artifacts/2.9.0-offline-playable1-r16-legacy-save/legacy106-migration-report.json",
+      "purpose": "r16來源、映射與成品一致性範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1911,
+      "sha256": "8b6503f14b2f090875e6b2d2b1d2ae93c258cb4398352203cbb3a5208523ad75",
+      "availability": "local-only"
+    },
+    {
+      "id": "S93",
+      "path": "artifacts/2.9.0-offline-playable1-r17-restore-retire/build-report.json",
+      "purpose": "r17接續取消退休候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11326,
+      "sha256": "1f57ef6c6d1666b1edb6c583e8611ee3dba317c5a742fabbf7993522100a582a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S94",
+      "path": "artifacts/2.9.0-offline-playable1-r17-restore-retire/test-report.json",
+      "purpose": "r17的24組受管檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 34740,
+      "sha256": "021404efc9d76d7d0b9b725c97457798da047cfb6d14b0f127ec23d39f49b127",
+      "availability": "local-only"
+    },
+    {
+      "id": "S95",
+      "path": "artifacts/2.9.0-offline-playable1-r17-restore-retire/restore-retirement-tests.txt",
+      "purpose": "原退休API、孤立關卡及失敗回復既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1137,
+      "sha256": "ceb0ad1861a4d54f1872325667078a74c4fb2b126a64d1de97818a7e214420e7",
       "availability": "local-only"
     }
   ]
