@@ -1,0 +1,29 @@
+config_version=5
+
+[application]
+config/name="Divine Gate Godot 2.9.0"
+config/icon="res://icon.png"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
+
+[display]
+window/size/viewport_width=640
+window/size/viewport_height=1136
+window/size/window_width_override=480
+window/size/window_height_override=852
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/handheld/orientation=1
+
+[dotnet]
+project/assembly_name="DivineGateGodot"
+
+[input_devices]
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0,0,0,1)

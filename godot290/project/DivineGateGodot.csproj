@@ -1,0 +1,12 @@
+<Project Sdk="Godot.NET.Sdk/4.6.3">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>DivineGateGodot</RootNamespace>
+    <Nullable>enable</Nullable>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Libraries/*.dll"><Private>true</Private></Reference>
+  </ItemGroup>
+</Project>
