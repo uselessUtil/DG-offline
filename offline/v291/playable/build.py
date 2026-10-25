@@ -32,12 +32,16 @@ def checked_replace(text,old,new):
     if text.count(old)!=1:raise ValueError('Shared runtime contract changed: '+old[:50])
     return text.replace(old,new)
 def main():
+    global PACKAGE
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--revision',type=int,default=1)
     parser.add_argument('--output',type=Path,default=ROOT/'artifacts/2.9.1-offline-playable1')
     parser.add_argument('--resume-work',type=Path,help='Resume an unfinished build before its APK exists')
     parser.add_argument('--assets-from',type=Path,help='Reuse immutable verified artwork from a previous build-report.json')
-    args=parser.parse_args();assert args.revision>0;release='2.9.1 offline gameplay dgdb-1 r'+str(args.revision);assert digest(SOURCE.read_bytes())==SHA
+    parser.add_argument('--restore-content',action='store_true',help='Independent 2.9.1-era restoration profile; original native assets win')
+    args=parser.parse_args()
+    if args.restore_content:PACKAGE='jp.gungho.dg.offline291.restored'
+    assert args.revision>0;release=('2.9.1 restored dgdb-2 r' if args.restore_content else '2.9.1 offline gameplay dgdb-1 r')+str(args.revision);assert digest(SOURCE.read_bytes())==SHA
     output=args.output.resolve();output.mkdir(parents=True,exist_ok=bool(args.resume_work))
     assert not (output/'ディバゲ_2.9.1.apk').exists(),'Never overwrite an APK'
     work=args.resume_work.resolve() if args.resume_work else Path(tempfile.mkdtemp(prefix='dg291-playable-',dir='/tmp'))
@@ -84,8 +88,11 @@ def main():
     legacy_as={r['fix_id']:r for r in json.loads(source_tables['MasterDataSkillLimitBreak'],strict=False)}
     original_max={r['fix_id']:legacy_as[r['skill_limitbreak']]['level_max'] if r['skill_limitbreak'] else 0 for r in legacy_chars if r['fix_id']}
     (build/'MigrationCatalog291.cs').write_text('using System.Collections.Generic; public static partial class DivineGateOffline { static readonly Dictionary<uint,uint> OldSkillMaximum291=new Dictionary<uint,uint>{'+','.join('{'+str(i)+'u,'+str(v)+'u}' for i,v in original_max.items())+'}; }')
-    source_tables,conversions=convert(source_tables,inventory)
+    source_tables,conversions=convert(source_tables,inventory,restored=args.restore_content)
     from dgdb import LAST_AUDIT
+    restoration=LAST_AUDIT.get('restoration')
+    if restoration:
+        (output/'restoration.json').write_text(json.dumps(restoration,ensure_ascii=False,indent=2)+chr(10))
     (output/'dgdb-projection.json').write_text(json.dumps(LAST_AUDIT,ensure_ascii=False,indent=2))
     (output/'skill-changes.json').write_text(json.dumps(LAST_AUDIT['skill_changes'],ensure_ascii=False,indent=2))
     (output/'excluded-evolutions.json').write_text(json.dumps(LAST_AUDIT['excluded_evolutions'],ensure_ascii=False,indent=2))
@@ -120,7 +127,9 @@ def main():
             imported[name]={'rows':len(rows),'sha256':digest(source_tables[name]),'field':field,'type':typ}
         else:
             lines.append('server.'+field+'=new '+typ+'[0];');disabled.append(name)
-    assert len(imported)>=34 and imported['MasterDataParamChara']['rows']==596 and imported['MasterDataQuest']['rows']==399
+    assert len(imported)>=34
+    assert imported['MasterDataParamChara']['rows']==(restoration['expected_characters']+1 if restoration else 596)
+    assert imported['MasterDataQuest']['rows']==(len(json.loads(source_tables['MasterDataQuest'])) if restoration else 399)
     assert imported['MasterDataGacha']['rows']==7
     characters={r['fix_id']:r for r in json.loads((tables/'MasterDataParamChara.json').read_text(),strict=False)}
     for row in json.loads((tables/'MasterDataGachaAssign.json').read_text(),strict=False):
@@ -176,11 +185,32 @@ def main():
     text=text.replace('1.0.6','2.9.1').replace('offline106','offline291').replace('prototype 22r7','2.9.1 dgdb-1 r1')
     text=text.replace('private static bool showNotice = true;', 'private static bool showNotice = false;')
     text=text.replace('store.m_StoreRestoreOK = true;', '')
+    if restoration:
+        text=checked_replace(text,'return MapPartTexture(bundle, name, "lower");','return RestorationAtlas291(bundle, name);')
+        start=text.index('    private static GameObject Map(string bundle, string name)')
+        end=text.index('    public static void RaiseEnemyHud',start)
+        text=text[:start]+'    private static GameObject Map(string bundle,string name){return RestorationMap291(bundle,name);}'+chr(10)+chr(10)+text[end:]
     (build/'Runtime.cs').write_text(text)
     # Clearly labelled procedural fallback remains available for absent resources.
     from generate_images import create as placeholders
     placeholders(build/'Images.cs',tables)
-    if args.assets_from:
+    if restoration:
+        assert args.assets_from,'Restored builds require verified original native assets'
+        cached_report=json.loads(args.assets_from.read_text())
+        assert cached_report['source_sha256']==SHA
+        cached=Path(cached_report['work_directory'])/'build'
+        from importlib.util import spec_from_file_location,module_from_spec
+        spec=spec_from_file_location('dg_restored_assets',ROOT/'offline/v291/restored/assets.py')
+        extra_assets=module_from_spec(spec);spec.loader.exec_module(extra_assets)
+        images=extra_assets.create(tables,build,args.assets_from)
+        for name in ['NativeAssetIndex.cs','native-bundle-manifest.json']:
+            shutil.copy2(cached/name,build/name)
+        shutil.copytree(cached/'native-bundles',build/'native-bundles',copy_function=__import__('os').link)
+        native=json.loads((build/'native-bundle-manifest.json').read_text())
+        native['restored_fallback_characters']=restoration['new_character_ids']
+        native['restored_fallback_note']='Original native595 models are unchanged and always preferred. Added models use exact PNG art or compatible native geometry only when original models are absent.'
+        (build/'native-bundle-manifest.json').write_text(json.dumps(native,ensure_ascii=False,indent=2))
+    elif args.assets_from:
         cached_report=json.loads(args.assets_from.read_text())
         assert cached_report['source_sha256']==SHA
         cached_data=json.loads((args.assets_from.parent/'master-data.json').read_text())
@@ -233,9 +263,16 @@ def main():
     run('mono',build/'CompileApi.exe',managed/'Assembly-CSharp.dll',api/'Assembly-CSharp.dll')
     refs=['-r:'+str(managed/n) for n in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     refs=[r.replace(str(managed/'Assembly-CSharp.dll'),str(api/'Assembly-CSharp.dll')) for r in refs]
-    save_feature=create_save_sources(build)
+    save_feature=create_save_sources(build,restored=bool(restoration),package=PACKAGE)
+    migration_source=CODE/'SaveMigration291.cs'
+    runtime_source=CODE/'Runtime291.cs'
+    if restoration:
+        migration_source=build/'SaveMigration291.cs'
+        migration_source.write_text((CODE/'SaveMigration291.cs').read_text().replace('target_data="dgdb-1"','target_data="dgdb-2-restored"'))
+        runtime_source=build/'Runtime291.cs'
+        runtime_source.write_text((CODE/'Runtime291.cs').read_text().replace('offline291-dgdb-1','offline291-dgdb-2-restored').replace('595 characters / 399 quest rows',str(restoration['expected_characters'])+' characters / '+str(imported['MasterDataQuest']['rows'])+' quest rows'))
     adapter=build/'DivineGateOffline.dll'
-    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',CODE/'Runtime291.cs',CODE/'Skills291.cs',*[CODE/(n+'291.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage','RestoreRetirement','QuestRewards']],ROOT/'offline/NativeAssets.cs',build/'SaveBackup291.cs',build/'SaveTransferUI291.cs',CODE/'LegacySave106.cs',CODE/'Legacy106Account.cs',build/'Legacy106Catalog.cs',CODE/'SaveMigration291.cs',build/'MigrationCatalog291.cs',build/'DG291Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
+    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',runtime_source,CODE/'Skills291.cs',*[CODE/(n+'291.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage','RestoreRetirement','QuestRewards']],ROOT/'offline/NativeAssets.cs',build/'SaveBackup291.cs',build/'SaveTransferUI291.cs',CODE/'LegacySave106.cs',CODE/'Legacy106Account.cs',build/'Legacy106Catalog.cs',migration_source,build/'MigrationCatalog291.cs',build/'DG291Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',*([ROOT/'offline/v291/restored/Presentation291.cs'] if restoration else []))
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Embed.exe'),ROOT/'offline/EmbedImages.cs')
     run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
     shutil.move(build/'WithImages.dll',adapter)
@@ -250,11 +287,11 @@ def main():
     tree['m_AssemblyNames'].append('DivineGateOffline.dll');manager.save_typetree(tree);main_raw=manager.assets_file.save()
     after={o.path_id:o.get_raw_data() for o in UnityPy.load(main_raw).objects}
     assert set(before)==set(after) and all(after[k]==v for k,v in before.items() if k!=manager.path_id)
-    new_manifest,removed=patch_manifest(manifest,package=PACKAGE,label='Divine Gate Offline 2.9.1',save_transfer=True,save_activity=PACKAGE+'.SaveTransferActivity',
+    new_manifest,removed=patch_manifest(manifest,package=PACKAGE,label='Divine Gate 2.9.1 Restored' if restoration else 'Divine Gate Offline 2.9.1',save_transfer=True,save_activity=PACKAGE+'.SaveTransferActivity',
         extra_permissions=['android.permission.WRITE_EXTERNAL_STORAGE','android.permission.READ_EXTERNAL_STORAGE','android.permission.READ_PHONE_STATE'],
         extra_components=['it.partytrack.sdk.ReferrerReceiver','com.CFM.ELAN.ELANAlarmCreator','com.CFM.ELAN.TimedAlarm','com.google.games.bridge.NativeBridgeActivity'])
     with zipfile.ZipFile(SOURCE) as original_apk:
-        save_dex,save_android=create_save_android(original_apk.read('classes.dex'),build,package=PACKAGE,game_version='2.9.1')
+        save_dex,save_android=create_save_android(original_apk.read('classes.dex'),build,package=PACKAGE,game_version='2.9.1',restored=bool(restoration))
     save_feature.update(save_android)
     replacements={'classes.dex':save_dex,'AndroidManifest.xml':new_manifest,'assets/bin/Data/mainData':main_raw,MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),MANAGED+'DivineGateOffline.dll':adapter.read_bytes()}
     for row in native['bundles']:replacements['assets/dg-native/'+row['file']]=(build/'native-bundles'/row['file']).read_bytes()
@@ -287,7 +324,7 @@ def main():
     assert digest(SOURCE.read_bytes())==SHA
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
-    report={'version':release,'status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'data_version':'dgdb-1','characters':595,'active_quests':392,'quest_rows':399,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False,'save_transfer':save_feature}
+    report={'version':release,'status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'data_version':'dgdb-2-restored' if restoration else 'dgdb-1','characters':restoration['expected_characters'] if restoration else 595,'active_quests':restoration['expected_quests'] if restoration else 392,'quest_rows':imported['MasterDataQuest']['rows'],'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False,'save_transfer':save_feature}
     report['permanent_invasions']={k:v for k,v in invasion_report.items() if k!='entries'}
     report['restore_retirement']={'original_api':'SERVER_API_QUEST_RETIRE','orphan_repair':True,'journal':'DG291_QUEST_RETIRE_JOURNAL'}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
