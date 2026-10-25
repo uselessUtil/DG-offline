@@ -26,7 +26,7 @@ def legacy_catalog(build):
             'characters_checked':len(catalog['characters']),'quests_checked':len(pairs),
             'quest_id_remaps':{str(a):b for a,b in pairs if a!=b}}
 
-def create(build):
+def create(build,restored=False,package="jp.gungho.dg.offline291"):
     src=ROOT/'offline'
     core=(src/'SaveBackup.cs').read_text()
     assert core.count('"1.0.6"')==2
@@ -75,9 +75,15 @@ def create(build):
     ui=ui.replace('UnityUtil.SetUILabelValue(UnityUtil.GetChildNode(root,"PartsTitle"),"Save Backup");',
         'foreach(UILabel label in UnityUtil.GetChildNode(root,"PartsTitle").GetComponentsInChildren<UILabel>(true))label.text="Save Backup";')
     ui=ui.replace('UnityUtil.GetChildNode(root,"PartsDetail"),','UnityUtil.GetChildNode(root,"PartsDetail","Detail"),')
+    if restored:
+        core=core.replace('e.schema=2;e.game_version="2.9.1";e.data_version="dgdb-1";','e.schema=3;e.game_version="2.9.1";e.data_version="dgdb-2-restored";')
+        needle='(e.game_version=="2.9.1" && e.schema==2 && e.data_version=="dgdb-1")'
+        assert needle in core
+        core=core.replace(needle,'(e.game_version=="2.9.1" && ((e.schema==3 && e.data_version=="dgdb-2-restored") || (e.schema==2 && e.data_version=="dgdb-1")))')
+    ui=ui.replace('jp.gungho.dg.offline291.SaveTransferActivity',package+'.SaveTransferActivity')
     (build/'SaveBackup291.cs').write_text(core);(build/'SaveTransferUI291.cs').write_text(ui)
     return {'source_commits':['019edde','64a347d','ce08e42','c600717'],
-            'game_version':'2.9.1','data_version':'dgdb-1','schema':2,'format':'dg-offline-save','byte_limit':4194304,
+            'game_version':'2.9.1','data_version':'dgdb-2-restored' if restored else 'dgdb-1','schema':3 if restored else 2,'format':'dg-offline-save','byte_limit':4194304,
             'entry':'Others > Save Backup','foreign_versions_rejected':True,'legacy_106_import':migration,
             'additional_preferences':['divinegate_TUTORIAL_SKIP']+['divinegate_FILTER_'+k for k in FILTER_KEYS],
             'source_sha256':{n:hashlib.sha256((src/n).read_bytes()).hexdigest() for n in ['SaveBackup.cs','SaveTransferUI.cs']}}

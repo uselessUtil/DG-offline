@@ -9,7 +9,7 @@ ROOT=Path('/workspace')
 TOOLS=Path('/opt/dg-save-tools')
 
 
-def source_code(package, game_version):
+def source_code(package, game_version, restored=False):
     code=(ROOT/'offline/android/SaveTransferActivity.java').read_text()
     code=code.replace('jp.gungho.dg.offline106',package).replace('1.0.6',game_version)
     if game_version=='2.9.0':
@@ -37,16 +37,20 @@ def source_code(package, game_version):
                 throw new IOException("Unsupported 1.0.6 backup revision");
 '''+code[end:]
         code=code.replace('return "Name: "', 'return (oldBackup ? "Convert to 2.9.1 DGDB. Skill levels above new limits will be capped. " : "")+"Name: "')
+    if restored:
+        needle='nativeBackup && root.getInt("schema")==2 && "dgdb-1".equals(root.optString("data_version",""))'
+        assert needle in code
+        code=code.replace(needle,'nativeBackup && ((root.getInt("schema")==3 && "dgdb-2-restored".equals(root.optString("data_version",""))) || (root.getInt("schema")==2 && "dgdb-1".equals(root.optString("data_version",""))))')
     return code
 
 
-def create(source_dex, work, package="jp.gungho.dg.offline106", game_version="1.0.6"):
+def create(source_dex, work, package="jp.gungho.dg.offline106", game_version="1.0.6", restored=False):
     work=work/'save-android';work.mkdir()
     classes=work/'classes';classes.mkdir()
-    assert package in {'jp.gungho.dg.offline106','jp.gungho.dg.offline290','jp.gungho.dg.offline291'}
+    assert package in {'jp.gungho.dg.offline106','jp.gungho.dg.offline290','jp.gungho.dg.offline291','jp.gungho.dg.offline291.restored'}
     assert game_version in {'1.0.6','2.9.0','2.9.1'}
     source=work/'SaveTransferActivity.java'
-    source.write_text(source_code(package,game_version))
+    source.write_text(source_code(package,game_version,restored=restored))
     subprocess.run(['javac','--release','8','-cp',str(TOOLS/'android.jar')+':'+str(TOOLS/'json.jar'),'-d',str(classes),
                     str(source)],check=True)
     jar=work/'bridge.jar'
