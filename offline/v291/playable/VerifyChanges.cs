@@ -19,6 +19,7 @@ class VerifyChanges {
  allowed.Add("MainMenuSeqPartyEvolveQuestFix.PageSwitchSetting");
  allowed.Add("ServerForgery.CreateQuestBuild");
  allowed.Add("ServerForgery.CreateQuestBuildBattle");
+ allowed.Add("BattleManager.DeadEnemy");
  allowed.Add("MasterDataUtil.GetGuerrillaBossParamFromQuestID");
  allowed.Add("MasterDataUtil.GetQuestPickupUnit");
  allowed.Add("MainMenuSeqQuestSelectFriend.SortExec");

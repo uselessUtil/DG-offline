@@ -8,6 +8,22 @@ public static partial class DivineGateOffline {
   if(enemy==null || enemy.drop_unit_id==0 || enemy.drop_unit_rate<=0)return false;
   return roll<(uint)Math.Min(10000,enemy.drop_unit_rate);
  }
+ // Resolve from the actual defeated enemy, not the dropped character ID:
+ // the same character can drop at different levels in different encounters.
+ // Reuse InGameAcquireUnit.m_UnitLevel; quest packet/save schemas stay native.
+ public static int QuestDropLevel291(BattleEnemy enemy,PacketStructQuestBuildDrop drop) {
+  if(enemy==null || enemy.m_EnemyMasterParamEnemy==null || drop==null)
+   throw new InvalidOperationException("Missing defeated enemy/drop level context");
+  var source=enemy.m_EnemyMasterParamEnemy;
+  if(drop.unit_id==0 || source.drop_unit_id!=drop.unit_id)
+   throw new InvalidOperationException("Drop unit does not match defeated enemy");
+  var unit=MasterDataUtil.GetCharaParamFromID(drop.unit_id);
+  if(unit==null || unit.level_min<1 || unit.level_max<unit.level_min)
+   throw new InvalidOperationException("Invalid drop unit level bounds");
+  // DGDB includes a Lv5 King Flare Egg whose level cap is1, and eight
+  // zero-rate rows with level0. Keep levels inside the actual unit bounds.
+  return Math.Max(unit.level_min,Math.Min(unit.level_max,source.drop_unit_level));
+ }
  // Relative weights, not independent percent chances. One drop gets at most
  // one plus point. The result is saved in the native quest packet at generation.
  public static void QuestDropPlus291(PacketStructQuestBuildDrop drop,MasterDataParamEnemy enemy) {

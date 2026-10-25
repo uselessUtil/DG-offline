@@ -26,6 +26,25 @@ public static partial class PatchPlayable291 {
   foreach(var i in new[]{Instruction.Create(OpCodes.Ldloc,drop),Instruction.Create(OpCodes.Ldloc,enemy),Instruction.Create(OpCodes.Call,Helper("QuestDropPlus291"))}) {
    il.InsertAfter(tail,i);tail=i;
   }
+  // DeadEnemy previously stored literal0 in the native acquisition record.
+  // Replace that one level initializer; keep drop identity/pluses, coin/EXP,
+  // visuals, anti-duplicate state and original settlement APIs intact.
+  var death=Method("BattleManager","DeadEnemy");var di=death.Body.GetILProcessor();
+  var acquire=death.Body.Instructions.Single(i=>i.OpCode==OpCodes.Callvirt &&
+   i.Operand is MethodReference && ((MethodReference)i.Operand).Name=="AddAcquireUnitParam");
+  var levelLoad=acquire.Previous.Previous.Previous.Previous;
+  if((levelLoad.OpCode!=OpCodes.Ldloc_S && levelLoad.OpCode!=OpCodes.Ldloc) ||
+   ((VariableDefinition)levelLoad.Operand).VariableType.FullName!="System.Int32")
+   throw new Exception("Drop acquisition level argument contract changed");
+  var level=(VariableDefinition)levelLoad.Operand;
+  var assign=death.Body.Instructions.Single(i=>(i.OpCode==OpCodes.Stloc_S || i.OpCode==OpCodes.Stloc) && i.Operand==level);
+  var zero=assign.Previous;
+  if(zero.OpCode!=OpCodes.Ldc_I4_0)throw new Exception("Drop level is no longer literal0");
+  var defeated=death.Body.Variables.Single(v=>v.VariableType.Name=="BattleEnemy");
+  var deathDrop=death.Body.Variables.Single(v=>v.VariableType.Name=="PacketStructQuestBuildDrop");
+  zero.OpCode=OpCodes.Ldloc;zero.Operand=defeated;
+  var dropArg=Instruction.Create(OpCodes.Ldloc,deathDrop);di.InsertAfter(zero,dropArg);
+  di.InsertAfter(dropArg,Instruction.Create(OpCodes.Call,Helper("QuestDropLevel291")));
   // Patch after LegacyQuestLayout291 so the saved original star selects
   // invasions before question-mark masking. Bosses and chained battles keep
   // their native groups; only the generic enemy-cell call is intercepted.
