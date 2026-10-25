@@ -1308,12 +1308,264 @@
       "size_bytes": 3589973,
       "sha256": "c9eb581ad689d42f7a8a9c459ff573da0c664bec220d2366975ca74d86540346",
       "availability": "local-only"
+    },
+    {
+      "id": "S146",
+      "path": "artifacts/probability-audit-2026-10-25/REPORT.txt",
+      "purpose": "r4機率邊界、未讀權重及調查限制",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 8471,
+      "sha256": "5a52d353d336c5e6ae939301eeff0fa7cbf61764fa7635cf4608af78aa6b0c86",
+      "availability": "local-only"
+    },
+    {
+      "id": "S147",
+      "path": "artifacts/probability-audit-2026-10-25/audit-summary.json",
+      "purpose": "機率稽核APK身分與影響數量",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 351,
+      "sha256": "dcd92a5afc1f672873a93e87c7906ae33fa45aa46c30424a779449f1ff15705c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S148",
+      "path": "artifacts/probability-audit-2026-10-25/probe-result.txt",
+      "purpose": "原生機率邊界隔離探測結果",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 560,
+      "sha256": "bf4aea52a39bc3dbd2a784bd045310eedc750fb47e8ae845717a2daba23e9c96",
+      "availability": "local-only"
+    },
+    {
+      "id": "S149",
+      "path": "artifacts/drop-rate-audit-2026-10-25/REPORT.txt",
+      "purpose": "五星範圍及r4萬分比反向掉落",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 3110,
+      "sha256": "6fdfe042386c534c86da138ecde812b062360c8301193762ba4645b4c195bca8",
+      "availability": "local-only"
+    },
+    {
+      "id": "S150",
+      "path": "artifacts/drop-rate-audit-2026-10-25/probe-result.txt",
+      "purpose": "七個掉落率的全抽樣值結果",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 173,
+      "sha256": "2973cfe39ab30e2823c9e239658e93d0ffbf769225f1cd695273eb7a66ba6e45",
+      "availability": "local-only"
+    },
+    {
+      "id": "S151",
+      "path": "artifacts/2.9.0-r17-39-buffs-vs-dgdb-20261025/summary.txt",
+      "purpose": "39筆舊增傷與DGDB狀態語意摘要",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 6913,
+      "sha256": "266eeacdda7f6ce6414f31379aa11fa685321cf767d397804e15f1ae6a4377c4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S152",
+      "path": "artifacts/2.9.0-r17-39-buffs-vs-dgdb-20261025/summary.json",
+      "purpose": "增傷差異及實際引用數量",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 772,
+      "sha256": "20901fa282c548d3a8f8be5af9b072ff943775e12a8ccecf9ac1a1f43c662e62",
+      "availability": "local-only"
+    },
+    {
+      "id": "S153",
+      "path": "artifacts/2.9.0-r17-39-buffs-vs-dgdb-20261025/differences.json",
+      "purpose": "增傷狀態與回合逐筆比對",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 76652,
+      "sha256": "f392d95f51c5cc3a0d90a1b5cf73eb8c6ff90f27b092c9c57a24dfb08066e3d3",
+      "availability": "local-only"
+    },
+    {
+      "id": "S154",
+      "path": "artifacts/2.9.1-r9-battle-field-audit-2026-10-25/REPORT.txt",
+      "purpose": "r9欄位稽核方法與覆蓋界線",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 5914,
+      "sha256": "0d3e31aa70746e1986fcaf4c11952613bb5211222f871ba26009444107532fa9",
+      "availability": "local-only"
+    },
+    {
+      "id": "S155",
+      "path": "artifacts/2.9.1-r9-battle-field-audit-2026-10-25/findings.json",
+      "purpose": "掉落等級缺口與已適配欄位",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 2460,
+      "sha256": "560d7e4f6f2057966c1a1f3c67a0d9688ca24aa64a11a7810ae77a470b058058",
+      "availability": "local-only"
+    },
+    {
+      "id": "S156",
+      "path": "artifacts/2.9.1-r9-battle-field-audit-2026-10-25/source-identity.json",
+      "purpose": "r9欄位稽核APK及SQL輸入身分",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 239,
+      "sha256": "d5406c1ecf49070d1e2edd09cafa53d4166c655c8c283def7a1fb42f5981dd3a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S157",
+      "path": "artifacts/2.9.1-r9-battle-field-audit-2026-10-25/drop-level-probe.txt",
+      "purpose": "原生掉落等級缺口隔離重現",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 185,
+      "sha256": "3e62a95f78c888185eb3d56d4fcc2b922e17a56748d266cf8e5c60f609eeb5ee",
+      "availability": "local-only"
+    },
+    {
+      "id": "S158",
+      "path": "artifacts/2.9.1-wiki-dgdb-coverage-2026-10-25/REPORT.txt",
+      "purpose": "Wiki年代選集方法與適配缺口",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 6365,
+      "sha256": "52294cd45d1e8d33ba3a37cf28ba0eb43e2b0fce9e12de98a1a07ea0d48baf4a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S159",
+      "path": "artifacts/2.9.1-wiki-dgdb-coverage-2026-10-25/summary.json",
+      "purpose": "兩個年代截點及依賴完整性統計",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 2593,
+      "sha256": "49807b1b10c9ce24044be24b67cee120d506ee454c0ad236df02e85e35a00b17",
+      "availability": "local-only"
+    },
+    {
+      "id": "S160",
+      "path": "artifacts/2.9.1-wiki-dgdb-coverage-2026-10-25/sources.json",
+      "purpose": "年代稽核使用的原始證據身分",
+      "chapter": "V291_CONTENT_AUDIT.md",
+      "size_bytes": 51217,
+      "sha256": "834863a7760573c822100bc3918416f57db354e1e93243fc926152fdc62f2de4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S161",
+      "path": "artifacts/cleanup-2026-10-25-old-apks.json",
+      "purpose": "舊APK清理、保留集合及證據未變紀錄",
+      "chapter": "ARTIFACT_RETENTION.md",
+      "size_bytes": 9647,
+      "sha256": "f3e3dd86049cd9615bbd26d3095ff1ca7a7bc001b542fe4edbd5b35608e5afb4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S162",
+      "path": "artifacts/maintenance/debian-cleanup-2026-10-25.json",
+      "purpose": "容器暫存清理及歷史重測限制",
+      "chapter": "ARTIFACT_RETENTION.md",
+      "size_bytes": 6039,
+      "sha256": "2858f587dcbe68d0c76782fd7709b9885eea1dd3728b0c7135f83cec5b033390",
+      "availability": "local-only"
+    },
+    {
+      "id": "S163",
+      "path": "artifacts/2.9.1-restored-r13-image-streaming/build-report.json",
+      "purpose": "r13圖片分段讀取候選身分及歷史啟動檢查狀態",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11382,
+      "sha256": "ace4c85ba2d859dea978a2743a85177b999d9f4ff7242be3ac701e39bfce9004",
+      "availability": "local-only"
+    },
+    {
+      "id": "S164",
+      "path": "artifacts/2.9.1-restored-r13-image-streaming/image-streaming-tests.json",
+      "purpose": "巨型RVA移除、舊BCL切片與圖片保留檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1164,
+      "sha256": "10f2e629d62e0a1f4b2f40cffbd2c3c4c67fc509d5d8cf10ece8d54cc488fd8c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S165",
+      "path": "artifacts/2.9.1-restored-r13-image-streaming/phone-smoke-test.json",
+      "purpose": "僅啟動／登入邊界的既有手機檢查界線",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1583,
+      "sha256": "d7fbdeaa3cd7631b2e4e499cd95fa532557ebd9b4889e6f14c5c667f5214d2dc",
+      "availability": "local-only"
+    },
+    {
+      "id": "S166",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/build-report.json",
+      "purpose": "r17具名UI素材與五位置校準候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11176,
+      "sha256": "e2d5e948fb6e89c5d15d116be08172fc1cc74be6e7520dcb7396fb1ab6433fc1",
+      "availability": "local-only"
+    },
+    {
+      "id": "S167",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/image-streaming-tests.json",
+      "purpose": "r17原圖片及35表保留與ZIP_STORED切片檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1276,
+      "sha256": "2dda0c55a9e266e052a5ec4436ee6b6a61f4851845e99d0d31fe8a6d4bcde704",
+      "availability": "local-only"
+    },
+    {
+      "id": "S168",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/ui-presentation-tests.json",
+      "purpose": "原生圖集搜尋、2147矩形及5765裁切範圍檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 102925,
+      "sha256": "7317ce62b76f827206c1c4bf7f4900f2dc0511777382e266ad13126f8f16ae46",
+      "availability": "local-only"
+    },
+    {
+      "id": "S169",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/hud-calibration.json",
+      "purpose": "595參考、分組五折及推估UV的限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 898731,
+      "sha256": "cb796041b4d59254ba064a020e514e1988906ee2a4b32368afef27ffb2505d6d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S170",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/hud-review-list.json",
+      "purpose": "146項低匹配／素材／巨型角色人工檢視",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 102810,
+      "sha256": "ed772baeb3ecb8fc2bd09d26e5011ef8d1b75ac4963eedbe584ecbe3cb3132c1",
+      "availability": "local-only"
+    },
+    {
+      "id": "S171",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/hud-image-inputs.json",
+      "purpose": "原參考及新增角色立繪／圖示像素輸入指紋",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 688822,
+      "sha256": "3b20f0d10d77c7dd3f48920d609e291d36d1f2353b11ef6e48edaca6f05769ff",
+      "availability": "local-only"
+    },
+    {
+      "id": "S172",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/test-report.json",
+      "purpose": "r17既有31組受管與資源檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 49960,
+      "sha256": "3179d9ee10ebefefae98c5a0ba58985f91195c333abadb18347812fa42657621",
+      "availability": "local-only"
+    },
+    {
+      "id": "S173",
+      "path": "artifacts/2.9.1-restored-r12/build-report.json",
+      "purpose": "r12登入配置失敗後的歷史報告修訂；修復另見r13",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11106,
+      "sha256": "cb572eb869027e8ae3339c7269b90a76064765576572ed3aedac59f8a86b8378",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
     "checked_on": "2026-10-25",
     "scope": "File presence and fingerprints only; historical test results were not re-run. Original fingerprints remain unchanged.",
-    "matching_count": 97,
+    "matching_count": 159,
     "missing_source_ids": [
       "S08",
       "S11",
@@ -1335,6 +1587,11 @@
         "current_sha256": "78f49913301d8cbb4d5ae4d1a9167cfe235573a675165b5cbc00377aa10098f6",
         "historical_git_revision": "ce424bb5869a01718e1b156267d66b59f40951ec",
         "historical_fingerprint_verified": true
+      },
+      {
+        "id": "S133",
+        "current_size_bytes": 11106,
+        "current_sha256": "cb572eb869027e8ae3339c7269b90a76064765576572ed3aedac59f8a86b8378"
       }
     ]
   }
