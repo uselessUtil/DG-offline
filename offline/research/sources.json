@@ -858,6 +858,169 @@
       "size_bytes": 1137,
       "sha256": "ceb0ad1861a4d54f1872325667078a74c4fb2b126a64d1de97818a7e214420e7",
       "availability": "local-only"
+    },
+    {
+      "id": "S96",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/summary.txt",
+      "purpose": "r17已有內容與DGDB比較摘要",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 2697,
+      "sha256": "095570a125cebc7d402468da1578deb26ce25f94aee3c2fa4128f53ebfe9463f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S97",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/gameplay-summary.json",
+      "purpose": "核心欄位統計、任務映射及可追溯敵人範圍",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 205515,
+      "sha256": "7c25cd4826143b96a190f96b5f0568e5b1dd221c83ed1038d69f820135c02a5c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S98",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/identity-mismatches.json",
+      "purpose": "同ID改名、區域與敵人角色差異",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 5622,
+      "sha256": "afdf16ff4a3aaafede5a5271325625b33ed9a055def7f1494bf582474ad34271",
+      "availability": "local-only"
+    },
+    {
+      "id": "S99",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/quest-floor-semantic-differences.json",
+      "purpose": "按關卡、under類型與順序比較樓層",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 241120,
+      "sha256": "011543ce37855a265a9fbd23aabac6b324952f23742bf5523a691ea3d5696e18",
+      "availability": "local-only"
+    },
+    {
+      "id": "S100",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/sources.json",
+      "purpose": "r17與DGDB輸入雜湊及暫存匯出依賴",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 398,
+      "sha256": "39bc977c2b09fa900ea63135d628dd6d1171f1ab8be077893b631fe18efca8cd",
+      "availability": "local-only"
+    },
+    {
+      "id": "S101",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/verification.json",
+      "purpose": "來源未變、明細總數與HTML靜態核對範圍",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 275,
+      "sha256": "5c8e579c831bae001d58493eab206391bc025b40011e144eed6adaf9964da91b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S102",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/summary.json",
+      "purpose": "同ID共通純量欄位的比較分母與統計",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 139811,
+      "sha256": "3911ecb73b21e5e2f50626fa1dc56faf3d3624f7ef5d7982ac11b469cc9ef19f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S103",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/analyze.py",
+      "purpose": "核心欄位、關卡映射與樓層配對方法",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 7942,
+      "sha256": "bb7d0880baa49eb567cdcb60141e7311c73eac84b59caa91241ea081f7db0672",
+      "availability": "local-only"
+    },
+    {
+      "id": "S104",
+      "path": "artifacts/2.9.0-r9-key-position-audit/結論.txt",
+      "purpose": "r9數量正確但鑰匙固定於索引0的調查",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 1402,
+      "sha256": "0acd37eb040ab4667b285e62ec1b4e8973cf4e05cb45f43e368c55c9d0052344",
+      "availability": "local-only"
+    },
+    {
+      "id": "S105",
+      "path": "artifacts/2.9.0-r9-key-position-audit/原版流程補充.txt",
+      "purpose": "原版流程比對與採用1.0.6規則的方向更正",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 1253,
+      "sha256": "0262e6d07a95046e1284528025d1e02aa61930cb1678083b7c63030e2e72a756",
+      "availability": "local-only"
+    },
+    {
+      "id": "S106",
+      "path": "artifacts/2.9.0-r9-key-position-audit/results.txt",
+      "purpose": "7600層鑰匙位置分布的既有受管證據",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 268,
+      "sha256": "13cd0b77c5a0c9aa021cea67cb675fb7e0551617409eeb80547880b4d2cf9331",
+      "availability": "local-only"
+    },
+    {
+      "id": "S107",
+      "path": "artifacts/2.9.0-evolve-quest-investigation/REPORT.txt",
+      "purpose": "早期進化出發未重現及r12組件來源限制",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 768,
+      "sha256": "18fd725733095f0ddfc4bbcfa38c79e87a56c101d70cc55c11aad299cc2dfb30",
+      "availability": "local-only"
+    },
+    {
+      "id": "S108",
+      "path": "artifacts/phone-crash-audit-2026-10-24/diagnosis.json",
+      "purpose": "4.0.0 r15廣告ID例外診斷；僅保存報告指紋",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 1403,
+      "sha256": "f59514c96651e21436375aaa2993c3b7aa0572321a7266684809cb1b6b02f4b6",
+      "availability": "local-only"
+    },
+    {
+      "id": "S109",
+      "path": "artifacts/phone-save-diagnosis-20261024/diagnosis.json",
+      "purpose": "進化關卡殘留的唯讀診斷；僅保存報告指紋",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 1004,
+      "sha256": "eb3e3174fd9fc15dbbb2a0701687c5b318689bb0a3069f59324de8b712981982",
+      "availability": "local-only"
+    },
+    {
+      "id": "S110",
+      "path": "artifacts/2.9.0-r17-existing-vs-dgdb-20261025/audit.py",
+      "purpose": "共通純量欄位、零號列排除與同ID比對方法",
+      "chapter": "V290_DGDB_COMPARISON.md",
+      "size_bytes": 5504,
+      "sha256": "495fd9d8e585e290685f393049b58c5bb09c8c0a6ac59b55e01685b4157690bd",
+      "availability": "local-only"
     }
-  ]
+  ],
+  "local_source_check": {
+    "checked_on": "2026-10-25",
+    "scope": "File presence and fingerprints only; historical test results were not re-run. Original fingerprints remain unchanged.",
+    "matching_count": 97,
+    "missing_source_ids": [
+      "S08",
+      "S11",
+      "S15",
+      "S20",
+      "S21",
+      "S22",
+      "S25",
+      "S26",
+      "S30",
+      "S31",
+      "S35",
+      "S36"
+    ],
+    "changed_sources": [
+      {
+        "id": "S29",
+        "current_size_bytes": 8642,
+        "current_sha256": "78f49913301d8cbb4d5ae4d1a9167cfe235573a675165b5cbc00377aa10098f6",
+        "historical_git_revision": "ce424bb5869a01718e1b156267d66b59f40951ec",
+        "historical_fingerprint_verified": true
+      }
+    ]
+  }
 }
