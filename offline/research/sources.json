@@ -1083,6 +1083,114 @@
       "size_bytes": 21349,
       "sha256": "8b013e40d52f379ae3ab82de9a0cc04cbe8b2b3b79947ba846eee3a7f84f1f7f",
       "availability": "local-only"
+    },
+    {
+      "id": "S121",
+      "path": "artifacts/2.9.1-offline-dgdb1-r9-leader-guard/build-report.json",
+      "purpose": "r9原生減傷配接候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10929,
+      "sha256": "e5a3cd614cdcc0144b82d714942be5391c02de4aee7e8c6b40c45dce935ed58d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S122",
+      "path": "artifacts/2.9.1-offline-dgdb1-r9-leader-guard/leader-guard-native.txt",
+      "purpose": "23隊長技與76角色原生攻擊／承傷既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 186,
+      "sha256": "e7995cb573afdf8a79537098ec75682f51ebe12b3cf6323062d5a5561bdc4749",
+      "availability": "local-only"
+    },
+    {
+      "id": "S123",
+      "path": "artifacts/2.9.1-offline-dgdb1-r9-leader-guard/r8-diff.json",
+      "purpose": "r9僅隊長技表改變及原生DLL保留範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8137,
+      "sha256": "4684ad27bfa14ae5d6d6d5f7911327282e735df8aa86efd62ebe5556de0cf247",
+      "availability": "local-only"
+    },
+    {
+      "id": "S124",
+      "path": "artifacts/2.9.1-offline-dgdb1-r9-leader-guard/dex-equivalence.txt",
+      "purpose": "r8與r9反組譯DEX類別等價核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 176,
+      "sha256": "26b993dc03cca13bd91d76f21228ab5c2aea9c0b7a3b749c914c1d701839d06b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S125",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/build-report.json",
+      "purpose": "r10掉落等級候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10929,
+      "sha256": "63d6f0e8b6d2c348057fbf4789648013eb2ec46cb26a419cda3ecf815a9d8dcc",
+      "availability": "local-only"
+    },
+    {
+      "id": "S126",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/test-report.json",
+      "purpose": "r10的31組受管及資源既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 37891,
+      "sha256": "6deb5208a4e82a9d2e959307b0ccf341584b117af636d8cdfa0eb1b89ee0ad72",
+      "availability": "local-only"
+    },
+    {
+      "id": "S127",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/drop-level-native.txt",
+      "purpose": "2144敵人死亡及原取得紀錄等級核對",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 344,
+      "sha256": "abbb371d3a61030e513304bde8a0b713e01ab3e11a654f9899d27f2cd3f0fa82",
+      "availability": "local-only"
+    },
+    {
+      "id": "S128",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/drop-level-restart.txt",
+      "purpose": "原生續關、一般／進化結算及等級EXP保存",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 322,
+      "sha256": "29f081d7f487b0d908eadb3533a58d5e8b8d2549a32ea5106ccdafd4cdbc1ecb",
+      "availability": "local-only"
+    },
+    {
+      "id": "S129",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/drop-level-award-restart.txt",
+      "purpose": "發獎後獨立程序重載檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 84,
+      "sha256": "d57e1258913c2c02b34a6f59ba7991e37ae6177c01931ccb2a0ae37a88529865",
+      "availability": "local-only"
+    },
+    {
+      "id": "S130",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/r9-diff.json",
+      "purpose": "r10原生方法修改範圍及34表保留",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 596,
+      "sha256": "3d6e7da631cc3e2acc360d743a2c26c3325781c70f71087937144e524857938e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S131",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/drop-level-normalizations.json",
+      "purpose": "九筆來源掉落等級例外及有效範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1965,
+      "sha256": "3b35faf61fcb6651e9e2049de692d51a70299c637b080ae0c290d71711b820ba",
+      "availability": "local-only"
+    },
+    {
+      "id": "S132",
+      "path": "artifacts/2.9.1-offline-dgdb1-r10-drop-level/r9-save-compatibility.txt",
+      "purpose": "r9進行中存檔及關卡封包跨程序保留",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 196,
+      "sha256": "99bc50888208b17961ac6ac24ca7cec86c37ea05ec5477cdd704578b4ae925a1",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
