@@ -19,6 +19,8 @@ CECIL='/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
 from manifest import patch as patch_manifest
 from native import create as native_create
 from assets import create as image_create
+from save_transfer_android import create as create_save_android
+from save_backup import create as create_save_sources
 from donor import read as read_donor, SHA106, TABLES as DONOR_TABLES
 MANAGED='assets/bin/Data/Managed/'
 PACKAGE='jp.gungho.dg.offline290'
@@ -143,9 +145,9 @@ def main():
     text=(ROOT/'offline/Runtime.cs').read_text()
     start=text.index('    public static void Ready(');end=text.index('    private static void OpenLocalEvents',start)
     text=text[:start]+text[end:]
-    text=checked_replace(text,'1.0.6 offline prototype 22r6','2.9.0 offline gameplay candidate 1')
+    text=checked_replace(text,'1.0.6 offline prototype 22r7','2.9.0 offline gameplay candidate 1 r17')
     text=text.replace('        patch.m_PatchUpdateRequestText = false;\n','').replace('        patch.m_PatchUpdateRequestBanner = false;\n','')
-    text=text.replace('1.0.6','2.9.0').replace('offline106','offline290').replace('prototype 22r6','2.9.0 candidate 1')
+    text=text.replace('1.0.6','2.9.0').replace('offline106','offline290').replace('prototype 22r7','2.9.0 candidate 1 r17')
     text=text.replace('private static bool showNotice = true;', 'private static bool showNotice = false;')
     text=text.replace('store.m_StoreRestoreOK = true;', '')
     (build/'Runtime.cs').write_text(text)
@@ -196,14 +198,15 @@ def main():
     run('mono',build/'CompileApi.exe',managed/'Assembly-CSharp.dll',api/'Assembly-CSharp.dll')
     refs=['-r:'+str(managed/n) for n in ['mscorlib.dll','System.dll','System.Core.dll','UnityEngine.dll','Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll']]
     refs=[r.replace(str(managed/'Assembly-CSharp.dll'),str(api/'Assembly-CSharp.dll')) for r in refs]
+    save_feature=create_save_sources(build)
     adapter=build/'DivineGateOffline.dll'
-    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',CODE/'Runtime290.cs',CODE/'Skills290.cs',*[CODE/(n+'290.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage']],ROOT/'offline/NativeAssets.cs',build/'DG290Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
+    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',CODE/'Runtime290.cs',CODE/'Skills290.cs',*[CODE/(n+'290.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage','RestoreRetirement']],ROOT/'offline/NativeAssets.cs',build/'SaveBackup290.cs',build/'SaveTransferUI290.cs',CODE/'LegacySave106.cs',CODE/'Legacy106Account.cs',build/'Legacy106Catalog.cs',build/'DG290Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs')
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Embed.exe'),ROOT/'offline/EmbedImages.cs')
     run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
     shutil.move(build/'WithImages.dll',adapter)
     run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'master-data.bin',build/'master-data-offsets.tsv',build/'WithData.dll','DG290Data')
     shutil.move(build/'WithData.dll',adapter)
-    run('mcs','-r:'+CECIL,'-out:'+str(build/'Patch.exe'),CODE/'Patch.cs',CODE/'PatchRules290.cs',CODE/'PatchCommerce290.cs',CODE/'PatchGacha290.cs',CODE/'PatchQuest290.cs',CODE/'PatchTutorial290.cs',CODE/'PatchEvolution290.cs')
+    run('mcs','-r:'+CECIL,'-out:'+str(build/'Patch.exe'),CODE/'Patch.cs',CODE/'PatchRules290.cs',CODE/'PatchCommerce290.cs',CODE/'PatchGacha290.cs',CODE/'PatchQuest290.cs',CODE/'PatchTutorial290.cs',CODE/'PatchEvolution290.cs',CODE/'PatchSave290.cs',CODE/'PatchRestore290.cs')
     run('mono',build/'Patch.exe',managed/'Assembly-CSharp.dll',adapter,build/'Assembly-CSharp.dll',output/'adapter-hooks.txt')
     main=UnityPy.load(str(original/'assets/bin/Data/mainData'))
     manager=next(o for o in main.objects if o.type.name=='MonoManager')
@@ -212,10 +215,13 @@ def main():
     tree['m_AssemblyNames'].append('DivineGateOffline.dll');manager.save_typetree(tree);main_raw=manager.assets_file.save()
     after={o.path_id:o.get_raw_data() for o in UnityPy.load(main_raw).objects}
     assert set(before)==set(after) and all(after[k]==v for k,v in before.items() if k!=manager.path_id)
-    new_manifest,removed=patch_manifest(manifest,package=PACKAGE,label='Divine Gate Offline 2.9.0',
+    new_manifest,removed=patch_manifest(manifest,package=PACKAGE,label='Divine Gate Offline 2.9.0',save_transfer=True,save_activity=PACKAGE+'.SaveTransferActivity',
         extra_permissions=['android.permission.WRITE_EXTERNAL_STORAGE','android.permission.READ_EXTERNAL_STORAGE','android.permission.READ_PHONE_STATE'],
         extra_components=['it.partytrack.sdk.ReferrerReceiver','com.CFM.ELAN.ELANAlarmCreator','com.CFM.ELAN.TimedAlarm','com.google.games.bridge.NativeBridgeActivity'])
-    replacements={'AndroidManifest.xml':new_manifest,'assets/bin/Data/mainData':main_raw,MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),MANAGED+'DivineGateOffline.dll':adapter.read_bytes()}
+    with zipfile.ZipFile(SOURCE) as original_apk:
+        save_dex,save_android=create_save_android(original_apk.read('classes.dex'),build,package=PACKAGE,game_version='2.9.0')
+    save_feature.update(save_android)
+    replacements={'classes.dex':save_dex,'AndroidManifest.xml':new_manifest,'assets/bin/Data/mainData':main_raw,MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),MANAGED+'DivineGateOffline.dll':adapter.read_bytes()}
     for row in native['bundles']:replacements['assets/dg-native/'+row['file']]=(build/'native-bundles'/row['file']).read_bytes()
     expected=set(replacements)
     with zipfile.ZipFile(SOURCE) as src,zipfile.ZipFile(build/'unsigned.apk','w') as dst:
@@ -245,7 +251,8 @@ def main():
     assert digest(SOURCE.read_bytes())==SHA
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
-    report={'version':'2.9.0 offline gameplay candidate 1 r14','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':595,'quest_rows':399,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False}
+    report={'version':'2.9.0 offline gameplay candidate 1 r17','status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'characters':595,'quest_rows':399,'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False,'save_transfer':save_feature}
+    report['restore_retirement']={'original_api':'SERVER_API_QUEST_RETIRE','orphan_repair':True,'journal':'DG290_QUEST_RETIRE_JOURNAL'}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     (output/'SHA256SUMS').write_text(report['sha256']+'  '+target.name+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))

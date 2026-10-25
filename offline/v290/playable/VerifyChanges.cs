@@ -11,6 +11,10 @@ class VerifyChanges {
  var allowed=new HashSet<string>{"LocalSaveManager.LoadFuncServerAddressIP","ResidentManager.Start","ServerForgery.Start","ServerForgery.UserParamCreate","ServerForgery.UserParamRenew","ServerForgery.UserParamLoad","ServerForgery.CreateLoginMonthlyList","MainMenuSeqQuestSelectMission.PageSwitchSetting","PatchManager.Start","PatchManager.GetPatchText","PatchManager.PatchUpdateRequest","PatchUtil.CheckAppUpdate","TitleMenuSeqInformationFox.Update","TitleMenuSeqInformationFox.LayoutSwitchSetting","TitleMenuSeqLoadAssetBundle.Update","TitleMenuSeqLoadAssetBundle.LayoutSwitchSetting","AssetBundleManager.Request","AssetBundleManager.ClearAssetBundle","AssetBundleManager.SetupAssetBundlePackageParam","AssetAutoSetCharaMesh.Update","StoreManager.Start","StoreManager.Update","StoreManager.OnDestroy","AndroidDeviceInfo.Awake","AndroidDeviceInfo.UpdateExStoragePath","AndroidDeviceInfo.IsExStorageActive","MainMenuManager.AddSwitchRequest","TitleMenuSeqSwitchPage.Update","TitleMenuFixLayerBanner.Update","TitleMenuSeqWaitInput.Update","LinkerOpenURL.Update","UIAtlas.GetSprite","InGameManager.GetTouchCell"};
  allowed.Add("ServerForgery.CreateLoginParam");
  allowed.Add("ServerForgery.CreateRecvForgery");
+ allowed.Add("TitleMenuSeqRestoreChk.RestoreFuncInit");
+ allowed.Add("TitleMenuSeqRestoreChk.RestoreFuncChkFinishCancel");
+ allowed.Add("MainMenuSeqOthers.Update");
+ allowed.Add("MainMenuSeqOthers.WindowUpdateTransfer");
  allowed.Add("MainMenuSeqPartyEvolveQuestFix.Update");
  allowed.Add("MainMenuSeqPartyEvolveQuestFix.PageSwitchSetting");
  allowed.Add("ServerForgery.CreateQuestBuild");

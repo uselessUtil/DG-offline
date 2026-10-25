@@ -234,7 +234,8 @@ public static partial class PatchPlayable290
         OfflineQualityOfLife();
         WarehouseSupports();
         GachaTabs290();
-        LegacyQuestLayout290(); TutorialSkip290(); EvolutionPageLifecycle290();
+        LegacyQuestLayout290(); TutorialSkip290(); EvolutionPageLifecycle290(); SaveTransfer290();
+        RestoreRetirement290();
         RemoveDiagnosticAchievements290();
 
         // Disable the obsolete analytics bridge, including later event calls.

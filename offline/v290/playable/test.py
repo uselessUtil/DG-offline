@@ -12,7 +12,7 @@ ROOT=Path('/workspace');CODE=ROOT/'offline/v290/playable'
 CECIL='/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
 def run(*args,**kw):return subprocess.check_output(list(map(str,args)),text=True,stderr=subprocess.STDOUT,timeout=180,**kw)
 def main():
- p=argparse.ArgumentParser();p.add_argument('report',type=Path);args=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('report',type=Path);p.add_argument('--phone-prefs',type=Path);args=p.parse_args()
  report=json.loads(args.report.read_text());apk=Path(report['output']);assert hashlib.sha256(apk.read_bytes()).hexdigest()==report['sha256']
  build=Path(report['work_directory']);original=build/'original/assets/bin/Data/Managed'
  work=Path(tempfile.mkdtemp(prefix='dg290-playable-test-',dir='/tmp'));tools=work/'tools';tools.mkdir()
@@ -96,6 +96,12 @@ def main():
  prefab_result=verify_warehouse(apk,args.report.parent)
  (args.report.parent/'warehouse-prefab.txt').write_text(prefab_result)
  results.append({'name':'warehouse-prefab','output':prefab_result});print(prefab_result)
+ from verify_save_backup290 import verify as verify_save_backup
+ save_result=verify_save_backup(work,tools,env,args.report.parent)
+ results.append({'name':'save-transfer','output':save_result})
+ from verify_restore290 import verify as verify_restore
+ restore_result=verify_restore(work,tools,env,args.report.parent,args.phone_prefs)
+ results.append({'name':'restore-retirement','output':restore_result})
  # Verify original game code outside the explicit changes is preserved by Cecil.
  assert hashlib.sha256(apk.read_bytes()).hexdigest()==report['sha256']
  result={'apk_sha256':report['sha256'],'work':str(work),'tests':results,'android_tested':False,'scope':'Original managed API, core table consumption, per-quest generation, file-backed PlayerPrefs process restart, embedded image hashes; Unity engine is stubbed only in temporary tests.'}
