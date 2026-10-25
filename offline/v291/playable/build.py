@@ -90,6 +90,7 @@ def main():
     (output/'skill-changes.json').write_text(json.dumps(LAST_AUDIT['skill_changes'],ensure_ascii=False,indent=2))
     (output/'excluded-evolutions.json').write_text(json.dumps(LAST_AUDIT['excluded_evolutions'],ensure_ascii=False,indent=2))
     (output/'fallbacks.json').write_text(json.dumps(LAST_AUDIT['fallbacks'],ensure_ascii=False,indent=2))
+    (output/'leader-guard-conversions.json').write_text(json.dumps(LAST_AUDIT['native_guard_conversions'],ensure_ascii=False,indent=2)+chr(10))
     # New 2.9.1 downloadable text keys have no counterpart in the old backup.
     # Keep the APK's resident TextDatabase; supplement only documented missing keys.
     text_fallback=json.loads((CODE/'text-fallback.json').read_text())
@@ -152,6 +153,19 @@ def main():
     data_report={'source':'jp.gungho.dg content whitelist + locked DGDB gameplay + original 1.0.6 scratch tables','imported':imported,'disabled_missing_tables':disabled,'backup_files':baseline,
         'donor':{'source':str(donor_apk),'sha256':SHA106,'tables':DONOR_TABLES,'normalization':'Seven source pools retained; version-specific 22r6 gameplay rules'}}
     (output/'master-data.json').write_text(json.dumps(data_report,ensure_ascii=False,indent=2)+'\n')
+    # Record exceptional DGDB level metadata without rewriting master values.
+    drop_levels=[]
+    for enemy in json.loads((tables/'MasterDataEnemyChara.json').read_text()):
+        if not enemy['drop_unit_id']:continue
+        unit=characters[enemy['drop_unit_id']]
+        raw=enemy['drop_unit_level']
+        normalized=max(unit['level_min'],min(unit['level_max'],raw))
+        if raw!=normalized:
+            drop_levels.append({'enemy_id':enemy['fix_id'],'unit_id':unit['fix_id'],
+                'unit_name':unit['name'],'source_level':raw,'effective_level':normalized,
+                'unit_level_min':unit['level_min'],'unit_level_max':unit['level_max'],
+                'drop_rate_per10000':enemy['drop_unit_rate']})
+    (output/'drop-level-normalizations.json').write_text(json.dumps(drop_levels,ensure_ascii=False,indent=2)+chr(10))
     from invasions import audit as audit_invasions
     invasion_report=audit_invasions(tables,output)
     text=(ROOT/'offline/Runtime.cs').read_text()
@@ -172,13 +186,22 @@ def main():
         cached_data=json.loads((args.assets_from.parent/'master-data.json').read_text())
         # Category counts, text and native attack-buff execution fields do not affect prefab routes.
         # Check every existing skill/status value before permitting asset reuse.
-        core=lambda rows:{k:v for k,v in rows.items() if k not in DONOR_TABLES and k not in {'MasterDataCategoryPattern','MasterDataTextDefinition','MasterDataSkillLimitBreak','MasterDataStatusAilment'}}
+        core=lambda rows:{k:v for k,v in rows.items() if k not in DONOR_TABLES and k not in {'MasterDataCategoryPattern','MasterDataTextDefinition','MasterDataSkillLimitBreak','MasterDataStatusAilment','MasterDataSkillLeader'}}
         assert core(cached_data['imported'])==core(imported) and cached_data['backup_files']==baseline
         cached=Path(cached_report['work_directory'])/'build'
         for table in ['MasterDataSkillLimitBreak','MasterDataStatusAilment']:
             prior=json.loads((cached.parent/'tables'/(table+'.json')).read_text(),strict=False)
             current={row['fix_id']:row for row in json.loads((tables/(table+'.json')).read_text(),strict=False)}
             assert all(row['fix_id'] in current and all(current[row['fix_id']].get(k)==v for k,v in row.items()) for row in prior), 'Changed existing cached skill/status value'
+        # Leader guard flags affect combat only. Require every other field,
+        # ID, description and chained-skill reference to be identical.
+        from dgdb import native_guard_fields
+        prior_leaders=json.loads((cached.parent/'tables/MasterDataSkillLeader.json').read_text())
+        current_leaders={r['fix_id']:r for r in json.loads((tables/'MasterDataSkillLeader.json').read_text())}
+        assert {r['fix_id'] for r in prior_leaders}==set(current_leaders)
+        for prior in prior_leaders:
+            expected=dict(prior);expected.update(native_guard_fields(prior))
+            assert current_leaders[prior['fix_id']]==expected, 'Non-guard cached leader skill changed'
         for name in ['RecoveredImages.cs','RecoveredImages.bin','image-offsets.tsv','images.json','NativeAssetIndex.cs','native-bundle-manifest.json']:
             shutil.copy2(cached/name,build/name)
         if not (args.resume_work and (build/'native-bundles').exists()):

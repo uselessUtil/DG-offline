@@ -75,6 +75,13 @@ def main():
  rewards_env=dict(env,DG_TEST_PREFS=str(work/'quest-rewards.prefs'))
  capture('quest-rewards','mono',work/'QuestRewardsTests291.exe',env=rewards_env,cwd=work)
  capture('quest-rewards-restart','mono',work/'QuestRewardsTests291.exe','reload',env=rewards_env,cwd=work)
+ run('mcs','-out:'+str(work/'LeaderGuardTests291.exe'),*['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll']],CODE/'LeaderGuardTests291.cs')
+ capture('leader-guard-native','mono',work/'LeaderGuardTests291.exe',work/'guard-expectations.tsv',env=dict(env,DG_TEST_PREFS=str(work/'guard.prefs')),cwd=work)
+ run('mcs','-out:'+str(work/'DropLevelTests291.exe'),*['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll','EngineSupport.dll']],CODE/'DropLevelTests291.cs')
+ drop_env=dict(env,DG_TEST_PREFS=str(work/'drop-level.prefs'))
+ capture('drop-level-native','mono',work/'DropLevelTests291.exe',env=drop_env,cwd=work)
+ capture('drop-level-restart','mono',work/'DropLevelTests291.exe','reload',env=drop_env,cwd=work)
+ capture('drop-level-award-restart','mono',work/'DropLevelTests291.exe','awarded',env=drop_env,cwd=work)
  # Independent test saves: production hooks, actual local APIs, process reload.
  for name in ['CommerceTests291','VerifyAccountRules291','VerifyAcquisitionAndSupports291','VerifyFreeChipShop291']:
   run('mcs','-out:'+str(work/(name+'.exe')), *['-r:'+str(work/n) for n in ['Assembly-CSharp.dll','Assembly-CSharp-firstpass.dll','UnityEngine.dll','DivineGateOffline.dll','EngineSupport.dll']], CODE/(name+'.cs'))
