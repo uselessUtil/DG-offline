@@ -87,13 +87,21 @@ class NativeDgdbTests {
     var state=MasterDataUtil.GetMasterDataStatusAilmentParam(row.status_ailment1);
     if(state.category>=12 && state.category<=19 || state.category>=34 && state.category<=41) {
      Apply(a);
+     int expiry=0;
      for(int e=1;e<=7;e++)for(int k=1;k<=8;k++) {
-      int category=state.category;bool applies=category==12 || (category==13 && e==2) ||
-       (category==14 && e==3) || (category==15 && e==4) || (category==16 && e==5) ||
-       (category==17 && e==6) || (category==18 && e==7) || (category==19 && e==1) || category==33+k;
-      Near(Rate(e,k),applies?state.param01*0.01f:1f,"DGDB target "+row.fix_id);matrix++;
+      float expectedRate=1f;
+      foreach(int id in a.m_statusAilment)if(id!=0) {
+       var effect=MasterDataUtil.GetMasterDataStatusAilmentParam(id);
+       expiry=Math.Max(expiry,effect.duration);int category=effect.category;
+       bool applies=category==12 || (category==13 && e==2) ||
+        (category==14 && e==3) || (category==15 && e==4) ||
+        (category==16 && e==5) || (category==17 && e==6) ||
+        (category==18 && e==7) || (category==19 && e==1) || category==33+k;
+       if(applies)expectedRate*=effect.param01*0.01f;
+      }
+      Near(Rate(e,k),expectedRate,"DGDB composite target "+row.fix_id);matrix++;
      }
-     for(int turn=0;turn<state.duration;turn++)states.UpdateTurnOnce(EAILMENT_UPDATE_TIMING.eBATTLE,game.m_PlayerPartyCharaAilment);
+     for(int turn=0;turn<expiry;turn++)states.UpdateTurnOnce(EAILMENT_UPDATE_TIMING.eBATTLE,game.m_PlayerPartyCharaAilment);
      Near(Rate(4,4),1f,"State did not expire "+row.fix_id);status++;
     }
    }
