@@ -23,14 +23,28 @@ def source_code(package, game_version):
                 throw new IOException("Unsupported 1.0.6 backup revision");
 '''+needle)
         code=code.replace('return "Name: "', 'return (legacy ? "Convert 1.0.6 to 2.9.0. Quest IDs will be mapped; new features start empty. " : "")+"Name: "')
+    if game_version=='2.9.1':
+        start=code.index('            if(!"dg-offline-save".equals')
+        end=code.index('            String payload=',start)
+        code=code[:start]+'''            String version=root.getString("game_version");
+            boolean nativeBackup="2.9.1".equals(version);
+            boolean legacy106="1.0.6".equals(version);
+            boolean oldBackup=legacy106 || "2.9.0".equals(version);
+            if(!"dg-offline-save".equals(root.getString("format")) ||
+                !((nativeBackup && root.getInt("schema")==2 && "dgdb-1".equals(root.optString("data_version",""))) ||
+                  (oldBackup && root.getInt("schema")==1)))throw new IOException("Not a compatible DGDB backup");
+            if(legacy106 && !"1.0.6 offline prototype 22r7".equals(root.getString("prototype")))
+                throw new IOException("Unsupported 1.0.6 backup revision");
+'''+code[end:]
+        code=code.replace('return "Name: "', 'return (oldBackup ? "Convert to 2.9.1 DGDB. Skill levels above new limits will be capped. " : "")+"Name: "')
     return code
 
 
 def create(source_dex, work, package="jp.gungho.dg.offline106", game_version="1.0.6"):
     work=work/'save-android';work.mkdir()
     classes=work/'classes';classes.mkdir()
-    assert package in {'jp.gungho.dg.offline106','jp.gungho.dg.offline290'}
-    assert game_version in {'1.0.6','2.9.0'}
+    assert package in {'jp.gungho.dg.offline106','jp.gungho.dg.offline290','jp.gungho.dg.offline291'}
+    assert game_version in {'1.0.6','2.9.0','2.9.1'}
     source=work/'SaveTransferActivity.java'
     source.write_text(source_code(package,game_version))
     subprocess.run(['javac','--release','8','-cp',str(TOOLS/'android.jar')+':'+str(TOOLS/'json.jar'),'-d',str(classes),
