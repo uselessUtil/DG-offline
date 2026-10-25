@@ -9,6 +9,10 @@ public static class VerifyRecoveredImages
 {
     public static void Main(string[] args)
     {
+        if(args.Length>3) {
+            Assembly support=Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(args[0]),"EngineSupport.dll"));
+            support.GetType("EngineSupport",true).GetField("NativeApkPath").SetValue(null,args[3]);
+        }
         Assembly assembly = Assembly.LoadFrom(args[0]);
         Type images = assembly.GetType("RecoveredImages", true);
         MethodInfo read = images.GetMethod("Read", BindingFlags.Public | BindingFlags.Static);
@@ -37,6 +41,6 @@ public static class VerifyRecoveredImages
         }
         if (sprite.Invoke(null, new object[] { "AtlasPanelIcon", "missing/sprite" }) != null)
             throw new Exception("Unknown sprite must fall back safely");
-        Console.WriteLine("PASS actual APK embedded reader: " + count + " PNG hashes, sprite rectangles, missing-resource fallback");
+        Console.WriteLine("PASS actual APK image reader: " + count + " PNG hashes, sprite rectangles, missing-resource fallback");
     }
 }

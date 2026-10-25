@@ -58,10 +58,11 @@ def main():
  (work/'expected-images.tsv').write_text(''.join(k+'\t'+v['sha256']+'\n' for k,v in images['payloads'].items()))
  (work/'expected-sprites.tsv').write_text(''.join(k.split('/',1)[0]+'\t'+k.split('/',1)[1]+'\t'+','.join(map(str,v))+'\n' for k,v in images['sprites'].items()))
  run('mcs','-out:'+str(tools/'VerifyImages.exe'),tests/'VerifyRecoveredImages.cs')
- capture('images','mono',tools/'VerifyImages.exe',work/'DivineGateOffline.dll',work/'expected-images.tsv',work/'expected-sprites.tsv')
+
  run('mcs','-target:library','-out:'+str(work/'EngineSupport.dll'),'-r:'+str(original/'UnityEngine.dll'),tests/'EngineSupport.cs')
  run('mcs','-r:'+CECIL,'-out:'+str(tools/'TestEngine.exe'),tests/'TestEngine.cs')
  run('mono',tools/'TestEngine.exe',original/'UnityEngine.dll',work/'EngineSupport.dll',work/'UnityEngine.dll')
+ capture('images','mono',tools/'VerifyImages.exe',work/'DivineGateOffline.dll',work/'expected-images.tsv',work/'expected-sprites.tsv',*([apk] if report.get('image_storage') else []))
  run('mcs','-out:'+str(work/'PlayableTests.exe'),'-r:'+str(work/'Assembly-CSharp.dll'),'-r:'+str(work/'Assembly-CSharp-firstpass.dll'),'-r:'+str(work/'UnityEngine.dll'),'-r:'+str(work/'DivineGateOffline.dll'),CODE/'PlayableTests.cs')
  env=dict(os.environ,DG_TEST_TABLES=str(build/'tables'),DG_TEST_PREFS=str(work/'prefs.txt'))
  from verify_dgdb291 import verify as verify_data

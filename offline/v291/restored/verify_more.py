@@ -89,7 +89,9 @@ def main():
     oldgame=temp/'r10-game.dll'
     with zipfile.ZipFile(old['output']) as z:oldgame.write_bytes(z.read('assets/bin/Data/Managed/Assembly-CSharp.dll'))
     logs.append(run('mono',w/'tools/VerifyChanges.exe',oldgame,w/'Assembly-CSharp.dll',temp/'method-changes.txt'))
-    assert (temp/'method-changes.txt').read_text()==''
+    modifications=(temp/'method-changes.txt').read_text().splitlines()
+    allowed=['EINGAME_STEP InGameManager::StepFuncReadyCreateParty()'] if current.get('ui_fallbacks') else []
+    assert modifications==allowed,modifications
     # r10 exporter runs its own signed DLLs and own disposable prefs.
     src=temp/'r10';src.mkdir()
     with zipfile.ZipFile(old['output']) as z:
