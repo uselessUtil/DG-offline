@@ -9,11 +9,32 @@ ROOT=Path('/workspace')
 TOOLS=Path('/opt/dg-save-tools')
 
 
-def create(source_dex, work):
+def source_code(package, game_version):
+    code=(ROOT/'offline/android/SaveTransferActivity.java').read_text()
+    code=code.replace('jp.gungho.dg.offline106',package).replace('1.0.6',game_version)
+    if game_version=='2.9.0':
+        old='!"2.9.0".equals(root.getString("game_version"))'
+        new='(!"2.9.0".equals(root.getString("game_version")) && !"1.0.6".equals(root.getString("game_version")))'
+        assert old in code
+        code=code.replace(old,new)
+        needle='            String payload=root.getString("payload");'
+        code=code.replace(needle,'''            boolean legacy="1.0.6".equals(root.getString("game_version"));
+            if(legacy && !"1.0.6 offline prototype 22r7".equals(root.getString("prototype")))
+                throw new IOException("Unsupported 1.0.6 backup revision");
+'''+needle)
+        code=code.replace('return "Name: "', 'return (legacy ? "Convert 1.0.6 to 2.9.0. Quest IDs will be mapped; new features start empty. " : "")+"Name: "')
+    return code
+
+
+def create(source_dex, work, package="jp.gungho.dg.offline106", game_version="1.0.6"):
     work=work/'save-android';work.mkdir()
     classes=work/'classes';classes.mkdir()
+    assert package in {'jp.gungho.dg.offline106','jp.gungho.dg.offline290'}
+    assert game_version in {'1.0.6','2.9.0'}
+    source=work/'SaveTransferActivity.java'
+    source.write_text(source_code(package,game_version))
     subprocess.run(['javac','--release','8','-cp',str(TOOLS/'android.jar')+':'+str(TOOLS/'json.jar'),'-d',str(classes),
-                    str(ROOT/'offline/android/SaveTransferActivity.java')],check=True)
+                    str(source)],check=True)
     jar=work/'bridge.jar'
     with zipfile.ZipFile(jar,'w') as z:
         for f in classes.rglob('*.class'):z.write(f,f.relative_to(classes))
@@ -27,14 +48,15 @@ def create(source_dex, work):
     old_hashes={str(p.relative_to(original)):hashlib.sha256(p.read_bytes()).hexdigest() for p in original.rglob('*.smali')}
     for p in new.rglob('*.smali'):
         relative=p.relative_to(new)
-        assert str(relative).startswith('jp/gungho/dg/offline106/SaveTransferActivity')
+        assert str(relative).startswith(package.replace('.','/')+'/SaveTransferActivity')
         destination=original/relative
         assert not destination.exists(),'New activity collides with archived DEX class'
         destination.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,destination)
     for name,value in old_hashes.items():assert hashlib.sha256((original/name).read_bytes()).hexdigest()==value
     merged=work/'classes.dex'
     subprocess.run(['smali','a',str(original),'-o',str(merged)],check=True)
-    return merged.read_bytes(),{'activity':'jp.gungho.dg.offline106.SaveTransferActivity','permissions_added':[],
+    return merged.read_bytes(),{'activity':package+'.SaveTransferActivity','permissions_added':[],
         'minimum_android_for_picker':19,'original_classes_unchanged_smali':len(old_hashes),
-        'source':'offline/android/SaveTransferActivity.java',
+        'source':'offline/android/SaveTransferActivity.java', 'game_version':game_version,
+        'generated_source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
         'tool_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in TOOLS.glob('*.jar')}}

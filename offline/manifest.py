@@ -75,7 +75,8 @@ def attributes(chunk, strings):
 
 
 def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.0.6',
-          extra_permissions=(), extra_components=(), save_transfer=False):
+          extra_permissions=(), extra_components=(), save_transfer=False,
+          save_activity="jp.gungho.dg.offline106.SaveTransferActivity"):
     items = list(chunks(data))
     pool = next(c for k,c in items if k == 1)
     strings = strings_from(pool)
@@ -85,7 +86,7 @@ def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.
     label_index = len(strings)
     strings.append(label)
     if save_transfer:
-        for text in ['jp.gungho.dg.offline106.SaveTransferActivity','exported']:
+        for text in [save_activity,'exported']:
             if text not in strings:strings.append(text)
     result = []
     skip_depth = 0
@@ -101,7 +102,7 @@ def patch(data, package='jp.gungho.dg.offline106', label='Divine Gate Offline 1.
     def transfer_activity():
         ns=strings.index('http://schemas.android.com/apk/res/android');tag=strings.index('activity')
         attrs=[]
-        for key,kind,value in [('name',3,strings.index('jp.gungho.dg.offline106.SaveTransferActivity')),('exported',0x12,0)]:
+        for key,kind,value in [('name',3,strings.index(save_activity)),('exported',0x12,0)]:
             attrs.append(struct.pack('<IIIHBBI',ns,strings.index(key),value if kind==3 else NONE,8,0,kind,value))
         start=struct.pack('<HHIII',0x102,16,36+40,0,NONE)+struct.pack('<IIHHHHHH',NONE,tag,20,20,2,0,0,0)+b''.join(attrs)
         end=struct.pack('<HHIIIII',0x103,16,24,0,NONE,NONE,tag)
