@@ -19,3 +19,6 @@ AGENTS.md
 .env.*
 # Additional imported device backup; keep out of image build context.
 jp.gungho.dg(DG0)/
+
+# Runtime trust stores are local execution output.
+files/
