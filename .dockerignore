@@ -22,3 +22,16 @@ jp.gungho.dg(DG0)/
 
 # Runtime trust stores are local execution output.
 files/
+
+# Godot generated output is not a container build input.
+godot290/preview*.png
+godot290/project/.godot/
+godot290/project/.mono/
+godot290/project/bin/
+godot290/project/obj/
+godot290/project/Libraries/
+godot290/project/Reference/
+godot290/project/Tables/
+godot290/project/icon.png
+godot290/project/reference.json
+godot290/project/**/*.import

@@ -29,3 +29,16 @@ __pycache__/
 # Imported third-party asset archive and local runtime trust stores.
 /external/dgdata/
 /files/
+
+# Godot source checkout: generated imports, assemblies and recovered game data.
+/godot290/preview*.png
+/godot290/project/.godot/
+/godot290/project/.mono/
+/godot290/project/bin/
+/godot290/project/obj/
+/godot290/project/Libraries/
+/godot290/project/Reference/
+/godot290/project/Tables/
+/godot290/project/icon.png
+/godot290/project/reference.json
+/godot290/project/**/*.import
