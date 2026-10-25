@@ -299,6 +299,8 @@ public static partial class PatchPlayable291
         clearIL.InsertBefore(firstClear, Instruction.Create(OpCodes.Call, Helper("ClearTransientAssets")));
         Empty("AssetBundleManager", "SetupAssetBundlePackageParam");
         BeforeEveryReturn("AssetAutoSetCharaMesh", "Update", "FixCharacterShadow");
+        if(adapter.Types.Single(t=>t.Name=="DivineGateOffline").Methods.Any(m=>m.Name=="FixBattleHudPortraits291"))
+            BeforeEveryReturn("InGameManager","StepFuncReadyCreateParty","FixBattleHudPortraits291");
         var residentType = module.Types.Single(t => t.Name == "ResidentManager");
         if (residentType.Methods.Any(m => m.Name == "Update")) throw new Exception("Unexpected resident Update");
         var nativePump = new MethodDefinition("Update", MethodAttributes.Private | MethodAttributes.HideBySig, module.TypeSystem.Void);

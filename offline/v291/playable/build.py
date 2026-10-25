@@ -186,6 +186,9 @@ def main():
     text=text.replace('private static bool showNotice = true;', 'private static bool showNotice = false;')
     text=text.replace('store.m_StoreRestoreOK = true;', '')
     if restoration:
+        old_sprite=text.index('            // InGameCard probes every character atlas')
+        rect_end=text.index('            if (rect != null)',old_sprite)
+        text=text[:old_sprite]+'            if (RecoveredImages.Enabled && rect == null) return;'+chr(10)+text[rect_end:]
         text=checked_replace(text,'return MapPartTexture(bundle, name, "lower");','return RestorationAtlas291(bundle, name);')
         start=text.index('    private static GameObject Map(string bundle, string name)')
         end=text.index('    public static void RaiseEnemyHud',start)
@@ -205,7 +208,8 @@ def main():
         images=extra_assets.create(tables,build,args.assets_from)
         for name in ['NativeAssetIndex.cs','native-bundle-manifest.json']:
             shutil.copy2(cached/name,build/name)
-        shutil.copytree(cached/'native-bundles',build/'native-bundles',copy_function=__import__('os').link)
+        if not (args.resume_work and (build/'native-bundles').exists()):
+            shutil.copytree(cached/'native-bundles',build/'native-bundles',copy_function=__import__('os').link)
         native=json.loads((build/'native-bundle-manifest.json').read_text())
         native['restored_fallback_characters']=restoration['new_character_ids']
         native['restored_fallback_note']='Original native595 models are unchanged and always preferred. Added models use exact PNG art or compatible native geometry only when original models are absent.'
@@ -256,6 +260,9 @@ def main():
             native=native_create(backup,build,tables,expected_characters=595,expected_areas=106,script_hashes=script_hashes)
     assert native['characters']==595 and native['areas']==106
     shutil.copy2(build/'images.json',output/'images.json')
+    if restoration:
+        for name in ['hud-portrait-crops.json','hud-calibration.json','hud-image-inputs.json']:
+            shutil.copy2(build/name,output/name)
     for row in native['bundles']:assert digest((build/'native-bundles'/row['file']).read_bytes())==row['sha256']
     shutil.copy2(build/'native-bundle-manifest.json',output/'native-bundle-manifest.json')
     api=build/'compile-api';api.mkdir(exist_ok=True)
@@ -272,10 +279,11 @@ def main():
         runtime_source=build/'Runtime291.cs'
         runtime_source.write_text((CODE/'Runtime291.cs').read_text().replace('offline291-dgdb-1','offline291-dgdb-2-restored').replace('595 characters / 399 quest rows',str(restoration['expected_characters'])+' characters / '+str(imported['MasterDataQuest']['rows'])+' quest rows'))
     adapter=build/'DivineGateOffline.dll'
-    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',runtime_source,CODE/'Skills291.cs',*[CODE/(n+'291.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage','RestoreRetirement','QuestRewards']],ROOT/'offline/NativeAssets.cs',build/'SaveBackup291.cs',build/'SaveTransferUI291.cs',CODE/'LegacySave106.cs',CODE/'Legacy106Account.cs',build/'Legacy106Catalog.cs',migration_source,build/'MigrationCatalog291.cs',build/'DG291Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',*([ROOT/'offline/v291/restored/Presentation291.cs'] if restoration else []))
+    run('mcs','-nostdlib','-target:library','-out:'+str(adapter),*refs,build/'Runtime.cs',runtime_source,CODE/'Skills291.cs',*[CODE/(n+'291.cs') for n in ['AccountRules','AcquisitionOrder','WarehouseSupport','FreeChipShop','Commerce','Gacha','LegacyFloor','TutorialSkip','EvolutionPage','RestoreRetirement','QuestRewards']],ROOT/'offline/NativeAssets.cs',build/'SaveBackup291.cs',build/'SaveTransferUI291.cs',CODE/'LegacySave106.cs',CODE/'Legacy106Account.cs',build/'Legacy106Catalog.cs',migration_source,build/'MigrationCatalog291.cs',build/'DG291Data.cs',build/'Images.cs',build/'RecoveredImages.cs',build/'NativeAssetIndex.cs',*([ROOT/'offline/v291/restored/Presentation291.cs',ROOT/'offline/v291/restored/ApkImages.cs',ROOT/'offline/v291/restored/HudPortraits291.cs',build/'RestoredHudLayouts.cs'] if restoration else []))
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Embed.exe'),ROOT/'offline/EmbedImages.cs')
-    run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
-    shutil.move(build/'WithImages.dll',adapter)
+    if not restoration:
+        run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'RecoveredImages.bin',build/'image-offsets.tsv',build/'WithImages.dll')
+        shutil.move(build/'WithImages.dll',adapter)
     run('mono',build/'Embed.exe',adapter,managed/'mscorlib.dll',build/'master-data.bin',build/'master-data-offsets.tsv',build/'WithData.dll','DG291Data')
     shutil.move(build/'WithData.dll',adapter)
     run('mcs','-r:'+CECIL,'-out:'+str(build/'Patch.exe'),CODE/'Patch.cs',CODE/'PatchRules291.cs',CODE/'PatchCommerce291.cs',CODE/'PatchGacha291.cs',CODE/'PatchQuest291.cs',CODE/'PatchTutorial291.cs',CODE/'PatchEvolution291.cs',CODE/'PatchSave291.cs',CODE/'PatchRestore291.cs',CODE/'PatchRewards291.cs')
@@ -296,11 +304,13 @@ def main():
     replacements={'classes.dex':save_dex,'AndroidManifest.xml':new_manifest,'assets/bin/Data/mainData':main_raw,MANAGED+'Assembly-CSharp.dll':(build/'Assembly-CSharp.dll').read_bytes(),MANAGED+'DivineGateOffline.dll':adapter.read_bytes()}
     for row in native['bundles']:replacements['assets/dg-native/'+row['file']]=(build/'native-bundles'/row['file']).read_bytes()
     expected=set(replacements)
+    if restoration:expected.add('assets/dg-images.bin')
     with zipfile.ZipFile(SOURCE) as src,zipfile.ZipFile(build/'unsigned.apk','w') as dst:
         for info in src.infolist():
             if info.filename.upper().startswith('META-INF/'):continue
             dst.writestr(info,replacements.pop(info.filename,src.read(info.filename)))
         for name,data in replacements.items():dst.writestr(name,data,compress_type=zipfile.ZIP_DEFLATED)
+        if restoration:dst.write(build/'RecoveredImages.bin','assets/dg-images.bin',compress_type=zipfile.ZIP_STORED)
     run('zipalign','4',build/'unsigned.apk',build/'aligned.apk')
     key=Path('/var/lib/divine-gate-offline/playable290.p12')
     if not key.exists():
@@ -325,6 +335,7 @@ def main():
     for row in baseline:assert digest((backup/row['path']).read_bytes())==row['sha256']
     assert digest(donor_apk.read_bytes())==SHA106
     report={'version':release,'status':'Build complete; validation pending','source':str(SOURCE),'source_sha256':SHA,'donor_sha256':SHA106,'output':str(target),'sha256':digest(target.read_bytes()),'size':target.stat().st_size,'package':PACKAGE,'work_directory':str(work),'data_version':'dgdb-2-restored' if restoration else 'dgdb-1','characters':restoration['expected_characters'] if restoration else 595,'active_quests':restoration['expected_quests'] if restoration else 392,'quest_rows':imported['MasterDataQuest']['rows'],'native_characters':native['characters'],'native_areas':native['areas'],'missing_tables_disabled':disabled,'removed_manifest_items':removed,'original_modified_entries':sorted(changed),'added_entries':sorted(added),'android_tested':False,'save_transfer':save_feature}
+    if restoration:report['image_storage']={'kind':'apk-stored-slices','entry':'assets/dg-images.bin','bytes':images['store_size'],'count':len(images['payloads'])}
     report['permanent_invasions']={k:v for k,v in invasion_report.items() if k!='entries'}
     report['restore_retirement']={'original_api':'SERVER_API_QUEST_RETIRE','orphan_repair':True,'journal':'DG291_QUEST_RETIRE_JOURNAL'}
     (output/'build-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
