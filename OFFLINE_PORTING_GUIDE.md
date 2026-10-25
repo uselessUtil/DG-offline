@@ -739,3 +739,12 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 1.0.9 候選版重用的共用工具保留 1.0.6 預設：`EmbedImages.cs` 可額外指定 RVA 資料擁有者，省略時仍為 `RecoveredImages`；`native_bundles.create` 可顯式指定角色／區域預期數與目標腳本 hash，預設仍檢查 522 角色、99 區域及原 1.0.6 schema。其他版本須自行核對，不得以放寬數量代替相容性檢查。
 
 2.1.0 r3／r4 的細節及獨立重現入口見 [候選版修正說明](offline/v210/playable/README.md#r3r4-修正與既有證據)：`data.py` 明確將舊 24 格分類表補上 `cate5=1`，`Runtime210.cs` 僅於本地資料就緒後保存 Android 更新標記。原關卡生成與更新判定仍保留；`test_keys.py`／`test_update_loop.py` 為獨立針對性測試，未納入完整 `test.py`，既有通過紀錄不能推廣為完整 Android 驗證。
+
+
+## 16. 新增工程入口：原生2.9.1與Godot
+
+[2.9.1／DGDB-1](offline/v291/playable/README.md) 從獨立原APK配接，鎖定SQL並以舊快取595角色／392有效關卡白名單遞迴補齊依賴；保留原生技能判定，缺失地圖生成表與顯示欄位逐項列fallback。r8另處理掉落加值、萬分比方向與常駐亂入，保存關卡封包以免重抽。其schema2備份單向接受舊格式，不能反向還原。
+
+[Godot工程](godot290/README.md) 以2.9.0 r17規則組件為參照，另寫引擎服務、畫面與關卡控制；原版ARMv7 Unity引擎不在Godot執行。原程式配接片段及擷取素材仍依第三方權利處理。較早ARM64選單里程碑未含戰鬥；目前新增關卡來源尚未重新對應成品驗證，不能以舊APK或原Unity測試代替。
+
+本次整理僅靜態核對來源與文件；兩個工程的相依資料不隨Git提供，實際建置與Android驗證須另行安排。

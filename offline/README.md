@@ -18,6 +18,10 @@
 
 本倉庫發布配接器、工具與文件；原 APK、大型素材、`artifacts/` 報告及生成的預覽頁不隨 Git checkout 提供。下列產物路徑是專案相對資料分類，不表示已附公開下載；重現前須另備來源檔與 manifests。
 
+
+
+另有兩個獨立入口：[原生2.9.1／DGDB-1](v291/playable/README.md) 使用鎖定SQL投影、595角色／392有效關卡，現行r8包含掉落與常駐亂入修正；既有27組受管檢查不等於Android實戰通過。[Godot移植](../godot290/README.md) 是獨立ARM64開發工程，保留r17規則並新增實驗關卡流程；較早port1成品尚無戰鬥，不能用其報告證明目前來源。兩者均需另備APK／資料與工具。
+
 ## 調查資料
 
 已將本機 artifacts 的重要結論整理到 [調查資訊索引](research/README.md)：包含主資料年代與版本相容性、DGDB／DG0 可用範圍、素材保存、玩法修正歷程及 Android 驗證界線。整理文件與來源報告指紋隨 Git 提供，原始報告與大型產物仍需另備。
@@ -44,7 +48,7 @@
 
 ## 素材與限制
 
-- prototype 22r7 新增 `SaveBackup.cs`、`SaveTransferUI.cs` 與 `android/SaveTransferActivity.java`。Others原資料移轉入口改為Save Backup，使用系統文件選擇器匯出／匯入4MiB內的schema1備份；包括帳號JSON及角色保護、排序、聲音等本機設定。匯入有版本／雜湊／資料引用驗證與原生確認，覆蓋前保留可再次匯出的舊存檔，啟動前可回復中斷的匯入。限主選單、無進行中關卡，成功後關閉遊戲再開啟。功能已接入1.0.6及 [2.9.0 r17](v290/playable/README.md)。2.9.0 可單向轉入固定1.0.6 prototype22r7備份；1.0.6仍只接受同版本，其他版本尚未套用。
+- prototype 22r7 新增 `SaveBackup.cs`、`SaveTransferUI.cs` 與 `android/SaveTransferActivity.java`。Others原資料移轉入口改為Save Backup，使用系統文件選擇器匯出／匯入4MiB內的schema1備份；包括帳號JSON及角色保護、排序、聲音等本機設定。匯入有版本／雜湊／資料引用驗證與原生確認，覆蓋前保留可再次匯出的舊存檔，啟動前可回復中斷的匯入。限主選單、無進行中關卡，成功後關閉遊戲再開啟。功能已接入1.0.6及 [2.9.0 r17](v290/playable/README.md)。2.9.0 可單向轉入固定1.0.6 prototype22r7備份；1.0.6仍只接受同版本；[2.9.1](v291/playable/README.md) 另以schema2／dgdb-1接受舊備份單向轉入，其他版本尚未套用。
 - prototype 22r6 的倉庫來源按鈕改為複製原生 `PagePartyBlendBuildUp/SwitchButtonClear`，使用參考截圖的 `buttonn_small` 背景與184×38碰撞框；按排序列原左側留白鏡像對齊右緣，文字改為置中。原 `LabelSetter` 的清除文字鍵清空，避免覆蓋倉庫切換文字。來源切換及五星以上篩選規則維持原設定。
 - prototype 22r5 將標準及四個聯動池的五星總機率改為原始本機抽選實際機率的三倍，透過兩階段抽選保留各星等類別內的角色與加值權重。倍率基準在補入18種標準五星前擷取，並納入原抽選器首尾票號偏差；池內說明同步顯示三倍與實際百分比。
 - prototype 22r4 新增 `AcquisitionOrder.cs`：只在 `ServerForgery.AddUnit` 建立新角色物件時記錄伺服器格式秒數，載入／存檔不補寫舊角色獲得時間。兩種共用獲得順序鍵改用秒級時間，同秒按原始倉庫插入順序區分；零時間舊卡仍按原圖鑑編號排列，其他排序保留。倉庫助戰候選增加目前 `rare >= 4` 條件，即五星以上；一般好友清單與強化流程不變。

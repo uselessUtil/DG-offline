@@ -993,6 +993,96 @@
       "size_bytes": 5504,
       "sha256": "495fd9d8e585e290685f393049b58c5bb09c8c0a6ac59b55e01685b4157690bd",
       "availability": "local-only"
+    },
+    {
+      "id": "S111",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/build-report.json",
+      "purpose": "2.9.1 r8候選身分與建置範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11062,
+      "sha256": "7b60784f36f9286ea8b06a13f33324952084c3905d29b44721d7d6217bac2f5f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S112",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/test-report.json",
+      "purpose": "r8的27組既有受管檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 36635,
+      "sha256": "00b5490a5a04268401fd43f031a318a50a55228ed1306f712a927070d365a9da",
+      "availability": "local-only"
+    },
+    {
+      "id": "S113",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/effective-data-tests.json",
+      "purpose": "原生載入後212271個SQL欄位核對範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 773,
+      "sha256": "05128a7d8747a261048352d232fc1263346051af2604008812aff0f558303db0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S114",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/permanent-invasions.json",
+      "purpose": "79關97組常駐亂入及衝突政策",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 48184,
+      "sha256": "a59f79ffb280e87c5e5006e8aef10ca8c83d2aa3b9d0e7ca7cfadae9b594a2e7",
+      "availability": "local-only"
+    },
+    {
+      "id": "S115",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/data-identity.json",
+      "purpose": "與r4的34表身分及技能定義保留",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1254,
+      "sha256": "a9a9106ec9d8cd51714544b8e8f3b8f2b7cd153494006462af13866be06a97ef",
+      "availability": "local-only"
+    },
+    {
+      "id": "S116",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/quest-rewards.txt",
+      "purpose": "原掉落方向、加值權重與封包保存檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1143,
+      "sha256": "025d84ac21ebd8311a853c241f589557f88645c6f649035cbc2acdae02f15f39",
+      "availability": "local-only"
+    },
+    {
+      "id": "S117",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/migration290-tests.txt",
+      "purpose": "2.9.0備份單向轉入及技能降限檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 602,
+      "sha256": "84990ef9336d2bfbad151609556d94f3f0a89eb60fb0df66fbce45091421971e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S118",
+      "path": "artifacts/2.9.1-offline-dgdb1-r8-rewards-permanent/layout-regression.json",
+      "purpose": "原106配置IL及進行中封包保存對照",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 890,
+      "sha256": "0b6a941944af14f97a6ca4fc34ee9a594d057790e0d8a8e80c184424b9519742",
+      "availability": "local-only"
+    },
+    {
+      "id": "S119",
+      "path": "artifacts/godot290-port1/manifest.json",
+      "purpose": "較早Godot選單里程碑成品身分及未含戰鬥範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3277,
+      "sha256": "ba67a67cbb649c316886a920cb8fbf614b45d307bbc2825042f6f8c840fdfe3d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S120",
+      "path": "artifacts/godot290-port1/asset-conversion.json",
+      "purpose": "Godot舊資源轉換數量與未解參照",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 21349,
+      "sha256": "8b013e40d52f379ae3ab82de9a0cc04cbe8b2b3b79947ba846eee3a7f84f1f7f",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
