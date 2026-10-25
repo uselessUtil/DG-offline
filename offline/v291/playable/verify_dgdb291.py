@@ -1,7 +1,7 @@
 """Validate data consumed by actual signed DLLs against the locked SQL."""
 import json,hashlib,collections
 from pathlib import Path
-from dgdb import read_sql,index,QUEST_MAP
+from dgdb import read_sql,index,QUEST_MAP,native_guard_fields
 from verify_save_backup291 import run
 CODE=Path('/workspace/offline/v291/playable')
 def verify(work,env,output):
@@ -38,8 +38,10 @@ def verify(work,env,output):
                 d=di[sql][QUEST_MAP.get(ident,ident) if native=='MasterDataQuest' else ident]
                 excluded={'fix_id','area_id'} if native=='MasterDataQuest' else set()
                 if native=='MasterDataParamCharaEvol':excluded={'quest_id'}
+            overrides=native_guard_fields(d) if native=='MasterDataSkillLeader' else {}
             for k in columns & set(r)-excluded-{'created_at','updated_at','timing_public'}:
-                assert r[k]==d[k],(native,ident,k,r[k],d[k]);count+=1
+                expected=overrides.get(k,d[k])
+                assert r[k]==expected,(native,ident,k,r[k],expected);count+=1
             if native=='MasterDataParamCharaEvol':
                 assert r['unit_id_pre'] in units and r['unit_id_after'] in units
                 for j in range(1,5):assert not r['unit_id_parts'+str(j)] or r['unit_id_parts'+str(j)] in units
@@ -50,8 +52,18 @@ def verify(work,env,output):
     assert len(actual['MasterDataParamCharaEvol'])==262
     assert len(actual['MasterDataQuestFloor'])==763
     checks=sum(counts.values())
-    text='PASS signed APK effective tables: exactly595 characters/392 active quests, 262 dependency-complete evolutions, 763 floor rows; '+str(checks)+' DGDB scalar values match locked SQL, with only explicit identity/layout exclusions. No account created.'+chr(10)
+    text='PASS signed APK effective tables: exactly595 characters/392 active quests, 262 dependency-complete evolutions, 763 floor rows; '+str(checks)+' DGDB scalar values match locked SQL, with explicit identity/layout exclusions and validated native guard field mapping. No account created.'+chr(10)
     text+='PASS actual DGDB enemies/drop units remain inside the original roster; AS/LS/NS/PS/Boost/status/action definitions verified after native loading.'+chr(10)
     (output/'effective-data-tests.txt').write_text(text)
     (output/'effective-data-tests.json').write_text(json.dumps({'sql_values_checked':checks,'field_counts':counts,'work':str(directory)},indent=2))
+    conversions=audit['native_guard_conversions']
+    expected={r['fix_id']:native_guard_fields(r) for r in db['l_skill'] if r['skill_type']==5}
+    actual_guards=[r for r in actual['MasterDataSkillLeader'] if r['skill_type']==5]
+    assert len(actual_guards)==len(conversions)==23
+    for r in actual_guards:
+        assert all(r[k]==v for k,v in expected[r['fix_id']].items())
+    # Independent fixture from the raw locked SQL, never the converted flags.
+    (work/'guard-expectations.tsv').write_text(''.join(
+        str(r['fix_id'])+'	'+str(r['skill_value_00'])+'	'+str(r['skill_value_01'])+chr(10)
+        for r in db['l_skill'] if r['fix_id'] in {v['fix_id'] for v in actual_guards}))
     print(text,flush=True);return text

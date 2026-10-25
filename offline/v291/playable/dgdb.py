@@ -53,6 +53,19 @@ def index(rows):
 
 def encode(rows):return json.dumps(rows,ensure_ascii=True,separators=(',',':')).encode()
 
+def native_guard_fields(skill):
+    """DGDB type 5 stores remaining damage %, not reduction %, in value_01."""
+    if skill['skill_type'] != 5:
+        return {}
+    element, rate = skill['skill_value_00'], skill['skill_value_01']
+    assert isinstance(element, int) and 0 <= element <= 7, ('Unsupported guard element', skill['fix_id'])
+    assert isinstance(rate, int) and 0 <= rate <= 100, ('Unsupported guard rate', skill['fix_id'])
+    assert all(skill['skill_value_%02d' % i] == 0 for i in range(2,16)), ('Unsupported guard parameters', skill['fix_id'])
+    fields = {'skill_decline_dmg_active':2, 'skill_decline_dmg_element':element, 'skill_decline_dmg_rate':rate}
+    prior = {k:skill[k] for k in fields}
+    assert all(v == 0 for v in prior.values()) or prior == fields, ('Conflicting native guard', skill['fix_id'])
+    return fields
+
 def project(source, inventory):
     global LAST_AUDIT
     db=read_sql();di={n:index(rs) for n,rs in db.items()}
@@ -252,7 +265,23 @@ def project(source, inventory):
         assert not any(d['value'+str(j)] for j in range(5,16)),('Unsupported extended AS',i)
         skills.append(row('MasterDataSkillLimitBreak',d))
     emit('MasterDataSkillLimitBreak',[row('MasterDataSkillLimitBreak',require('a_skill',0),old['MasterDataSkillLimitBreak'].get(0))]+skills)
-    leaders=[row('MasterDataSkillLeader',require('l_skill',i)) for i in sorted(lsids)]
+    leaders=[];guard_conversions=[]
+    for i in sorted(lsids):
+        d=require('l_skill',i);guard=native_guard_fields(d)
+        leaders.append(row('MasterDataSkillLeader',d,overrides=guard))
+        if guard:
+            guard_conversions.append({'id':i,'name':d['name'],'detail':d['detail'],
+                'element':d['skill_value_00'],'remaining_damage_percent':d['skill_value_01'],
+                'native_fields':guard,'source_fields':{k:d[k] for k in guard},
+                'add_fix_id':d['add_fix_id'],
+                'users':[{'id':c['fix_id'],'draw_id':c['draw_id'],'name':c['name']}
+                         for c in units if c and c.get('skill_leader')==i]})
+    assert len(guard_conversions)==23 and sum(len(r['users']) for r in guard_conversions)==76
+    audit['native_guard_conversions']=guard_conversions
+    audit['fallbacks'].append({'table':'MasterDataSkillLeader',
+        'fields':['skill_decline_dmg_active','skill_decline_dmg_element','skill_decline_dmg_rate'],
+        'ids':[r['id'] for r in guard_conversions],
+        'reason':'DGDB type5 element/remaining-damage percent mapped to native 2.9.1 guard flags; no balance changes'})
     passive=[row('MasterDataSkillPassive',require('p_skill',i)) for i in sorted(psids)]
     emit('MasterDataSkillLeader',leaders);emit('MasterDataSkillPassive',passive)
     boosts={r['skill_boost_id'] for r in active if r['skill_boost_id']}
