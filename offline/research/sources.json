@@ -1191,6 +1191,123 @@
       "size_bytes": 196,
       "sha256": "99bc50888208b17961ac6ac24ca7cec86c37ea05ec5477cdd704578b4ae925a1",
       "availability": "local-only"
+    },
+    {
+      "id": "S133",
+      "path": "artifacts/2.9.1-restored-r12/build-report.json",
+      "purpose": "r12獨立還原候選身分及範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 10989,
+      "sha256": "97192fb1dae2e4d1f89ce79937dc0c0e81d9bca942febb297c4016db5ff02077",
+      "availability": "local-only"
+    },
+    {
+      "id": "S134",
+      "path": "artifacts/2.9.1-restored-r12/restoration.json",
+      "purpose": "年代選集、排除項目與配置fallback",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 727301,
+      "sha256": "8d5960dccd18f0c5d753b587a9860915a38303809bc5a0c0006aaa07fb8d2fcd",
+      "availability": "local-only"
+    },
+    {
+      "id": "S135",
+      "path": "artifacts/2.9.1-restored-r12/test-report.json",
+      "purpose": "擴充設定的31組既有受管檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 49963,
+      "sha256": "4417f1859f1edad0ed5e0e9c3c1adb8b59514c610a4a6fc98508f8c5b1ebac1a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S136",
+      "path": "artifacts/2.9.1-restored-r12/test-profile.json",
+      "purpose": "暫存測試數量、格式及套件期望的明列配接",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2922,
+      "sha256": "551016551e534565ca58cbbf9604cc5a39586ad06306e163796851f594f7b5d6",
+      "availability": "local-only"
+    },
+    {
+      "id": "S137",
+      "path": "artifacts/2.9.1-restored-r12/expanded-extra-tests.json",
+      "purpose": "原素材像素、備份跨程序及曲線參數檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1555,
+      "sha256": "78c1c986cbae01e26811a9373d91a4df4a37559a38326d8e6544378de4553d96",
+      "availability": "local-only"
+    },
+    {
+      "id": "S138",
+      "path": "artifacts/2.9.1-restored-r12/r10-data-differences.json",
+      "purpose": "原r10資料列保留與新增逐表對照",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 158660,
+      "sha256": "627dba5aa176dafb5596da3908a64cec7b6c2698951ced58450c551699ebb397",
+      "availability": "local-only"
+    },
+    {
+      "id": "S139",
+      "path": "artifacts/2.9.1-restored-r12/skill-additions.json",
+      "purpose": "新增技能定義及持有者的既有稽核",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 4648061,
+      "sha256": "819fe5b09f844ed7d3ef932dfc71bc990f3676fc8b9d2a87643edf6c507588db",
+      "availability": "local-only"
+    },
+    {
+      "id": "S140",
+      "path": "artifacts/2.9.1-restored-r12/new-character-acquisition.json",
+      "purpose": "新角色取得來源及零掉落率缺口",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2075145,
+      "sha256": "20b7897ef028d6a15a267a9ada6af25487ba8bb5b28018d7eb2c3224c4480bcf",
+      "availability": "local-only"
+    },
+    {
+      "id": "S141",
+      "path": "artifacts/2.9.1-restored-r12/map-fallbacks.json",
+      "purpose": "新區域模型家族與共用幾何替代",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 126884,
+      "sha256": "ef05461279e51e75230c69f4e06e3ee6e85afd9e26c9ebf147c97e5505bb259d",
+      "availability": "local-only"
+    },
+    {
+      "id": "S142",
+      "path": "artifacts/2.9.1-restored-r12/restored-summary.json",
+      "purpose": "r12數量、缺口與Android待測摘要",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 783,
+      "sha256": "f36c8745e7fab9826040cf015624e2ecc68c17cb490fb3d0892096486eb7e2a8",
+      "availability": "local-only"
+    },
+    {
+      "id": "S143",
+      "path": "artifacts/2.9.1-restored-r11/DO_NOT_USE.txt",
+      "purpose": "r11圖集方向修正前的停用候選標記",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 140,
+      "sha256": "87d3bb8482e2522dafdc31622b4d427112a898a5aedaaf9dae9edaac82b5f043",
+      "availability": "local-only"
+    },
+    {
+      "id": "S144",
+      "path": "artifacts/2.9.1-wiki-dgdb-coverage-2026-10-25/units.json",
+      "purpose": "擴充角色年代選集的固定輸入身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3468162,
+      "sha256": "dd998f5d136a7f646bc3eb515b4c253eedd9532d7639457452f8c3f8c8a3ce19",
+      "availability": "local-only"
+    },
+    {
+      "id": "S145",
+      "path": "artifacts/2.9.1-wiki-dgdb-coverage-2026-10-25/quests.json",
+      "purpose": "擴充關卡年代選集及引用缺口身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 3589973,
+      "sha256": "c9eb581ad689d42f7a8a9c459ff573da0c664bec220d2366975ca74d86540346",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {

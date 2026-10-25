@@ -71,3 +71,6 @@ legacy106-catalog.json 是固定來源的最小角色／關卡對照契約，只
 [2.9.1工程](v291/playable/README.md) 使用game_version=2.9.1、schema2、data_version=dgdb-1識別，接受2.9.0 schema1及固定1.0.6 prototype22r7備份單向轉入。保留帳號欄位與交易回復；新技能上限較低時才限制原技能等級，將來源checksum及調整項目記入migration_report。新格式不可匯回2.9.0或1.0.6，回舊版須使用原舊備份。
 
 既有跨程序測試從固定舊APK生成帳號，驗證轉入及降限；不代表任意官方帳號可遷移，Android選檔與實際遊玩仍待驗證。Godot使用另一套獨立存檔，目前未接本格式遷移。
+
+
+[2.9.1還原設定](v291/restored/README.md) 另輸出schema3／dgdb-2-restored，接受舊2.9.1 schema2及上述固定舊版格式單向轉入；原r10拒收schema3。它使用獨立套件空間，跨套件須明確匯出／匯入，不自動讀取原帳號。r12有既有隔離往返及跨程序報告，本次未重新執行，Android文件介面仍待驗證。

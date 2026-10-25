@@ -58,10 +58,33 @@ QuestRewards291.QuestDropLevel291從實際擊敗的敵人取得drop_unit_level�
 
 r10通過31組受管／資源檢查及鑰匙、地圖、更新循環回歸；新增2144筆實際敵人死亡、同角色不同來源等級、原生100格續關跨程序保存、一般／進化結算及發獎重登測試。r9實際DLL產生的進行中存檔交給r10讀取，SERVER_SAVE及關卡封包保持逐位元組相同。未使用ADB，實機由使用者測試。
 
+## 2.9.1 年代內容還原候選 r12
+
+獨立設定的身分、相依輸入與缺口見 [還原工程說明](../restored/README.md)；本頁頂端的最新交付仍指原dgdb-1的r10。
+
+新增獨立套件 `jp.gungho.dg.offline291.restored`，資料版本 `dgdb-2-restored`、備份 schema3；r10保留原套件與成品。以指紋鎖定的Wiki年代稽核白名單擴至1748角色、921有效關卡、717進化，完整引用閉包使用鎖定DGDB；既有角色、敵人、關卡和技能列不改寫。排除3個NS ability不支援角色及3個後期Link固定隊伍關卡，另76個依賴不完整候選未開放。
+
+`../restored/content.py`建立保守擴充資料；`assets.py`保留所有595角色原生模型路由和原圖，只為缺模型的角色補PNG。缺地圖模型時使用相容共用模型／原門動畫；`Presentation291.cs`只在原生資源不可用的fallback分支，以分離門片執行四態動畫。Dgdata地圖PNG的上下方向與native快取相反，`map_layout.py`轉正後套原UV；用RGB排除不透明黑色空白區，只有簡化切片將黑色padding轉透明。
+
+新增2062筆敵人來源的角色掉落率全為0；本候選保留來源值，沒有猜測補率。七個原卡池及舊79關常駐亂入維持原集合，沒有替新增角色建立推測機率。1153新增角色中697個沒有目前的掉落／卡池／通關／進化目標來源定義；其餘也須逐項確認前置可取得性。這是資料與可執行引用的還原候選，不是2015官方完整平衡快照。
+
+容器內重現（必須另備已驗證的r10素材快取、原APK、鎖定SQL／Wiki稽核及dgdata）：
+
+```sh
+python offline/v291/playable/build.py --revision 12 --restore-content --output artifacts/2.9.1-restored-r12 --assets-from artifacts/2.9.1-offline-dgdb1-r10-drop-level/build-report.json
+python offline/v291/restored/test.py artifacts/2.9.1-restored-r12/build-report.json
+python offline/v291/restored/verify_more.py artifacts/2.9.1-restored-r12/build-report.json
+python offline/v291/restored/report.py artifacts/2.9.1-restored-r12/build-report.json
+```
+
+測試將固定舊白名單／schema的斷言移至容器暫存副本，僅調整有明確來源的擴充數量／套件／格式期望；舊回歸主體不省略。補強複合狀態測試，逐一計算四個狀態槽的原生乘算及最長有效期。實際r10組件匯出、r12匯入、新角色與新通關旗標跨程序及備份再匯入、舊版拒絕schema3均有獨立測試。
+
+完整差異、不可取得角色、技能新增、門／素材fallback、來源缺口及驗證範圍見交付目錄REPORT.txt和對應JSON。r11是地圖方向／分離判定修正前的中間候選，應使用r12。沒有使用ADB或改寫玩家存檔；Android啟動、記憶體、UV與動畫仍由使用者實機測試。
+
 ## 來源與重現限制
 
 原創配接器、工具及文件依 [MIT 授權](../../../LICENSE)；遊戲、DGDB 與聯動內容的權利見 [第三方權利聲明](../../../THIRD_PARTY_NOTICES.md)。原APK、SQL、快取、素材、報告原文及私鑰均不隨 Git checkout 提供。DGDB SQL 的精確輸入身分由 dgdb.py 核對，不能改 hash 繞過失配。
 
 本工程由 [2.9.0 r17](../../v290/playable/README.md) 配接，build.py 明確要求共用 Runtime 的22r7標記。來源中的工作目錄、工具位置與簽署設定尚未全面參數化，須先核對容器設定；只取得 Git 來源不能直接重建。--revision只調整候選標記，不會恢復對應歷史實作；目前累積來源包含r10修正。
 
-r4／r8／r9／r10 的通過結果均引自既有報告。本次整理僅核對語法、格式、連結、公開資訊及來源指紋，未編譯、執行回歸、安裝或操作Android；r10實機仍待驗證。
+r4／r8／r9／r10 的通過結果均引自既有報告。先前文件整理僅核對語法、格式、連結、公開資訊及來源指紋；r12另有既有容器建置與回歸報告。本次提交整理僅做靜態核對，未編譯、執行回歸、安裝或操作Android；實機驗證仍由使用者進行。
