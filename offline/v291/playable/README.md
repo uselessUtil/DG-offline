@@ -81,6 +81,24 @@ python offline/v291/restored/report.py artifacts/2.9.1-restored-r12/build-report
 
 完整差異、不可取得角色、技能新增、門／素材fallback、來源缺口及驗證範圍見交付目錄REPORT.txt和對應JSON。r11是地圖方向／分離判定修正前的中間候選，應使用r12。沒有使用ADB或改寫玩家存檔；Android啟動、記憶體、UV與動畫仍由使用者實機測試。
 
+## r13 手機啟動記憶體修復
+
+此節記錄歷史r13；目前還原設定已至 [r17 UI適配與校準](../restored/UI_ASSET_RECOVERY.md)，原dgdb-1／r10交付維持不變。
+
+r12在32位元Android Mono登入後，會為RecoveredImages的全部PNG RVA欄位一次配置797,044,184 bytes；配置失敗導致mono_class_vtable內SIGSEGV。桌面Mono通過不代表手機的連續位址空間配置能成功。
+
+還原版從r13起將同一份797,044,173-byte圖片資料以ZIP_STORED放在APK的assets/dg-images.bin。ApkImages.cs只讀取ZIP中央目錄與指定圖片範圍，不解壓到外部儲存、不讀整包圖片；圖片索引、所有PNG雜湊、原生模型優先與35張主資料均保持r12原值。配接DLL由814,852,096降為17,397,760 bytes，RecoveredImages不再含巨型RVA欄位；主資料仍使用原先約15MiB的RVA傳輸。
+
+verify_image_streaming.py核對實際簽章APK的儲存方式、全部主資料／圖片／原生資源不變，並以舊版BCL測試讀取器。VerifyImagePackaging.cs限制受管組件及單一RVA類別大小，避免只測單張圖片而漏掉類別整批配置。最大ZIP註解、截斷／遺失／壓縮／長度不符／錯誤本地表頭／ZIP64／越界輸入皆須明確拒絕。
+
+建置沿用還原版命令，--revision 13，輸出artifacts/2.9.1-restored-r13-image-streaming；另執行：
+
+```sh
+python offline/v291/restored/verify_image_streaming.py artifacts/2.9.1-restored-r13-image-streaming/build-report.json
+```
+
+角色／關卡／技能／活動開放與備份資料版本不變，APK套件與簽章相同，可覆蓋安裝保留資料。既有r13記錄只確認啟動／登入邊界，沒有完整遊玩或玩家存檔逐位元組對照；不能推廣為目前r17已通過Android。
+
 ## 來源與重現限制
 
 原創配接器、工具及文件依 [MIT 授權](../../../LICENSE)；遊戲、DGDB 與聯動內容的權利見 [第三方權利聲明](../../../THIRD_PARTY_NOTICES.md)。原APK、SQL、快取、素材、報告原文及私鑰均不隨 Git checkout 提供。DGDB SQL 的精確輸入身分由 dgdb.py 核對，不能改 hash 繞過失配。
@@ -88,3 +106,6 @@ python offline/v291/restored/report.py artifacts/2.9.1-restored-r12/build-report
 本工程由 [2.9.0 r17](../../v290/playable/README.md) 配接，build.py 明確要求共用 Runtime 的22r7標記。來源中的工作目錄、工具位置與簽署設定尚未全面參數化，須先核對容器設定；只取得 Git 來源不能直接重建。--revision只調整候選標記，不會恢復對應歷史實作；目前累積來源包含r10修正。
 
 r4／r8／r9／r10 的通過結果均引自既有報告。先前文件整理僅核對語法、格式、連結、公開資訊及來源指紋；r12另有既有容器建置與回歸報告。本次提交整理僅做靜態核對，未編譯、執行回歸、安裝或操作Android；實機驗證仍由使用者進行。
+
+
+目前還原版r17另補DG0具名圖集像素及原生595參考的五位置HUD裁切校準，資料與schema3不變。角色來源、校準限制與候選SHA-256見專用說明。上述通過紀錄均為既有報告，本次整理僅靜態核對，未建置或執行測試。
