@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "compiled_on": "2026-10-25",
+  "compiled_on": "2026-10-26",
   "timezone": "Asia/Taipei",
   "scope": "Curated report fingerprints; not an APK inventory or independent re-run of historical tests. Paths relative to repository root.",
   "sources": [
@@ -1560,12 +1560,228 @@
       "size_bytes": 11106,
       "sha256": "cb572eb869027e8ae3339c7269b90a76064765576572ed3aedac59f8a86b8378",
       "availability": "local-only"
+    },
+    {
+      "id": "S174",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/REPORT.txt",
+      "purpose": "r17交付摘要及保留舊摘要的判讀界線",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 9682,
+      "sha256": "27cf0f8880c72970b9aeefc7cf1e86035f491706cedde1a61250529f0fce135e",
+      "availability": "local-only"
+    },
+    {
+      "id": "S175",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/handoff.json",
+      "purpose": "r17候選身分、校準數量及未實機驗證狀態",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 810,
+      "sha256": "8fc98c9675b368c1ebf4aaadebe931d0b08b2e790d31a13857b2aec699c975ce",
+      "availability": "local-only"
+    },
+    {
+      "id": "S176",
+      "path": "artifacts/2.9.1-ui-source-audit/REPORT.txt",
+      "purpose": "本機UI素材與原生裁切資料搜尋範圍",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 2073,
+      "sha256": "cf0efae7ac3fc1118c5f5a3cb8fcdb2accd5c5d7068db5fc7f8c85a7bcf6c201",
+      "availability": "local-only"
+    },
+    {
+      "id": "S177",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/source-audit.json",
+      "purpose": "DGDB、Wiki、dgdata及DG0稽核範圍與來源指紋",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 4967,
+      "sha256": "2ea0a8b47f4a515d4a414d890e38eda87fe0ada467357e71b150cfa4d301271a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S178",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/expanded-extra-tests.json",
+      "purpose": "r10基準原生方法、資源保留與存檔檢查",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 1555,
+      "sha256": "7aae2cf5dca5969a19df1e502d2024b29e56cf5c58ce66d55beb431e59717ed4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S179",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/original-methods.txt",
+      "purpose": "原版2.9.1基準的方法比較，與r10比較分開",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 354,
+      "sha256": "c6e4b801b167189e0c4830e2d060f383cec189b3f91efa24e8cff9a4f002916b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S180",
+      "path": "artifacts/2.9.1-restored-r14-ui-uv/STATUS.txt",
+      "purpose": "r14未交付中間候選標記",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 112,
+      "sha256": "9cd7c81f8819343c136e30a53b56a0b0140c1d749425c6a7cd209c393ab515ab",
+      "availability": "local-only"
+    },
+    {
+      "id": "S181",
+      "path": "artifacts/2.9.1-restored-r15-ui-uv/STATUS.txt",
+      "purpose": "r15未交付中間候選標記",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 112,
+      "sha256": "9cd7c81f8819343c136e30a53b56a0b0140c1d749425c6a7cd209c393ab515ab",
+      "availability": "local-only"
+    },
+    {
+      "id": "S182",
+      "path": "artifacts/2.9.1-restored-r16-native-ui/STATUS.txt",
+      "purpose": "r16未交付中間候選標記",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 112,
+      "sha256": "9cd7c81f8819343c136e30a53b56a0b0140c1d749425c6a7cd209c393ab515ab",
+      "availability": "local-only"
+    },
+    {
+      "id": "S183",
+      "path": "artifacts/device-crash-2026-10-25/REPORT.txt",
+      "purpose": "r12巨型RVA配置失敗的歷史裝置診斷",
+      "chapter": "DIAGNOSTIC_FINDINGS.md",
+      "size_bytes": 2591,
+      "sha256": "94431421593f00d3ed03709c6b78c2e944747abc077f22f2a56c3a24bc91fccb",
+      "availability": "local-only"
+    },
+    {
+      "id": "S184",
+      "path": "artifacts/2.9.1-restored-r17-native-ui-calibrated/RESTORATION_REPORT.txt",
+      "purpose": "r17仍保留舊方法數與r12指示的摘要版本",
+      "chapter": "V291_UI_EVIDENCE.md",
+      "size_bytes": 6325,
+      "sha256": "7222754ae4536566fa4acb4d0ee3112b55d61aa097dcfd1670f5a8998da38f76",
+      "availability": "local-only"
+    },
+    {
+      "id": "S185",
+      "path": "artifacts/2.9.1-restored-r18-enemy-size/build-report.json",
+      "purpose": "r18尺寸配接候選身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 11180,
+      "sha256": "2316322f68553468d3a53354df8471ac6f04ffe03efeff194e36414a9ca3eac2",
+      "availability": "local-only"
+    },
+    {
+      "id": "S186",
+      "path": "artifacts/2.9.1-restored-r18-enemy-size/size-layout-adaptations.json",
+      "purpose": "304新增角色四欄映射與原生參考來源",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 499603,
+      "sha256": "86af9492a5315dfb3a110e91d768979422c08c61623a7db068e0e7802221eca7",
+      "availability": "local-only"
+    },
+    {
+      "id": "S187",
+      "path": "artifacts/2.9.1-restored-r18-enemy-size/enemy-size-tests.json",
+      "purpose": "實際尺寸資料、原方法與r17備份跨程序保留",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2026,
+      "sha256": "db3c9927a5fd8cc91c29fa2703335ca80717201896dfa6c646d90221f0013200",
+      "availability": "local-only"
+    },
+    {
+      "id": "S188",
+      "path": "artifacts/2.9.1-restored-r18-enemy-size/test-report.json",
+      "purpose": "r18既有31組受管／資源檢查範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 49960,
+      "sha256": "9750ba9f8d7c708b0b7db3fda901f5cfa292784beff43567f5e20fa3dbb6c347",
+      "availability": "local-only"
+    },
+    {
+      "id": "S189",
+      "path": "artifacts/2.9.1-restored-r18-enemy-size/image-streaming-tests.json",
+      "purpose": "僅304尺寸四欄差異及圖片傳輸保留",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1364,
+      "sha256": "9d1a7caf6aed5e55fc407a3a2e77b0ccabd132100dbe07c8e837fb10968d30f4",
+      "availability": "local-only"
+    },
+    {
+      "id": "S190",
+      "path": "artifacts/battle-layout-editor/DG-Battle-Lab.html.report.json",
+      "purpose": "戰鬥版面單檔工具的來源與成品身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 441,
+      "sha256": "96437d1f84880fe8d8a103a7e477fe9ff86ed2558bf6f4672133c59e17a8097f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S191",
+      "path": "artifacts/battle-layout-editor/standalone-validation.json",
+      "purpose": "戰鬥工具內嵌圖片／靜態檢查及瀏覽器待測界線",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1024,
+      "sha256": "03c92ee8ed6505e7f5bd3a5ee7f859d953bf5440b3ee8114dece210aa3fe2b3b",
+      "availability": "local-only"
+    },
+    {
+      "id": "S192",
+      "path": "artifacts/door-animation-lab/build-report.json",
+      "purpose": "門動作工具來源、25家族與100原始曲線範圍",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 2286,
+      "sha256": "222fdba592867187768cec4777281eabe4717dce559d3a4453b7735052d18717",
+      "availability": "local-only"
+    },
+    {
+      "id": "S193",
+      "path": "artifacts/door-animation-lab/standalone-validation.json",
+      "purpose": "門工具成品資料一致性與瀏覽器待測界線",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 506,
+      "sha256": "078a04abda87e069aeea5d77e678f763046e1542c59b2afafaeeb4560cf19308",
+      "availability": "local-only"
+    },
+    {
+      "id": "S194",
+      "path": "artifacts/door-animation-lab/native-state-contract.txt",
+      "purpose": "原生OPEN／TATAKI／CLOSE／OPEN_BOSS索引契約",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 13772,
+      "sha256": "2892dd203975403e9b1d44f4cf29b6b186571e1fe747d5d2f8b2ff1ae2f3d792",
+      "availability": "local-only"
+    },
+    {
+      "id": "S195",
+      "path": "artifacts/door-animation-lab/native-animation-audit.json",
+      "purpose": "25組門家族、七類動作與替代分組稽核",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 19071,
+      "sha256": "cbed191046934f9c5495e51b923ed7ca342a1a16f67ef4ff6fd630299a5b7ee5",
+      "availability": "local-only"
+    },
+    {
+      "id": "S196",
+      "path": "artifacts/battle-layout-editor/logic-tests.txt",
+      "purpose": "戰鬥顯示匯出／匯入及幾何邏輯既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1901,
+      "sha256": "ef4d804105c42905e3e61fd44b47049c962ef939971dda736cc4843c6c754b50",
+      "availability": "local-only"
+    },
+    {
+      "id": "S197",
+      "path": "artifacts/door-animation-lab/logic-tests.txt",
+      "purpose": "門曲線／顯示匯出與引用邏輯既有檢查",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 1737,
+      "sha256": "f8084b8332c3b5ffb14a9efd1fe98b13f69f053f22cb089b9f5beea3a9ad2e74",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
-    "checked_on": "2026-10-25",
+    "checked_on": "2026-10-26",
     "scope": "File presence and fingerprints only; historical test results were not re-run. Original fingerprints remain unchanged.",
-    "matching_count": 159,
+    "matching_count": 183,
     "missing_source_ids": [
       "S08",
       "S11",
