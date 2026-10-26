@@ -35,3 +35,8 @@ godot290/project/Tables/
 godot290/project/icon.png
 godot290/project/reference.json
 godot290/project/**/*.import
+
+# Local presentation-tool data and decoded game assets.
+tools/battle-layout/runtime/
+tools/battle-layout/dist/game/
+tools/door-lab/runtime/
