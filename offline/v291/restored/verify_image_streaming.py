@@ -39,7 +39,12 @@ def main():
  assert sha(Path(r['output']))==r['sha256'] and sha(Path(old['output']))==old['sha256']
  oldtables=Path(old['work_directory'])/'tables';tables=Path(r['work_directory'])/'tables'
  assert sorted(p.name for p in tables.glob('*.json'))==sorted(p.name for p in oldtables.glob('*.json'))
- for f in tables.glob('*.json'):assert f.read_bytes()==(oldtables/f.name).read_bytes(),f.name
+ size_meta=json.loads((out/'size-layout-adaptations.json').read_text()) if (out/'size-layout-adaptations.json').exists() else None
+ for f in tables.glob('*.json'):
+  if f.name=='MasterDataParamChara.json' and size_meta:
+   from size_layout import verify_delta
+   verify_delta(json.loads((oldtables/f.name).read_text()),json.loads(f.read_text()),size_meta,json.loads((out/'restoration.json').read_text())['original_characters'])
+  else:assert f.read_bytes()==(oldtables/f.name).read_bytes(),f.name
  w=Path(tempfile.mkdtemp(prefix='dg291-png-streaming-',dir='/tmp'))
  stored=None;changes=[]
  with zipfile.ZipFile(r['output']) as z,zipfile.ZipFile(old['output']) as oz:
@@ -70,7 +75,7 @@ def main():
  run('mcs','-nostdlib','-r:'+str(managed/'mscorlib.dll'),'-r:'+str(managed/'System.dll'),
      '-out:'+str(w/'ReaderTests.exe'),CODE/'ApkImages.cs',CODE/'ApkImageReaderTests.cs')
  logs.append(run('mono',w/'ReaderTests.exe',w))
- logs.append('PASS all35 master tables and original4368 PNG hashes/sprite rectangles match r12; added UI atlases separately audited; native Unity data and original model packages unchanged; UI hook checked separately. APK payload is ZIP_STORED; no new permission, save schema or data revision.')
+ logs.append('PASS '+('34 master tables identical; character table differs only by304 audited visual dimension/pivot/spacing profiles; ' if size_meta else 'all35 master tables identical; ')+'original4368 PNG hashes/sprite rectangles match r12; added UI atlases separately audited; native Unity data and original model packages unchanged; UI hook checked separately. APK payload is ZIP_STORED; no new permission, save schema or data revision.')
  result={'apk_sha256':r['sha256'],'work':str(w),'adapter_before_bytes':(w/'before.dll').stat().st_size,
    'adapter_after_bytes':(w/'after.dll').stat().st_size,'image_bytes':images['store_size'],'image_store_sha256':stored,
    'changed_existing_entries':changes,'tests':logs,'android_tested':False}
