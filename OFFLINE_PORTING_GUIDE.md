@@ -754,3 +754,6 @@ prototype 22 曾加入強化頁倉庫選擇，22r1 已移除該頁橋接、按�
 
 
 還原設定目前為 [r17](offline/v291/restored/README.md)：r13將巨型PNG RVA移為APK內未壓縮切片，避免舊32位Mono整批配置；r17再取指紋鎖定DG0具名UI像素及校準五個HUD位置。資料／schema3沿用r12，原生595模型優先保留。頭像是推估構圖，146項明列人工檢視；r13僅有歷史啟動／登入實測，不能作為r17 Android或全流程證據。
+
+
+還原版r18的 [敵人尺寸配接](offline/v291/restored/ENEMY_SIZE_ADAPTER.md) 只允許304筆四個顯示欄位差異，以原595尺寸／定位／間距建立明列推定；保留其餘資料、素材、原生方法及schema3。新增的 [顯示工具](tools/README.md) 分別以r17／r18資料輸出人工調整JSON，不直接修改APK或玩家存檔；生成HTML與素材不隨Git提供，真實瀏覽器及Android畫面仍需分別驗證。

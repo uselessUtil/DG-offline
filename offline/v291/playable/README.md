@@ -83,7 +83,7 @@ python offline/v291/restored/report.py artifacts/2.9.1-restored-r12/build-report
 
 ## r13 手機啟動記憶體修復
 
-此節記錄歷史r13；目前還原設定已至 [r17 UI適配與校準](../restored/UI_ASSET_RECOVERY.md)，原dgdb-1／r10交付維持不變。
+此節記錄歷史r13；還原設定的r17 UI適配見 [素材與校準](../restored/UI_ASSET_RECOVERY.md)，現行r18尺寸配接見 [還原設定](../restored/README.md)，原dgdb-1／r10交付維持不變。
 
 r12在32位元Android Mono登入後，會為RecoveredImages的全部PNG RVA欄位一次配置797,044,184 bytes；配置失敗導致mono_class_vtable內SIGSEGV。桌面Mono通過不代表手機的連續位址空間配置能成功。
 
@@ -108,4 +108,4 @@ python offline/v291/restored/verify_image_streaming.py artifacts/2.9.1-restored-
 r4／r8／r9／r10 的通過結果均引自既有報告。先前文件整理僅核對語法、格式、連結、公開資訊及來源指紋；r12另有既有容器建置與回歸報告。本次提交整理僅做靜態核對，未編譯、執行回歸、安裝或操作Android；實機驗證仍由使用者進行。
 
 
-目前還原版r17另補DG0具名圖集像素及原生595參考的五位置HUD裁切校準，資料與schema3不變。角色來源、校準限制與候選SHA-256見專用說明。上述通過紀錄均為既有報告，本次整理僅靜態核對，未建置或執行測試。
+還原版r17補DG0具名圖集像素及原生595參考的五位置HUD裁切校準；r18再只調整304名新增角色的尺寸／定位四欄，schema3不變。角色來源、校準限制與候選SHA-256見專用說明。上述通過紀錄均為既有報告，本次整理僅靜態核對，未建置或執行測試。
