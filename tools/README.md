@@ -10,3 +10,6 @@
 只提交維護中的程式、介面模板與說明。runtime、battle-layout/dist/game、素材、成品及預覽保留在Git以外，亦排除於Docker建置內容。門工具使用battle-layout的共用Unity4結構讀取器與生成schema，請依各自說明準備輸入。所有開發工具在專案容器執行，固定路徑尚未全面參數化。
 
 原創工具與文件依 [MIT授權](../LICENSE)；原遊戲素材、模型、字型及輸出內容中的第三方部分依 [權利聲明](../THIRD_PARTY_NOTICES.md) 處理。既有測試報告不能替代真實瀏覽器或Android畫面驗證。
+
+
+兩個本機交付ZIP、完整／QA HTML的差別、顯示資料統計與未驗證項目，集中於 [工具產物與證據](../offline/research/TOOL_ARTIFACTS.md)。其中記錄的SHA-256綁定2026-10-26核對的交付版本；建置模板及維護程式仍以本目錄為入口。

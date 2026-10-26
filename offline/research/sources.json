@@ -1776,12 +1776,120 @@
       "size_bytes": 1737,
       "sha256": "f8084b8332c3b5ffb14a9efd1fe98b13f69f053f22cb089b9f5beea3a9ad2e74",
       "availability": "local-only"
+    },
+    {
+      "id": "S198",
+      "path": "artifacts/2.9.1-r18-strengthening-audit/REPORT.txt",
+      "purpose": "r18同屬性素材經驗漏算與既有測試缺口",
+      "chapter": "STRENGTHENING_FINDINGS.md",
+      "size_bytes": 2948,
+      "sha256": "4ea8d73be442f1367c8dc42982e4ae1fd8cd8086dc93f4b1e8b9abacec0a8e63",
+      "availability": "local-only"
+    },
+    {
+      "id": "S199",
+      "path": "artifacts/2.9.1-r18-strengthening-audit/measurements.json",
+      "purpose": "六例原生預覽、API回傳與實存增量",
+      "chapter": "STRENGTHENING_FINDINGS.md",
+      "size_bytes": 1306,
+      "sha256": "c07ff1f84e1def3ff85852f7753d235294b0b9096174d00dcf87c23afab89e29",
+      "availability": "local-only"
+    },
+    {
+      "id": "S200",
+      "path": "artifacts/2.9.1-r18-strengthening-audit/probe-output.txt",
+      "purpose": "強化探測及獨立程序重登結果",
+      "chapter": "STRENGTHENING_FINDINGS.md",
+      "size_bytes": 740,
+      "sha256": "6199c2c8d394d19c12ecc781c73df8d99d17a262915a07c4b8aba5b78da8aeec",
+      "availability": "local-only"
+    },
+    {
+      "id": "S201",
+      "path": "artifacts/2.9.1-r18-strengthening-audit/provenance.json",
+      "purpose": "r18簽章組件及隔離探測範圍",
+      "chapter": "STRENGTHENING_FINDINGS.md",
+      "size_bytes": 310,
+      "sha256": "e52b0ea4a29a5bbc0525741f765e58b3035c7b3034c2efc3e8379bfea5c7d949",
+      "availability": "local-only"
+    },
+    {
+      "id": "S202",
+      "path": "artifacts/2.9.1-r18-strengthening-audit/StrengtheningProbe.cs",
+      "purpose": "原生預覽、結算、序列化及消耗核對方法",
+      "chapter": "STRENGTHENING_FINDINGS.md",
+      "size_bytes": 5310,
+      "sha256": "3fd1efd64e611a0bfe9b36023803b1d822b05176323be66018cf812d846e5bbd",
+      "availability": "local-only"
+    },
+    {
+      "id": "S203",
+      "path": "artifacts/cleanup-2026-10-25-v291-old-apks.json",
+      "purpose": "13個舊APK清理與回歸基準保留紀錄",
+      "chapter": "ARTIFACT_RETENTION.md",
+      "size_bytes": 6891,
+      "sha256": "d09dd5217888c7c4fd9be90d2d315f40d1d749101333fdcba53c96314f0ee533",
+      "availability": "local-only"
+    },
+    {
+      "id": "S204",
+      "path": "artifacts/battle-layout-editor/size-adaptation.json",
+      "purpose": "Battle Lab revision2尺寸映射與304個新增角色",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 65970,
+      "sha256": "6f11625ef354c7037f97fdd2b9afdd00bbdfc12b0be7f620cf09598c23d173ae",
+      "availability": "local-only"
+    },
+    {
+      "id": "S205",
+      "path": "artifacts/battle-layout-editor/embedded-image-sources.json",
+      "purpose": "3509圖片的PNG、RGBA及無損WebP來源身分",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 1925774,
+      "sha256": "2f84ee958a4e586a3ce7d2679f938d224e63353bac89ebc3be20c20e188e5650",
+      "availability": "local-only"
+    },
+    {
+      "id": "S206",
+      "path": "artifacts/battle-layout-editor/DG-Battle-Lab-QA.html.report.json",
+      "purpose": "11角色精簡QA版與完整交付的差別",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 436,
+      "sha256": "552c4c48ab6b731adfe11fdcdc5177c6cf95e0ce1dfeec9e7a8b9c742bfe6d65",
+      "availability": "local-only"
+    },
+    {
+      "id": "S207",
+      "path": "artifacts/battle-layout-editor/使用說明.txt",
+      "purpose": "Battle Lab完整離線交付、草稿與敵人篩選範圍",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 2405,
+      "sha256": "254ee6c5338c76925e82ca931af9d783554229a3c633cc2eecbe217b140ac9e0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S208",
+      "path": "artifacts/door-animation-lab/使用說明.txt",
+      "purpose": "Door Lab狀態、區域共用、自訂動畫及交付限制",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 2973,
+      "sha256": "9a72b86b2860d574c388aa33284762b3e2f4d59cc4abb8519b685dfabf7bc624",
+      "availability": "local-only"
+    },
+    {
+      "id": "S209",
+      "path": "artifacts/door-animation-lab/source-verification.json",
+      "purpose": "門工具r18 APK、25個CAB與關卡／區域表指紋",
+      "chapter": "TOOL_ARTIFACTS.md",
+      "size_bytes": 4053,
+      "sha256": "66498dd86f1f39c1a3dc9b95a6c8dc9b395029f17ed8ebc37c9b3105e2f87be6",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
     "checked_on": "2026-10-26",
     "scope": "File presence and fingerprints only; historical test results were not re-run. Original fingerprints remain unchanged.",
-    "matching_count": 183,
+    "matching_count": 195,
     "missing_source_ids": [
       "S08",
       "S11",
