@@ -55,8 +55,12 @@ def expand(base,schemas,db,quest_map):
         d=di['unit'][i]
         r=native('MasterDataParamChara',d,char_template)
         base['MasterDataParamChara'].append(r)
+    from size_layout import apply as apply_visual_sizes
+    added=[r for r in base['MasterDataParamChara'] if r['fix_id'] and r['fix_id']not in original_chars]
+    meta['visual_size_adapter']=apply_visual_sizes(added,original_chars,di['unit'])
+    assert meta['visual_size_adapter']['changed_count']==304
     meta['fallbacks'].append({'table':'MasterDataParamChara','ids':sorted(target-set(original_chars)),
-        'reason':'No recovered per-character prefab; shared placement from character10, exact DGDB large/icon images by draw_id. Native original595 prefab routes remain preferred.'})
+        'reason':'No recovered per-character prefab; HUD/cutin metadata initially from character10; visual dimensions/pivot/spacing mapped explicitly from DGDB size and native595 profiles. Exact DGDB large/icon images by draw_id. Native original595 prefab routes remain preferred.'})
     used={r['fix_id'] for r in base['MasterDataQuest'] if r}
     for q in selected:
         i=q['id']

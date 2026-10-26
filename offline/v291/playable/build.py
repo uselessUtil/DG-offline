@@ -93,6 +93,7 @@ def main():
     restoration=LAST_AUDIT.get('restoration')
     if restoration:
         (output/'restoration.json').write_text(json.dumps(restoration,ensure_ascii=False,indent=2)+chr(10))
+        (output/'size-layout-adaptations.json').write_text(json.dumps(restoration['visual_size_adapter'],ensure_ascii=False,indent=2)+chr(10))
     (output/'dgdb-projection.json').write_text(json.dumps(LAST_AUDIT,ensure_ascii=False,indent=2))
     (output/'skill-changes.json').write_text(json.dumps(LAST_AUDIT['skill_changes'],ensure_ascii=False,indent=2))
     (output/'excluded-evolutions.json').write_text(json.dumps(LAST_AUDIT['excluded_evolutions'],ensure_ascii=False,indent=2))
