@@ -12,6 +12,8 @@
 
 頁面範本與產生器位於 `offline/image_preview.html`、`offline/build_image_preview.py`。產生的 HTML 內嵌索引但不內嵌圖片，也不修改素材。產物由 Git 忽略。
 
+`divine-gate-wiki/` 是英文 Wiki 的備份，沒有涵蓋其他語言站。`divine-gate-wiki-zh/` 另存中文站的個別補下載圖片及其來源、描述頁 XML；目前並非完整中文站備份。整合預覽會將這些圖片標示為「Wiki / 中文 / PNG」等分類。2026-10-27 補入 `Area_icon_5008.png`，207 × 131，40,440 bytes，與中文站原始 SHA-1 相符。
+
 ## 來源與配置
 
 `dgdb/` 用來放置 [Divine Gate DB](https://github.com/kennyfong19931/dgdb) 的獨立 Git checkout，供查閱資料與原始圖片。此目錄不是主專案的 submodule，需另行取得第三方儲存庫。

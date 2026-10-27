@@ -3,6 +3,7 @@ artifacts/
 /AGENTS.md
 /external/dgdb/
 /external/divine-gate-wiki/
+/external/divine-gate-wiki-zh/
 /external/image-preview.html
 __pycache__/
 *.pyc

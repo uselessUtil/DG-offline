@@ -17,15 +17,20 @@ def local_url(path):
 
 def main():
     records = []
-    manifest = EXTERNAL / "divine-gate-wiki/metadata/image-manifest.json"
-    for item in json.loads(manifest.read_text(encoding="utf-8")):
-        path = EXTERNAL / "divine-gate-wiki" / item["path"]
+    wiki_records = []
+    for folder, language in (("divine-gate-wiki", ""), ("divine-gate-wiki-zh", "中文 / ")):
+        manifest = EXTERNAL / folder / "metadata/image-manifest.json"
+        if not manifest.exists() and language:
+            continue
+        wiki_records.extend((folder, language, item) for item in json.loads(manifest.read_text(encoding="utf-8")))
+    for folder, language, item in wiki_records:
+        path = EXTERNAL / folder / item["path"]
         if not item.get("mime", "").startswith("image/") and item.get("media_kind") != "external_video_thumbnail":
             continue
         if not path.is_file():
             raise FileNotFoundError(path)
         records.append(dict(
-            name=item["name"], source="Wiki", group=(item.get("decoded_format") or path.suffix[1:]).upper(),
+            name=item["name"], source="Wiki", group=language + (item.get("decoded_format") or path.suffix[1:]).upper(),
             src=local_url(path), path=path.relative_to(ROOT).as_posix(),
             width=item.get("width"), height=item.get("height"),
             size=item["downloaded_size"],
