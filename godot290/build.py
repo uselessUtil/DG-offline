@@ -19,5 +19,5 @@ def main():
     command('build',['/opt/dg-dotnet9/dotnet','build',str(PROJECT/'DivineGateGodot.csproj')])
     if '--import' in sys.argv:command('import',[GODOT,'--headless','--editor','--path',str(PROJECT),'--import'])
     if '--capture' in sys.argv:
-        command('capture',['xvfb-run','-a',GODOT,'--path',str(PROJECT),'--rendering-method','gl_compatibility','--audio-driver','Dummy','--','--capture']+([a for a in sys.argv if a in ['--smoke','--quest-smoke']])+[a for a in sys.argv if a.startswith('--page=')])
+        command('capture',['xvfb-run','-a',GODOT,'--path',str(PROJECT),'--rendering-method','gl_compatibility','--audio-driver','Dummy','--','--capture']+([a for a in sys.argv if a in ['--smoke','--quest-smoke','--battle-smoke']])+[a for a in sys.argv if a.startswith('--page=')])
 if __name__=='__main__':main()

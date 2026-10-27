@@ -89,6 +89,6 @@ public static class QuestTests
         for(int n=0;n<10000 && run.InBattle;n++)run.Resolve();
         Check(run.State.Phase=="defeat","passing without attacks eventually reaches real defeat");
         run.Retire();run.Dismiss();Check(core.Player.have_money==money && core.Player.quest_id==0,"defeat retirement awards nothing and permits another quest");
-        Console.WriteLine("PASS quest integration completed");
+        Console.WriteLine("PASS quest integration completed");SkillTests.Run();
     }
 }

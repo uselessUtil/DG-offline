@@ -1,6 +1,8 @@
 # Divine Gate 2.9.0 → Godot 移植
 
-**狀態：可遊玩的關卡流程開發版（port2），已在 MuMu 12 完成教學關及一般關卡；尚非完整 1:1 復刻。**
+**狀態：主動技能與戰鬥演出開發版（port3）；尚非完整 1:1 復刻。**
+
+目前提交為來源 checkpoint，尚未完成 port3 發布封裝。已驗證範圍、暫停位置及恢復步驟見 [CHECKPOINT-port3.md](CHECKPOINT-port3.md)。
 
 參照2.9.0 r17 APK，SHA-256為 b8caed0f1f5c6b34e1285db7dffcf3584436a2980393aa88324e18faa72b6e8f；來源位於專案相對目錄 artifacts/2.9.0-offline-playable1-r17-restore-retire。原APK保持不變，新套件為 org.divinegate.godot290，具有獨立存檔。
 
@@ -13,6 +15,9 @@
 - 從來源匯出原圖集、字型、prefab層級與UI網格，供LegacyView及選單使用；商店與抽卡接r17規則，免費代幣為1／6／12／25／52／85枚。
 - 帳號、倉庫、角色及關卡選單為混合原資源與暫時Godot介面。存檔採獨立原子寫入並保留前一版，不自動讀寫原APK帳號。
 - 新增QuestRun／QuestMenus／QuestView：隊伍選擇、格子移動、鑰匙及門、戰鬥面板計時、敵方回合、結算／退休與重開還原。LegacyEnemyAttack含原程式配接片段；這些來源不能概括為全技能或原版演出已還原。
+- QuestSkills／LegacySkillStatus／QuestEnemyActions 接上 AS/LB 的原版發動條件、SP、冷卻、傷害／治療、面板轉換、狀態付加與解除，BOOST、追擊／反擊、根性、敵方先制與技能反應。隨機數的完整狀態隨關卡保存。原程式 SkillBoost 類別 6–9 的空方法維持空行為；沒有自行添加規則。
+- export_battle_presentation.py 匯出 90 份動畫曲線、93 組技能特效定義、41 張原貼圖；Godot 播放敵人攻擊、技能切入、數字、簡化粒子和消失演出。邏輯結算與播放分開，動畫不能再次扣款或發獎；MENU 可暫停演出，顯示層不穿過選單。
+- tests/SkillTests.cs 掃描目前 595 角色所引用的 248 個不同 AS，覆蓋發動、成本、冷卻、重複拒絕、指定敵屬性、治療公式與上限、全體目標數、存讀，以及相同輸入在讀檔前後的相同結果。這是規則與測試場景覆蓋，不等於每個技能都已在裝置或原遊戲逐項對照。
 - tests/QuestTests.cs 已執行教學關 1、普通關 83 的實際路徑與戰鬥結算，並驗證中途存讀、手牌與倒數、體力只扣一次、不重複領獎、自然敗北及撤退。Main 的 quest-smoke 另檢查 Godot 地圖繪製。
 - export_battle_assets.py 從原 APK 擷取 88 張地圖貼圖、50 組地圖／門模型，MapArt 使用原頂點與 UV 重建平面投影；格子星數、鑰匙與敵人頭像取自原圖集。
 - Android Mono 無法載入舊 DLL 超過 1 MiB 的內嵌圖片值型別；RewriteEmbeddedData 將 1,828 個 RVA 資料陣列改為等值 manifest resources，保留原位元組及遊戲規則。
@@ -42,14 +47,16 @@ python godot290/setup.py --android
 python godot290/prepare.py
 python godot290/export_assets.py
 python godot290/export_battle_assets.py
+python godot290/export_battle_presentation.py
 python godot290/probe.py
 python godot290/probe.py reload
 python godot290/test_quests.py
 python godot290/build.py --import --capture --smoke --page=scratch
 python godot290/build.py --capture --quest-smoke
+python godot290/build.py --import --capture --battle-smoke
 python godot290/export_android.py
 python godot290/export_android.py --x86-64
-python godot290/package_quest.py
+python godot290/package_battle.py
 ```
 
 上述命令是重現入口，須先完成以下來源配對，不能直接當作完整自動建置流程：
@@ -58,13 +65,15 @@ python godot290/package_quest.py
 2. prepare.py尚未自動建立遊戲Tables；需從相同r17報告的已驗證主資料準備到生成專案Tables。不得借用DGDB或其他修訂表替代。
 3. probe.py與test_quests.py要求DG_TEST_TABLES環境變數指向相同表目錄；不再依賴某次建置的隨機暫存路徑。測試帳號與遊戲帳號分離。
 4. setup／build／export工具的容器工作根目錄、工具位置等仍有固定預設，執行前核對來源設定。Android模板透過Godot標準安裝位置尋找，不固定使用者家目錄。
-5. package.py 保留舊 port1 打包流程；新關卡版使用 package_quest.py，拒絕覆蓋不同的既有成品。匯出專案包含來源 DLL 及遊戲素材，其權利不因打包而改變。
+5. package.py／package_quest.py 保留 port1／port2 打包流程；目前使用 package_battle.py，拒絕覆蓋不同的既有成品。匯出專案包含來源 DLL 及遊戲素材，其權利不因打包而改變。
 
-smoke使用一次性帳號；一般啟動使用Godot獨立使用者資料目錄。quest-smoke只進入關卡畫面，不等於自動完成全流程。工具版本雖有部分釘選，Android command-line tools仍依latest來源解析，不能稱為完全鎖定的可重現工具鏈。
+smoke使用一次性帳號；一般啟動使用Godot獨立使用者資料目錄。quest-smoke只進入關卡畫面；battle-smoke 在獨立帳號設定滿冷卻測試技能繪圖，不等於自然遊玩或原遊戲對照。工具版本雖有部分釘選，Android command-line tools仍依latest來源解析，不能稱為完全鎖定的可重現工具鏈。
 
 ## 待驗證與缺口
 
-關卡目前使用暫時 Godot 排版，棋子以隊長立繪表示，還沒有還原原版動畫、音效及粒子。普通面板技能、傷害／治療、敵方回合及原版敵方行動表已接入；主動／LB 技能按鈕、部分 BOOST 追加效果、異常狀態、反擊／追擊和特殊陷阱仍未完整移植。因此不能把兩個關卡通關等同於全關卡、全角色技能或完整 1:1 還原。
+關卡仍使用暫時 Godot 排版，棋子以隊長立繪表示。90 份動畫曲線雖已匯出，尚未全部綁到原來的 UI、骨架與時序；粒子以 Godot 2D 投影播放，85 個非 billboard emitter 的網格／拉伸、完整 3D 形狀和子發射器尚未等價還原。不得把 93 組特效資料匯出解讀為 93 組演出已 1:1 完成。來源 APK 未找到 AudioClip 或外掛音訊檔，尚無可還原的原版音效。
+
+一般攻擊、AS/LB、BOOST、異常狀態、追擊／反擊與敵方行動已接入，但沒有每一敵人／狀態／隊伍組合的原遊戲差分證據。位移型 AS、落穴／隨機移動／回退等特殊地圖流程、全部多層關卡仍需補完；目前毒、黑暗及狀態陷阱、移動回復與地板數量條件已接上。兩個關卡的通關與 248 個 AS 測試均不能代表全遊戲一致。
 
 原版全部頁面、完整編隊／好友、強化／進化／出售、連抽／刮卡演出、多層關卡、原版存檔遷移、ARM64 真機、Android 16 及長時間遊玩仍需逐項驗證。編隊頁更換的隊員目前只用於本次出擊，尚未保存為常駐隊伍。
 

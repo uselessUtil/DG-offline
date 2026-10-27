@@ -24,7 +24,7 @@ public partial class Main : Node2D
             // Traditional Chinese characters. New controls use OS fallbacks;
             // LegacyView still draws the original Japanese bitmap typography.
             font=ThemeDB.FallbackFont;
-            bool smoke=OS.GetCmdlineUserArgs().Contains("--smoke") || OS.GetCmdlineUserArgs().Contains("--quest-smoke");
+            bool smoke=OS.GetCmdlineUserArgs().Contains("--smoke") || OS.GetCmdlineUserArgs().Contains("--quest-smoke") || OS.GetCmdlineUserArgs().Contains("--battle-smoke");
             core.Boot(ProjectSettings.GlobalizePath(smoke?"user://smoke-"+Guid.NewGuid().ToString("N"):"user://r17-port"),ProjectSettings.GlobalizePath("res://Tables"));
             if(smoke) {
                 core.SelectStarter(1);uint initial=core.Player.have_stone;
@@ -47,9 +47,10 @@ public partial class Main : Node2D
             Show("shop");
             foreach(string arg in OS.GetCmdlineUserArgs())if(arg.StartsWith("--page="))Show(arg.Substring(7));
             if(core.Player.first_select_num<1)Starter();
-            if(OS.GetCmdlineUserArgs().Contains("--quest-smoke")){
+            if(OS.GetCmdlineUserArgs().Contains("--quest-smoke") || OS.GetCmdlineUserArgs().Contains("--battle-smoke")){
                 var team=new ServerDataDefine.PacketStructUnit[5];for(int i=0;i<4;i++)team[i]=core.Player.unit_list[i];team[4]=core.Player.unit_list[0];
                 var run=new QuestRun(core);run.Start(1,team);PlayQuest(run);
+                if(OS.GetCmdlineUserArgs().Contains("--battle-smoke")){run.Move(17);run.Move(12);run.Events.Clear();run.Team[0].AddCharaLimitBreak(999);run.UseActive(0);}
             }
             if(OS.GetCmdlineUserArgs().Contains("--capture"))Capture();
         } catch(Exception ex) { GD.PushError(ex.ToString());Label(ex.ToString(),new Rect2(20,180,600,700)); }
@@ -218,6 +219,13 @@ public partial class Main : Node2D
                 await Click("/ButtonDetail");if(!collab)throw new Exception("Collab button failed after draw result return");
                 await Click("/ButtonDetail");if(collab)throw new Exception("Normal return failed after draw result");
                 GD.Print("PASS real Godot mouse events: normal -> collab -> Index -> normal; button bounds restored");
+            }
+            if(OS.GetCmdlineUserArgs().Contains("--battle-smoke")){
+                await ToSignal(GetTree().CreateTimer(.2),SceneTreeTimer.SignalName.Timeout);
+                await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
+                GetViewport().GetTexture().GetImage().SavePng("/tmp/dg-godot290/battle-preview.png");
+                await ToSignal(GetTree().CreateTimer(5),SceneTreeTimer.SignalName.Timeout);
+                GD.Print("PASS Godot active cutin / damage / source particle presentation");
             }
             await ToSignal(RenderingServer.Singleton,RenderingServer.SignalName.FramePostDraw);
             GetViewport().GetTexture().GetImage().SavePng("/tmp/dg-godot290/preview.png");GetTree().Quit();

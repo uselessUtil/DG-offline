@@ -8,7 +8,7 @@ def sha(path):
 def copy_new(source,target):
     if target.exists() and sha(source)!=sha(target):raise FileExistsError('Preserve existing release: '+str(target))
     shutil.copy2(source,target)
-def check_apk(path,arch):
+def check_apk(path,arch,version_code=290002,version_name="0.2.0-quest-dev"):
     libs=[]
     with zipfile.ZipFile(path) as z:
         assert z.testzip() is None
@@ -27,8 +27,8 @@ def check_apk(path,arch):
     for command in [['apksigner','verify'],['zipalign','-c','-P','16','4']]:
         subprocess.run(['/opt/dg-android-sdk/build-tools/35.0.1/'+command[0],*command[1:],str(path)],check=True)
     badging=subprocess.run(['aapt','dump','badging',str(path)],check=True,capture_output=True,text=True).stdout
-    assert "name='org.divinegate.godot290'" in badging and "versionCode='290002'" in badging
-    return {'file':path.name,'bytes':path.stat().st_size,'sha256':sha(path),'architecture':arch,'version':'0.2.0-quest-dev','version_code':290002,
+    assert "name='org.divinegate.godot290'" in badging and f"versionCode='{version_code}'" in badging
+    return {'file':path.name,'bytes':path.stat().st_size,'sha256':sha(path),'architecture':arch,'version':version_name,'version_code':version_code,
             'min_sdk':int(re.search(r"sdkVersion:'(\d+)'",badging)[1]),'target_sdk':int(re.search(r"targetSdkVersion:'(\d+)'",badging)[1]),'native_libraries':libs}
 def main():
     assert sha(SOURCE)==EXPECTED
