@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "compiled_on": "2026-10-26",
+  "compiled_on": "2026-10-27",
   "timezone": "Asia/Taipei",
   "scope": "Curated report fingerprints; not an APK inventory or independent re-run of historical tests. Paths relative to repository root.",
   "sources": [
@@ -1884,12 +1884,111 @@
       "size_bytes": 4053,
       "sha256": "66498dd86f1f39c1a3dc9b95a6c8dc9b395029f17ed8ebc37c9b3105e2f87be6",
       "availability": "local-only"
+    },
+    {
+      "id": "S210",
+      "path": "artifacts/2.9.1-r18-gold-egg-audit/REPORT.txt",
+      "purpose": "Quest220金蛋候選、掉率與順序判定",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 1788,
+      "sha256": "326855d69b5ed70706bffade388f164f877c05e5c228af4726713e2ba19cc51a",
+      "availability": "local-only"
+    },
+    {
+      "id": "S211",
+      "path": "artifacts/2.9.1-r18-gold-egg-audit/results.txt",
+      "purpose": "八組各十萬次固定種子遭遇與掉落統計",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 880,
+      "sha256": "575b644579beb6b6ae54f49d53b9f5a38360c7b8dfd4c99492e91881261b5d5f",
+      "availability": "local-only"
+    },
+    {
+      "id": "S212",
+      "path": "artifacts/2.9.1-r18-gold-egg-audit/provenance.json",
+      "purpose": "金蛋探測組件、SQL指紋與隔離範圍",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 627,
+      "sha256": "248450f2c998b6558b9fbb8b00abb6117d23b49d9d7777a0216c6c23d0f08311",
+      "availability": "local-only"
+    },
+    {
+      "id": "S213",
+      "path": "artifacts/2.9.1-r18-gold-egg-audit/Probe.cs",
+      "purpose": "固定種子與首個成功掉落的探測方法",
+      "chapter": "PROBABILITY_FINDINGS.md",
+      "size_bytes": 1897,
+      "sha256": "3d119b3603d596f4d43dd99aab9738d9ce8ee0867af27478d2250562c965f0a0",
+      "availability": "local-only"
+    },
+    {
+      "id": "S214",
+      "path": "artifacts/dg0-crop-deep-audit-2026-10-27/report.json",
+      "purpose": "DG0深度物件盤點及裁切資料搜尋界線",
+      "chapter": "CROP_DATA_FINDINGS.md",
+      "size_bytes": 68672,
+      "sha256": "967a6fdc60a65544ce4c5e90c66bb8db8bcc31331ef3c958942e26e098f82f41",
+      "availability": "local-only"
+    },
+    {
+      "id": "S215",
+      "path": "artifacts/dg0-crop-deep-audit-2026-10-27/bundle-inventory.json",
+      "purpose": "DG0逐包來源與物件盤點",
+      "chapter": "CROP_DATA_FINDINGS.md",
+      "size_bytes": 43032,
+      "sha256": "5a4dc6a08d76aa353fa1eea98b539c9295b21ca5f85c32905c49a19057447660",
+      "availability": "local-only"
+    },
+    {
+      "id": "S216",
+      "path": "artifacts/attack-banner-icon-relationship-2026-10-27/report.json",
+      "purpose": "原生橫條UV契約、頭像定位與留出驗證",
+      "chapter": "CROP_DATA_FINDINGS.md",
+      "size_bytes": 163141,
+      "sha256": "974bb8cb515b09da58532831ed5a1794058dc285237f534ead40f2679deba735",
+      "availability": "local-only"
+    },
+    {
+      "id": "S217",
+      "path": "artifacts/godot290-port2-quests/manifest.json",
+      "purpose": "Godot較早port2完整關卡流程交付身分",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8237,
+      "sha256": "14ca05ded4b679bc1940153a628cdbb6a91546cd74d1980b0f4c4dfa77ca2b65",
+      "availability": "local-only"
+    },
+    {
+      "id": "S218",
+      "path": "artifacts/godot290-port2-quests-r2/manifest.json",
+      "purpose": "Godot r2兩架構APK與最終選單重測界線",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 8421,
+      "sha256": "836079922b39fc932d08120ab286bcdbf654ff82186d759da86f729dab04146c",
+      "availability": "local-only"
+    },
+    {
+      "id": "S219",
+      "path": "artifacts/godot290-port2-quests-r2/quest-tests.log",
+      "purpose": "關卡1及83、保存／重領／敗北／撤退整合結果",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 4508,
+      "sha256": "022d9759d67db5979cf18260587e4d96ac233d51fbeb47dfada16df11b4158e1",
+      "availability": "local-only"
+    },
+    {
+      "id": "S220",
+      "path": "artifacts/godot290-port2-quests-r2/README.md",
+      "purpose": "port2 r2當時範圍、RVA修正與重現限制",
+      "chapter": "GAMEPLAY.md",
+      "size_bytes": 7210,
+      "sha256": "6f4c565daa2baadbd892a1868c8b65e788184babe334963d1824f02f2f7e0c86",
+      "availability": "local-only"
     }
   ],
   "local_source_check": {
-    "checked_on": "2026-10-26",
+    "checked_on": "2026-10-27",
     "scope": "File presence and fingerprints only; historical test results were not re-run. Original fingerprints remain unchanged.",
-    "matching_count": 195,
+    "matching_count": 206,
     "missing_source_ids": [
       "S08",
       "S11",
