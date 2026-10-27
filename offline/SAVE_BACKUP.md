@@ -59,11 +59,11 @@ Dockerfile 新增橋接編譯用 JDK 及固定版本 R8／Android／JSON 參考j
 - 四個舊聲音／引導選項保留，新增提示／通知選項採原生零值；新增篩選與教學跳過偏好不設值。還原安全標記轉為 240after，移除舊 SAVE_VERSION 與流程暫存。
 - 轉換後再次走完整 2.9.0 驗證與原有備份／日誌交易，不改動 2.9.0 同版本匯入格式。
 
-版本專用來源為 v290/playable/LegacySave106.cs、Legacy106Account.cs 與 legacy106-catalog.json；save_backup.py 在建置時對目前主資料核對對照。新增 verify_legacy106.py、VerifyLegacySchema106.cs、ExportLegacy106Fixture.cs 與 ImportLegacy106Tests.cs，從固定來源 APK 匯出獨立測試帳號，再由簽署 r16 APK 的組件匯入、逐欄比對與跨程序重登；另驗證損壞／未知資料拒絕、故障回復與 Java 預覽。完整受管回歸、鑰匙及更新檢查通過，詳見 r16 成品旁的報告。引擎 I/O 使用測試替身；Android 選檔器、確認／退出及實際遊玩仍交由使用者測試。
+版本專用來源為 v290/playable/LegacySave106.cs、Legacy106Account.cs 與 local_sources.py 的本機生成目錄；save_backup.py 在建置時對目前主資料核對對照。新增 verify_legacy106.py、VerifyLegacySchema106.cs、ExportLegacy106Fixture.cs 與 ImportLegacy106Tests.cs，從固定來源 APK 匯出獨立測試帳號，再由簽署 r16 APK 的組件匯入、逐欄比對與跨程序重登；另驗證損壞／未知資料拒絕、故障回復與 Java 預覽。完整受管回歸、鑰匙及更新檢查通過，詳見 r16 成品旁的報告。引擎 I/O 使用測試替身；Android 選檔器、確認／退出及實際遊玩仍交由使用者測試。
 
 目前 2.9.0 來源為 r17：另修正取消接續時必須透過原退休 API 保存關卡結束狀態，以及無接續／結算資料的孤立關卡。退休前日誌可在載入帳號前回復中斷交易；失敗時保留接續資料並阻擋換頁。r17 的 24 組受管檢查結果屬既有報告，Android 選檔、退出、接續及實際遊玩仍待驗證。
 
-legacy106-catalog.json 是固定來源的最小角色／關卡對照契約，只保留核對所需的 ID、名稱、等級上限與區域；不包含完整主資料或玩家存檔，亦不是通用轉換表。名稱等原遊戲資料依第三方權利聲明處理。建置會逐筆核對目標資料，驗證工具另從指紋鎖定的來源 APK 核對此契約；變更來源修訂時須重新審查，不能只改版本字串。
+原 legacy106-catalog.json 已從公開來源移除，由 offline/local_sources.py 從固定原始 1.0.6 APK 在記憶體重建相同的最小角色／關卡對照契約，只保留核對所需的 ID、名稱、等級上限與區域；不包含完整主資料或玩家存檔，亦不是通用轉換表。名稱等原遊戲資料依第三方權利聲明處理；本機重建結果不納入 Git。來源與核對方法見 [來源說明](SOURCE_PROVENANCE.md)。建置會逐筆核對目標資料，驗證工具另從指紋鎖定的來源 APK 核對此契約；變更來源修訂時須重新審查，不能只改版本字串。
 
 
 ## 2.9.1／DGDB-1 備份

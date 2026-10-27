@@ -8,13 +8,17 @@
 
 原創工具、配接器與文件依 [MIT授權](../LICENSE)；原遊戲程式、改寫片段、美術、字型與其他素材依 [第三方權利聲明](../THIRD_PARTY_NOTICES.md) 處理。Godot／.NET／Android工具依各自條款；匯出專案或APK不會使其內第三方內容成為MIT。
 
+## 本機重建的遊戲程式
+
+LegacyEnemyAttack.cs 與 LegacySkillStatus.cs 不隨公開來源提供。prepare／build／export／test_quests 會透過 recover_rules.py，從指紋鎖定的 r17 APK 生成到容器 /tmp/dg-godot290/project/Generated，並核對與原配接版本相同的程式指紋。缺少或版本不符會停止，不能用空方法替代。生成程式及完整工程包仍包含第三方內容。詳細來源與驗證見 [來源與重建說明](../offline/SOURCE_PROVENANCE.md)。
+
 ## 目前來源
 
 - Godot 4.6.3 .NET／net9.0工程，分別匯出 Android ARM64 手機包及 x86_64 MuMu 包。
 - 保留r17本機規則組件，bridge配接檔案、時間、數學與PlayerPrefs；未配接的Unity原生API明確報錯。原版libunity.so不隨Godot執行，舊managed型別不等於Unity引擎。
 - 從來源匯出原圖集、字型、prefab層級與UI網格，供LegacyView及選單使用；商店與抽卡接r17規則，免費代幣為1／6／12／25／52／85枚。
 - 帳號、倉庫、角色及關卡選單為混合原資源與暫時Godot介面。存檔採獨立原子寫入並保留前一版，不自動讀寫原APK帳號。
-- 新增QuestRun／QuestMenus／QuestView：隊伍選擇、格子移動、鑰匙及門、戰鬥面板計時、敵方回合、結算／退休與重開還原。LegacyEnemyAttack含原程式配接片段；這些來源不能概括為全技能或原版演出已還原。
+- 新增QuestRun／QuestMenus／QuestView：隊伍選擇、格子移動、鑰匙及門、戰鬥面板計時、敵方回合、結算／退休與重開還原。LegacyEnemyAttack由本機固定APK生成原程式配接片段；這些來源不能概括為全技能或原版演出已還原。
 - QuestSkills／LegacySkillStatus／QuestEnemyActions 接上 AS/LB 的原版發動條件、SP、冷卻、傷害／治療、面板轉換、狀態付加與解除，BOOST、追擊／反擊、根性、敵方先制與技能反應。隨機數的完整狀態隨關卡保存。原程式 SkillBoost 類別 6–9 的空方法維持空行為；沒有自行添加規則。
 - export_battle_presentation.py 匯出 90 份動畫曲線、93 組技能特效定義、41 張原貼圖；Godot 播放敵人攻擊、技能切入、數字、簡化粒子和消失演出。邏輯結算與播放分開，動畫不能再次扣款或發獎；MENU 可暫停演出，顯示層不穿過選單。
 - tests/SkillTests.cs 掃描目前 595 角色所引用的 248 個不同 AS，覆蓋發動、成本、冷卻、重複拒絕、指定敵屬性、治療公式與上限、全體目標數、存讀，以及相同輸入在讀檔前後的相同結果。這是規則與測試場景覆蓋，不等於每個技能都已在裝置或原遊戲逐項對照。

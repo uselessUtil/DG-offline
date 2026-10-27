@@ -16,7 +16,7 @@ dgdb.py鎖定SQL SHA-256 a507e0d519a70bab7617c7e37bd9f32b2a75894eb8bdbbffffa0c5b
 
 備份識別：2.9.1／schema2／dgdb-1。接受2.9.0 schema1與固定1.0.6 prototype22r7。技能等級保留數字，超過新上限才限制；調整及來源checksum記入migration_report。保留交易式回復、中斷恢復與原備份。2.9.0拒收新備份，回舊版使用原舊備份。
 
-套件資料空間獨立，不自動讀其他套件私人資料。固定1.0.6目錄沿用offline/v290/playable/legacy106-catalog.json，不更動來源ID。
+套件資料空間獨立，不自動讀其他套件私人資料。固定1.0.6目錄改由offline/local_sources.py從原始1.0.6 APK本機重建，不更動來源ID。
 
 ## 建置與驗證
 

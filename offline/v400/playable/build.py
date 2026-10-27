@@ -18,6 +18,7 @@ SHA='b3f2a366d553d0ab67f2c6fee76bde79dceb3a372f7ed64c3de4849fc1d9600e'
 SOURCE=ROOT/'ディバゲ_4.0.0(紀念)-v20220207073837.apk'
 CECIL='/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
 from manifest import patch as patch_manifest
+from text_sources import supplemental_text
 
 from assets import create as image_create
 SHA106='ba3ccd42c28e4d9362cb6bda2b4d21483b98085441f9513ca1b825bc71be81c2'
@@ -87,7 +88,7 @@ def main():
     # New 4.0.0 downloadable text keys have no counterpart in the old backup.
     # Keep resident TextDatabase; supplement missing keys and documented stale
     # format contracts (PARTY_NUM_RATE has two slots but 4.0.0 passes one value).
-    text_fallback=json.loads((CODE/'text-fallback.json').read_text())
+    text_fallback=supplemental_text(CODE/'text-fallback.json', 'v400', SOURCE)
     repairs=json.loads((CODE/'text-repairs.json').read_text())
     assert not (text_fallback.keys() & repairs.keys()),'Duplicate supplemental text key'
     text_fallback.update(repairs)
@@ -99,7 +100,8 @@ def main():
     text_raw=json.dumps(text_rows,ensure_ascii=True,separators=(',',':')).encode()
     source_tables['MasterDataTextDefinition']=text_raw
     conversions.append({'table':'MasterDataTextDefinition','rows':len(text_rows),
-        'mapping':'Authored fallback for missing code/scene text keys and PARTY_NUM_RATE format correction; not recovered original text.',
+        'mapping':'Authored fallback/format corrections plus three resident labels resolved from the source APK; see offline/SOURCE_PROVENANCE.md.',
+        'resident_source_keys':[k for k,v in json.loads((CODE/'text-fallback.json').read_text()).items() if v is None],
         'keys':list(text_fallback),'output_sha256':digest(text_raw)})
     (output/'data-conversions.json').write_text(json.dumps(conversions,ensure_ascii=False,indent=2)+'\n')
     payloads=[]

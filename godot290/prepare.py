@@ -8,6 +8,12 @@ EXPECTED='b8caed0f1f5c6b34e1285db7dffcf3584436a2980393aa88324e18faa72b6e8f'
 WORK=pathlib.Path('/tmp/dg-godot290')
 PROJECT=WORK/'project'
 def run(*args): subprocess.run([str(x) for x in args],check=True)
+def sync_sources():
+    from recover_rules import recover
+    recover(SOURCE, EXPECTED, PROJECT)
+    shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns('LegacyEnemyAttack.cs','LegacySkillStatus.cs','Generated'))
+
 def main():
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()==EXPECTED, 'Reference APK changed'
     managed=WORK/'reference/Managed';managed.mkdir(parents=True,exist_ok=True)
@@ -27,7 +33,7 @@ def main():
     (libs/'ExportRecovered.exe').unlink()
     run('mcs','-r:/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll','-out:'+str(WORK/'RewriteEmbeddedData.exe'),ROOT/'godot290/bridge/RewriteEmbeddedData.cs')
     run('mono',WORK/'RewriteEmbeddedData.exe',managed/'DivineGateOffline.dll',libs/'PortableEngine.dll',libs/'DivineGateOffline.dll')
-    shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)
+    sync_sources()
     (PROJECT/'reference.json').write_text(json.dumps({'apk':str(SOURCE.relative_to(ROOT)),'sha256':EXPECTED,'version':'2.9.0 r17','engine':'Godot 4.6.3 .NET','status':'port in progress'},indent=2))
     print(PROJECT)
 if __name__=='__main__':main()

@@ -1,5 +1,5 @@
 import pathlib,subprocess,shutil,os,argparse
-from prepare import ROOT,PROJECT,WORK
+from prepare import ROOT,PROJECT,WORK,sync_sources
 from build import GODOT,ENV,command
 def main():
     parser=argparse.ArgumentParser()
@@ -16,7 +16,7 @@ def main():
         text=settings.read_text()
         text='\n'.join(line for line in text.splitlines() if not any(line.startswith(k+' =') for k in values))+'\n'
     settings.write_text(text+'\n'.join(k+' = '+json.dumps(v) for k,v in values.items())+'\n')
-    shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)
+    sync_sources()
     presets=PROJECT/'export_presets.cfg'
     original=presets.read_text()
     if args.x86_64:

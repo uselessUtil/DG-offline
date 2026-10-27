@@ -1,5 +1,5 @@
 import pathlib,subprocess,shutil,os,sys
-from prepare import ROOT,PROJECT,WORK
+from prepare import ROOT,PROJECT,WORK,sync_sources
 GODOT='/opt/godot/4.6.3/Godot_v4.6.3-stable_mono_linux_x86_64/Godot_v4.6.3-stable_mono_linux.x86_64'
 ENV=dict(os.environ,DOTNET_ROOT='/opt/dg-dotnet9',DOTNET_CLI_TELEMETRY_OPTOUT='1',PATH='/opt/dg-dotnet9:'+os.environ['PATH'],GODOT_SILENCE_ROOT_WARNING='1')
 def command(name,args):
@@ -15,7 +15,7 @@ def command(name,args):
     if (name.startswith('android-export') and 'Verifying APK' in log.read_text()) or name=='import':errors=[e for e in errors if e not in known]
     if errors:raise RuntimeError('Godot reported an error; inspect '+str(log))
 def main():
-    shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)
+    sync_sources()
     command('build',['/opt/dg-dotnet9/dotnet','build',str(PROJECT/'DivineGateGodot.csproj')])
     if '--import' in sys.argv:command('import',[GODOT,'--headless','--editor','--path',str(PROJECT),'--import'])
     if '--capture' in sys.argv:

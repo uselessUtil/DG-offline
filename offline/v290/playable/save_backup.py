@@ -1,11 +1,14 @@
 """Generate version-checked 2.9.0 variants of the maintained 1.0.6 backup feature."""
 from pathlib import Path
 import hashlib,json
+import sys
 ROOT=Path('/workspace')
+sys.path.insert(0, str(ROOT/'offline'))
+from local_sources import legacy106_catalog
 FILTER_KEYS=['PARTY_FORM','BUILD_UNIT','BUILD_FRIEND','EVOLVE_UNIT','EVOLVE_FRIEND',
              'UNIT_SALE','UNIT_LIST','FRIEND_LIST','FRIEND_WAIT_ME','FRIEND_WAIT_HIM','QUEST_FRIEND']
 def legacy_catalog(build):
-    catalog=json.loads((ROOT/'offline/v290/playable/legacy106-catalog.json').read_text())
+    catalog=legacy106_catalog()
     tables=build.parent/'tables'
     chars={r['fix_id']:r for r in json.loads((tables/'MasterDataParamChara.json').read_text(),strict=False)}
     quests={r['fix_id']:r for r in json.loads((tables/'MasterDataQuest.json').read_text(),strict=False)}

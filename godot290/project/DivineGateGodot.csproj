@@ -9,4 +9,8 @@
   <ItemGroup>
     <Reference Include="Libraries/*.dll"><Private>true</Private></Reference>
   </ItemGroup>
+  <Target Name="RequireRecoveredRules" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('Generated/LegacyEnemyAttack.cs') Or !Exists('Generated/LegacySkillStatus.cs')"
+           Text="Missing local recovered rules. Run python3 godot290/prepare.py then python3 godot290/build.py in the project container; build the generated project under /tmp/dg-godot290/project." />
+  </Target>
 </Project>

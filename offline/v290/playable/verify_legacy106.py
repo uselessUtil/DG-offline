@@ -2,11 +2,14 @@
 import hashlib,json,os,shutil,zipfile,subprocess
 from pathlib import Path
 from verify_save_backup290 import run
+import sys
 ROOT=Path('/workspace')
+sys.path.insert(0, str(ROOT/'offline'))
+from local_sources import legacy106_catalog
 CODE=ROOT/'offline/v290/playable'
 CECIL='/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll'
 def verify(test,tools,env,output):
-    catalog=json.loads((CODE/'legacy106-catalog.json').read_text())
+    catalog=legacy106_catalog()
     donor=ROOT/'artifacts/1.0.6-offline-prototype22r7-save-backup'
     apk=donor/'ディバゲ_1.0.6.apk'
     assert hashlib.sha256(apk.read_bytes()).hexdigest()==catalog['apk_sha256']

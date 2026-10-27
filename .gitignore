@@ -43,3 +43,10 @@ __pycache__/
 /godot290/project/icon.png
 /godot290/project/reference.json
 /godot290/project/**/*.import
+
+# Recovered game code/data are rebuilt locally, never public source.
+/godot290/project/Generated/
+/godot290/project/LegacyEnemyAttack.cs
+/godot290/project/LegacySkillStatus.cs
+/offline/v290/playable/legacy106-catalog.json
+/offline/v291/playable/legacy106-catalog.json

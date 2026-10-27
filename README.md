@@ -6,6 +6,8 @@
 
 artifacts 中值得保留的資料年代、APK 相容性、素材缺口、玩法差異與驗證結果，已整理於 [調查資訊索引](offline/research/README.md)，並附來源報告指紋。
 
+公開來源與本機重建的分界、角色資料與補寫文字的來源核對，見 [來源與重建說明](offline/SOURCE_PROVENANCE.md)。兩份戰鬥配接與角色／關卡清單由固定 APK 在本機生成，公開 checkout 不附帶原內容。
+
 ## 授權
 
 本專案權利人有權授權的原創工具、補丁實作、測試、設定及文件採用 [MIT License](LICENSE)。

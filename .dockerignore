@@ -40,3 +40,10 @@ godot290/project/**/*.import
 tools/battle-layout/runtime/
 tools/battle-layout/dist/game/
 tools/door-lab/runtime/
+
+# Local-only recovered sources and migration catalogs.
+godot290/project/Generated/
+godot290/project/LegacyEnemyAttack.cs
+godot290/project/LegacySkillStatus.cs
+offline/v290/playable/legacy106-catalog.json
+offline/v291/playable/legacy106-catalog.json
