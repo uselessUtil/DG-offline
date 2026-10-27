@@ -14,13 +14,16 @@ public partial class Main : Node2D
     bool collab;
     int poolTab=1;
     uint[] PoolIds=>collab?new uint[]{300100,300200,300300,300400}:new uint[]{100100,200100,0,0};
-    FontFile font=null!;
+    Font font=null!;
     public override void _Ready()
     {
         try {
             LegacyView.Index=JsonNode.Parse(FileAccess.GetFileAsString("res://Reference/index.json"))!.AsObject();
             var key=LegacyView.Index["fonts"]!.AsObject().OrderByDescending(x=>x.Value!["font"]!["mSaved"]!.AsArray().Count).First().Key;
-            font=GD.Load<FontFile>("res://Reference/fonts/"+key+".fnt");
+            // Original bitmap fonts contain placeholder glyphs for several
+            // Traditional Chinese characters. New controls use OS fallbacks;
+            // LegacyView still draws the original Japanese bitmap typography.
+            font=ThemeDB.FallbackFont;
             bool smoke=OS.GetCmdlineUserArgs().Contains("--smoke") || OS.GetCmdlineUserArgs().Contains("--quest-smoke");
             core.Boot(ProjectSettings.GlobalizePath(smoke?"user://smoke-"+Guid.NewGuid().ToString("N"):"user://r17-port"),ProjectSettings.GlobalizePath("res://Tables"));
             if(smoke) {
@@ -61,7 +64,7 @@ public partial class Main : Node2D
         header.Labels["LabelStaminaCount"]="";header.Labels["FixLabelStaminaAto"]="";
         header.QueueRedraw();footer.QueueRedraw();
     }
-    void ClearDynamic() { foreach(Node child in dynamicUi.GetChildren()) {dynamicUi.RemoveChild(child);child.QueueFree();} }
+    void ClearDynamic() { foreach(Node child in dynamicUi.GetChildren()) {if(child is CanvasItem item)item.Hide();child.ProcessMode=ProcessModeEnum.Disabled;child.QueueFree();} }
     void Show(string target)
     {
         current=target;ClearDynamic();page.Visible=true;page.Labels.Clear();page.Active.Clear();Header();
@@ -81,7 +84,7 @@ public partial class Main : Node2D
             case "quest":Areas();break;
             case "others":
                 page.LoadScene("prefab/mainmenu/mainmenupage/pagewideuseempty");
-                Label("Godot 移植進度\n\n此版本已接上 r17 本機後端。\n場景動畫、戰鬥操作仍在移植中。\n存檔與原 APK 分開保存。",new Rect2(40,230,560,300));
+                Label("Godot 移植進度\n\n已接上 r17 本機後端與關卡流程。\n技能與原版演出仍在移植中。\n存檔與原 APK 分開保存。",new Rect2(40,230,560,300));
                 break;
         }
     }
@@ -171,7 +174,7 @@ public partial class Main : Node2D
     {
         string path="res://Reference/recovered/portrait/"+id+".png";
         if(!ResourceLoader.Exists(path))return;
-        dynamicUi.AddChild(new TextureRect{Texture=GD.Load<Texture2D>(path),Position=rect.Position,Size=rect.Size,ExpandMode=TextureRect.ExpandModeEnum.IgnoreSize,StretchMode=TextureRect.StretchModeEnum.KeepAspectCentered,MouseFilter=Control.MouseFilterEnum.Ignore});
+        dynamicUi.AddChild(new TextureRect{ExpandMode=TextureRect.ExpandModeEnum.IgnoreSize,StretchMode=TextureRect.StretchModeEnum.KeepAspectCentered,Texture=GD.Load<Texture2D>(path),Position=rect.Position,Size=rect.Size,MouseFilter=Control.MouseFilterEnum.Ignore});
     }
     void Label(string text,Rect2 rect,int size=26)
     {

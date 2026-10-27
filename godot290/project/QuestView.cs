@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace DivineGateGodot;
 
@@ -13,6 +14,7 @@ public partial class QuestView : Node2D
     public Font Font=null!;
     public Action? Leave;
     readonly Dictionary<string,Texture2D?> art=new();
+    static readonly MethodInfo RecoveredSprite=typeof(DivineGateOffline).Assembly.GetType("RecoveredImages",true)!.GetMethod("Sprite",BindingFlags.Public|BindingFlags.Static)!;
     int drag=-1,selected=-1;
     Vector2 pointer;
     bool menu;
@@ -45,6 +47,14 @@ public partial class QuestView : Node2D
     void Lines(string text,Vector2 pos,int size=24){foreach(string line in text.Split('\n')){Text(line,pos,size);pos.Y+=size+7;}}
     void Button(string text,Rect2 rect,Color? color=null){DrawRect(rect,color??new Color(.23f,.05f,.36f));DrawRect(rect,new Color(.74f,.3f,.9f),false,2);Text(text,new(rect.Position.X+12,rect.Position.Y+rect.Size.Y/2+10),25);}
     Texture2D? Portrait(uint id){string p="recovered/portrait/"+id+".png";return ResourceLoader.Exists("res://Reference/"+p)?LegacyView.Texture(p):null;}
+    Texture2D? Recovered(string atlas,string name)
+    {
+        string key=atlas+"/"+name;if(art.TryGetValue(key,out var cached))return cached;
+        var rect=(int[]?)RecoveredSprite.Invoke(null,new object[]{atlas,name});
+        if(rect==null){art[key]=null;return null;}
+        var tex=new AtlasTexture{Atlas=LegacyView.Texture("recovered/atlas/"+atlas+".png"),Region=new Rect2(rect[0],rect[1],rect[2],rect[3])};art[key]=tex;return tex;
+    }
+    Texture2D? Icon(uint id)=>Recovered($"AtlasCharaIcon_{id/200*200:000}_{id/200*200+199:000}",$"chara_icon_{id:000}");
     static string Element(int e)=>e switch{1=>"mu",2=>"hi",3=>"mizu",4=>"hikari",5=>"yami",6=>"kaze",7=>"kaifuku",_=>"panel_empty"};
     public override void _Process(double delta)
     {
@@ -57,23 +67,22 @@ public partial class QuestView : Node2D
         if(Run==null)return;
         var s=Run.State;
         DrawRect(new Rect2(0,0,640,1136),new Color(.04f,.025f,.055f));
-        string map=Run.Area.res_map.Replace("_tex","");
-        string lower="recovered/map/"+map+"/lower.png",upper="recovered/map/"+map+"/upper.png";
-        if(ResourceLoader.Exists("res://Reference/"+lower))Image(LegacyView.Texture(lower),new Rect2(0,220,640,750),new Color(.7f,.7f,.7f));
+        MapArt.Draw(this,Run.Area);
+        DrawRect(new Rect2(0,0,640,95),new Color(.04f,.025f,.055f));
         Text(Run.Area.area_name,new(16,35),25,Colors.White,480);
         Text($"{s.Floor}/{s.Build.panel.Length-1} F    COIN {s.Money}    UNIT {s.Drops.Count}",new(16,75),23);
         Button("MENU",menuButton);
-        if(ResourceLoader.Exists("res://Reference/"+upper))Image(LegacyView.Texture(upper),new Rect2(0,100,640,245));
         Button(s.BossDefeated?"NEXT / CLEAR":s.Key?"BOSS BATTLE":"KEY REQUIRED",new Rect2(185,285,270,48),s.Key?new Color(.45f,.1f,.05f):new Color(.15f,.15f,.2f));
         for(int i=0;i<25;i++){
             Rect2 rect=Cell(i);var p=Run.Panels[i];
-            DrawRect(rect,s.Open[i]?new Color(.08f,.07f,.1f,.35f):new Color(.11f,.10f,.14f));
-            DrawRect(rect,Run.CanMove(i)?Colors.Gold:new Color(.48f,.25f,.62f),false,Run.CanMove(i)?4:2);
+            if(!s.Open[i])Image(Recovered("AtlasPanelIcon","panel_blank"),rect);
+            if(!s.Open[i])Image(Recovered("AtlasPanelIcon","panel_blank_frame"),rect);
+            if(Run.CanMove(i))DrawRect(rect,Colors.Gold,false,3);
             if(!s.Open[i]){
-                if(p.star==9)Text("KEY",rect.Position+new Vector2(27,67),30,Colors.Yellow);
-                else if(Run.CanMove(i))Text(p.star==8?"?":p.star==10?"!":"★ "+p.star,rect.Position+new Vector2(25,65),30,Colors.Yellow);
-            } else if(p.type==3){var g=s.Build.list_battle.FirstOrDefault(x=>x.unique_id==p.type_unique);uint id=g?.enemy_list.FirstOrDefault(x=>x>0)??0;var e=id>0?MasterDataUtil.GetEnemyParamFromID(id):null;if(e!=null)Image(Portrait(e.chara_id),rect,new Color(1,1,1,.6f),true);}
-            else if(p.type==2)Text("OPEN",rect.Position+new Vector2(20,65),23,new Color(.65f,.6f,.65f));
+                if(p.star==9)Image(Recovered("AtlasPanelIcon",Run.Area.res_icon_key),rect);
+                else if(Run.CanMove(i)){string risk=p.risk==1?"b":p.risk==3?"r":"y";string name=p.star==8?"panel_Question":p.star==10?"panel_Attention":$"panel_{risk}_{Math.Clamp(p.star,1,6)}";Image(Recovered("AtlasPanelIcon",name),rect);}
+            } else if(p.type==3){var g=s.Build.list_battle.FirstOrDefault(x=>x.unique_id==p.type_unique);uint id=g?.enemy_list.FirstOrDefault(x=>x>0)??0;var e=id>0?MasterDataUtil.GetEnemyParamFromID(id):null;if(e!=null)Image(Icon(e.chara_id),rect,new Color(1,1,1,.6f));}
+            else if(p.type==2)Image(Recovered("AtlasPanelIcon",Run.Area.res_icon_box),rect,new Color(1,1,1,.55f));
         }
         Rect2 here=Cell(s.Position);Image(Portrait(s.Units[0].id),new Rect2(here.Position-new Vector2(0,25),new Vector2(118,142)),null,true);
         DrawRect(here,Colors.Yellow,false,4);
@@ -122,7 +131,7 @@ public partial class QuestView : Node2D
         DrawRect(new Rect2(16,y+32,608,11),new Color(.3f,.01f,.05f));DrawRect(new Rect2(16,y+32,608f*p.m_PartyTotalHP/p.m_PartyTotalHPMax,11),Colors.LimeGreen);
         Text($"SP {p.m_PartyTotalSP}/{p.m_PartyTotalSPMax}",new(420,y+23),24,Colors.Yellow);
         for(int i=0;i<5;i++)if(Run.Team[i]?.m_CharaMasterDataParam!=null){
-            Image(Portrait(Run.Team[i].m_CharaMasterDataParam.fix_id),new Rect2(18+i*123,y+46,112,88),null,true);
+            Image(Icon(Run.Team[i].m_CharaMasterDataParam.fix_id),new Rect2(18+i*123,y+46,88,88));
             Text("Lv."+Run.Team[i].m_CharaLevel,new(20+i*123,y+132),19);
         }
     }
@@ -175,6 +184,6 @@ public partial class QuestView : Node2D
                 for(int i=0;i<25;i++)if(Cell(i).HasPoint(pointer)){Run.Move(i);return;}
             }
         }catch(Exception ex){error=ex.Message;GD.PushError(ex.ToString());}
-        finally{GetViewport().SetInputAsHandled();QueueRedraw();}
+        finally{if(IsInsideTree()){GetViewport().SetInputAsHandled();QueueRedraw();}}
     }
 }

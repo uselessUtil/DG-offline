@@ -56,6 +56,19 @@ public static class QuestTests
         core=Boot(dir);run=new QuestRun(core);Check(run.Restore(),"reload pending quest");
         Check(run.State.Position==17 && run.Party.m_PartyTotalHP==hp && run.Party.m_PartyTotalSP==sp,"position, HP and SP persist");
         Check(core.Player.stamina_now==stamina,"resume does not charge stamina");
+        // Exercise a genuine battle interrupted in the middle of panel input.
+        while(!run.InBattle){
+            int target=run.State.Key?2:Array.FindIndex(run.Panels,p=>p.type==5);
+            if(run.State.Position!=target)run.Move(NextStep(run.State.Position,target));else run.Door();
+        }
+        run.Place(0,0);run.Tick(.75);run.Save();
+        var hand=(int[])run.State.Hand.Clone();var enemyHp=run.Enemies.Select(e=>e.m_EnemyHP).ToArray();
+        double seconds=run.State.Seconds;int placed=run.State.Fields[0][0];
+        core=Boot(dir);run=new QuestRun(core);Check(run.Restore(),"reload active battle");
+        Check(run.State.Hand.SequenceEqual(hand) && run.State.Fields[0].SequenceEqual(new[]{placed}),"actual hand and placed panels persist");
+        Check(run.State.RoundActive && run.State.Seconds==seconds && run.Enemies.Select(e=>e.m_EnemyHP).SequenceEqual(enemyHp),"battle countdown and enemy HP persist");
+        int turns=run.State.Turns;run.Tick(seconds+.1);
+        Check(run.State.Turns==turns+1 && !run.State.RoundActive,"countdown resolves exactly one battle round");
         uint money=core.Player.have_money;int units=core.Player.unit_list.Length;
         Complete(run);
         Check(core.Player.quest_id==0,"server quest order closed after victory");
@@ -70,6 +83,12 @@ public static class QuestTests
         Check(core.Player.stamina_now==stamina-regular.quest_stamina,"normal quest charges original stamina cost exactly once");
         Complete(run);run.Dismiss();
         run=new QuestRun(core);run.Start(1,team);run.Retire();Check(core.Player.quest_id==0 && run.Finished,"retirement closes order without rewards");run.Dismiss();
+        run=new QuestRun(core);run.Start(regular.fix_id,team);
+        while(!run.InBattle){int target=run.State.Key?2:Array.FindIndex(run.Panels,p=>p.type==5);if(run.State.Position!=target)run.Move(NextStep(run.State.Position,target));else run.Door();}
+        money=core.Player.have_money;
+        for(int n=0;n<10000 && run.InBattle;n++)run.Resolve();
+        Check(run.State.Phase=="defeat","passing without attacks eventually reaches real defeat");
+        run.Retire();run.Dismiss();Check(core.Player.have_money==money && core.Player.quest_id==0,"defeat retirement awards nothing and permits another quest");
         Console.WriteLine("PASS quest integration completed");
     }
 }

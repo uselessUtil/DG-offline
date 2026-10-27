@@ -11,8 +11,8 @@ def command(name,args):
     errors=[line for line in log.read_text().splitlines() if line.startswith('ERROR:')]
     # Godot 4.6.3's Android platform destructor reads an already-destroyed
     # EditorSettings after a successful command-line export. Preserve its log.
-    known='ERROR: EditorSettings not instantiated yet when getting setting "export/android/shutdown_adb_on_exit".'
-    if (name=='android-export' and 'Verifying APK' in log.read_text()) or name=='import':errors=[e for e in errors if e!=known]
+    known={f'ERROR: EditorSettings not instantiated yet when getting setting "export/android/{key}".' for key in ('shutdown_adb_on_exit','android_sdk_path')}
+    if (name.startswith('android-export') and 'Verifying APK' in log.read_text()) or name=='import':errors=[e for e in errors if e not in known]
     if errors:raise RuntimeError('Godot reported an error; inspect '+str(log))
 def main():
     shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)

@@ -1,7 +1,10 @@
-import pathlib,subprocess,shutil,os
+import pathlib,subprocess,shutil,os,argparse
 from prepare import ROOT,PROJECT,WORK
 from build import GODOT,ENV,command
 def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--x86-64',action='store_true',help='Native MuMu build; preserve the ARM64 phone APK')
+    args=parser.parse_args()
     config=pathlib.Path.home()/'.config/godot';config.mkdir(parents=True,exist_ok=True)
     settings=config/'editor_settings-4.6.tres'
     key=WORK/'debug.keystore'
@@ -14,5 +17,13 @@ def main():
         text='\n'.join(line for line in text.splitlines() if not any(line.startswith(k+' =') for k in values))+'\n'
     settings.write_text(text+'\n'.join(k+' = '+json.dumps(v) for k,v in values.items())+'\n')
     shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)
-    command('android-export',[GODOT,'--headless','--path',str(PROJECT),'--export-debug','Android ARM64',str(WORK/'DivineGate-Godot-arm64-dev.apk')])
+    presets=PROJECT/'export_presets.cfg'
+    original=presets.read_text()
+    if args.x86_64:
+        presets.write_text(original.replace('architectures/arm64-v8a=true','architectures/arm64-v8a=false').replace('architectures/x86_64=false','architectures/x86_64=true'))
+    try:
+        arch='x86_64' if args.x86_64 else 'arm64'
+        command('android-export-'+arch,[GODOT,'--headless','--path',str(PROJECT),'--export-debug','Android ARM64',str(WORK/f'DivineGate-Godot-{arch}-dev.apk')])
+    finally:
+        presets.write_text(original)
 if __name__=='__main__':main()

@@ -88,7 +88,9 @@ public partial class LegacyView : Node2D
                 string text=Labels.TryGetValue(path,out var value)?value:Labels.TryGetValue(name,out value)?value:S(c["mText"]);
                 Add(-z+F(c["mDepth"])*0.001f,()=>DrawLabel(t,c,text));
             }
-            if(type=="BoxCollider" && B(c["m_Enabled"],true)) {
+            // The original footer background only blocks clicks falling
+            // through the menu; it is not a navigation button.
+            if(type=="BoxCollider" && name!="footer_collide" && B(c["m_Enabled"],true)) {
                 Vector2 size=new(F(c["m_Size"]?["x"]),F(c["m_Size"]?["y"]));
                 hits.Add((path,t,new Rect2(V(c["m_Center"])-size/2,size),null));
             }

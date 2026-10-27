@@ -11,6 +11,18 @@ using UnityEngine;
 
 public static class PortableEngine
 {
+    // Android Mono rejects the old >1 MiB explicit-layout image structs.
+    // Preserve their bytes as ordinary manifest resources instead.
+    public static void InitializeImageArray(Array target, string resource)
+    {
+        using(var stream=System.Reflection.Assembly.Load("DivineGateOffline").GetManifestResourceStream(resource)) {
+            if(stream==null)throw new InvalidDataException("Missing embedded data: "+resource);
+            var bytes=new byte[stream.Length];int offset=0,read;
+            while(offset<bytes.Length && (read=stream.Read(bytes,offset,bytes.Length-offset))>0)offset+=read;
+            if(offset!=bytes.Length || Buffer.ByteLength(target)!=bytes.Length)throw new InvalidDataException("Embedded data length mismatch");
+            Buffer.BlockCopy(bytes,0,target,0,bytes.Length);
+        }
+    }
     static readonly Dictionary<string,string> prefs = new Dictionary<string,string>();
     static readonly Dictionary<object,string> texts = new Dictionary<object,string>();
     static readonly Stopwatch clock = Stopwatch.StartNew();

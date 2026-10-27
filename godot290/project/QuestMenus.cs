@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ServerDataDefine;
 
 namespace DivineGateGodot;
@@ -8,6 +9,7 @@ namespace DivineGateGodot;
 public partial class Main
 {
     QuestView? questView;
+    static string QuestName(string name)=>Regex.Replace(name,@"\[(?:[0-9a-fA-F]{6}|-)\]","");
     void QuestList(uint area)
     {
         ClearDynamic();Label("Quest Select",new Rect2(35,155,550,60),36);
@@ -15,7 +17,7 @@ public partial class Main
         var scroll=new ScrollContainer{Position=new(30,295),Size=new(580,620)};dynamicUi.AddChild(scroll);
         var list=new VBoxContainer{SizeFlagsHorizontal=Control.SizeFlags.ExpandFill};scroll.AddChild(list);
         foreach(var q in core.Server.m_MasterDataQuest.Where(q=>q.area_id==area && q.active==2)){
-            var b=new Button{Text=q.quest_name+"\nSTAMINA "+q.quest_stamina,CustomMinimumSize=new(560,90)};
+            var b=new Button{Text=QuestName(q.quest_name)+"\nSTAMINA "+q.quest_stamina,CustomMinimumSize=new(560,90)};
             b.AddThemeFontOverride("font",font);b.AddThemeFontSizeOverride("font_size",23);list.AddChild(b);
             b.Pressed+=()=>PrepareQuest(q.fix_id);
         }
@@ -29,8 +31,8 @@ public partial class Main
         PacketStructFriend[] helpers=core.Api<RecvQuestHelperGet>(SERVER_API.SERVER_API_QUEST_HELPER_GET,new SendQuestHelperGet()).result.friend;
         team[4]=helpers.FirstOrDefault()?.unit??team[0];
         void Draw(){
-            ClearDynamic();Label(q.quest_name,new Rect2(30,160,580,70),30);
-            Label("Party / Helper",new Rect2(30,240,580,50),32);
+            ClearDynamic();Label(QuestName(q.quest_name),new Rect2(30,160,580,70),25);
+            Label("Party / Helper",new Rect2(30,280,580,40),28);
             for(int i=0;i<5;i++){
                 int slot=i;var u=team[i];
                 if(u!=null)Portrait(u.id,new Rect2(20+i*123,320,112,170));
@@ -58,6 +60,6 @@ public partial class Main
     {
         ClearDynamic();page.Visible=false;header.Visible=false;footer.Visible=false;
         questView=new QuestView{Run=run,Font=font};AddChild(questView);
-        questView.Leave=()=>{RemoveChild(questView);questView.QueueFree();questView=null;header.Visible=true;footer.Visible=true;Show("quest");};
+        questView.Leave=()=>{var closing=questView;questView=null;closing!.Hide();closing.ProcessMode=ProcessModeEnum.Disabled;closing.QueueFree();header.Visible=true;footer.Visible=true;Show("quest");};
     }
 }

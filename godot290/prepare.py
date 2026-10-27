@@ -25,6 +25,8 @@ def main():
     run('mcs','-out:'+str(libs/'ExportRecovered.exe'),ROOT/'godot290/bridge/ExportRecovered.cs')
     run('mono',libs/'ExportRecovered.exe',libs/'DivineGateOffline.dll',PROJECT/'Reference/recovered')
     (libs/'ExportRecovered.exe').unlink()
+    run('mcs','-r:/usr/lib/mono/gac/Mono.Cecil/0.11.1.0__0738eb9f132ed756/Mono.Cecil.dll','-out:'+str(WORK/'RewriteEmbeddedData.exe'),ROOT/'godot290/bridge/RewriteEmbeddedData.cs')
+    run('mono',WORK/'RewriteEmbeddedData.exe',managed/'DivineGateOffline.dll',libs/'PortableEngine.dll',libs/'DivineGateOffline.dll')
     shutil.copytree(ROOT/'godot290/project',PROJECT,dirs_exist_ok=True)
     (PROJECT/'reference.json').write_text(json.dumps({'apk':str(SOURCE.relative_to(ROOT)),'sha256':EXPECTED,'version':'2.9.0 r17','engine':'Godot 4.6.3 .NET','status':'port in progress'},indent=2))
     print(PROJECT)
